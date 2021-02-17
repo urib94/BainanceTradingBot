@@ -29,5 +29,10 @@
             <artifactId>binance-api-client</artifactId>
             <version>1.0.0</version>
           </dependency>
+        <dependency>
+            <groupId>com.binance.sdk</groupId>
+            <artifactId>binance-client</artifactId>
+            <version>1.0.8-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>
