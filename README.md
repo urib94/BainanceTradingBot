@@ -1,2 +1,2 @@
-# TradingBot
-The first Machine Dance Crypto Trading Bot!
+# Trading-Bot
+The first Machine Dance Crypto Currency Bot!
