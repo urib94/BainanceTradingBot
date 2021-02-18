@@ -1,7 +1,5 @@
 import com.binance.client.RequestOptions;
-import com.binance.client.SubscriptionClient;
 import com.binance.client.SyncRequestClient;
-import com.binance.client.constant.*;
 import com.binance.client.model.enums.CandlestickInterval;
 import com.binance.client.model.event.CandlestickEvent;
 import com.binance.client.model.market.Candlestick;
@@ -12,7 +10,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
@@ -27,8 +24,7 @@ public class RealTimeData{
         realTimeData = new BaseBarSeries();
         lock = new ReentrantReadWriteLock();
         RequestOptions options = new RequestOptions();
-        SyncRequestClient syncRequestClient = SyncRequestClient.create(PrivateConfig.API_KEY, PrivateConfig.SECRET_KEY,
-                options);
+        SyncRequestClient syncRequestClient = SyncRequestClient.create(PrivateConfig.API_KEY, PrivateConfig.SECRET_KEY, options);
         List<Candlestick> candlestickBars = syncRequestClient.getCandlestick(symbol, interval, null, null, amount);
         for (Candlestick candlestickBar : candlestickBars) {
             ZonedDateTime closeTime = getZonedDateTime(candlestickBar.getCloseTime());
