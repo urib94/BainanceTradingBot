@@ -44,6 +44,8 @@ public class RealTimeData{
     }
 
     public void updateData(CandlestickEvent event){
+        boolean isNewCandle = true;
+        if (event.getStartTime().doubleValue() == updateCandlestick.getOpenTime()) isNewCandle = false;
         updateCandlestick = new Candlestick();
         updateCandlestick.setOpenTime(event.getStartTime());
         updateCandlestick.setOpen(event.getOpen());
@@ -65,7 +67,12 @@ public class RealTimeData{
         double close = updateCandlestick.getCloseTime().doubleValue();
         double volume = updateCandlestick.getVolume().doubleValue();
         lock.writeLock().lock();
-        realTimeData = realTimeData.getSubSeries(0, realTimeData.getBarCount() - 1);
+        if (isNewCandle){
+            realTimeData = realTimeData.getSubSeries(1, realTimeData.getBarCount());
+        }
+        else{
+            realTimeData = realTimeData.getSubSeries(0, realTimeData.getBarCount() - 1);
+        }
         realTimeData.addBar(candleDuration, closeTime, open, high, low, close, volume);
         lock.writeLock().unlock();
     }
