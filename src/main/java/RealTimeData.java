@@ -39,10 +39,12 @@ public class RealTimeData{
         }
     }
 
-    public void updateData(CandlestickEvent event){
-        boolean isNewCandle = true;
-        if (event.getStartTime().doubleValue() == updateCandlestick.getOpenTime()) isNewCandle = false;
-        updateCandlestick = new Candlestick();
+    /**
+     *
+     * @param updateCandlestick - the current candlestick the class maintains
+     * @param event - the candlestick event from the subscribtion of candlesticks in Main Class.
+     */
+    private static void fillCandleStickFromEvent(Candlestick updateCandlestick, CandlestickEvent event) {
         updateCandlestick.setOpenTime(event.getStartTime());
         updateCandlestick.setOpen(event.getOpen());
         updateCandlestick.setLow(event.getLow());
@@ -54,9 +56,15 @@ public class RealTimeData{
         updateCandlestick.setQuoteAssetVolume(event.getQuoteAssetVolume());
         updateCandlestick.setTakerBuyQuoteAssetVolume(event.getTakerBuyQuoteAssetVolume());
         updateCandlestick.setTakerBuyBaseAssetVolume(event.getTakerBuyQuoteAssetVolume());
+
+    }
+
+    public void updateData(CandlestickEvent event){
+        boolean isNewCandle = !(event.getStartTime().doubleValue() == updateCandlestick.getOpenTime());
+        updateCandlestick = new Candlestick();
+        fillCandleStickFromEvent(updateCandlestick,event);
         ZonedDateTime closeTime = getZonedDateTime(updateCandlestick.getCloseTime());
-        Duration candleDuration = Duration.ofMillis(updateCandlestick.getCloseTime()
-                - updateCandlestick.getOpenTime());
+        Duration candleDuration = Duration.ofMillis(updateCandlestick.getCloseTime() - updateCandlestick.getOpenTime());
         double open = updateCandlestick.getOpenTime().doubleValue();
         double high = updateCandlestick.getHigh().doubleValue();
         double low = updateCandlestick.getLow().doubleValue();

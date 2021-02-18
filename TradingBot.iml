@@ -20,20 +20,5 @@
     </orderEntry>
     <orderEntry type="library" name="Maven: org.ta4j:ta4j-core:0.13" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:2.0.0-alpha1" level="project" />
-    <orderEntry type="library" name="Maven: com.binance.api:binance-api-client:1.0.0" level="project" />
-    <orderEntry type="library" name="Maven: com.squareup.retrofit2:retrofit:2.3.0" level="project" />
-    <orderEntry type="library" name="Maven: com.squareup.retrofit2:converter-jackson:2.3.0" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.7.2" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.7.0" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.7.2" level="project" />
-    <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.10" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.6" level="project" />
-    <orderEntry type="library" name="Maven: com.binance.sdk:binance-client:1.0.8-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: com.squareup.okhttp3:okhttp:3.12.1" level="project" />
-    <orderEntry type="library" name="Maven: com.squareup.okio:okio:1.15.0" level="project" />
-    <orderEntry type="library" name="Maven: com.alibaba:fastjson:1.2.47" level="project" />
-    <orderEntry type="library" name="Maven: ch.qos.logback:logback-classic:1.2.3" level="project" />
-    <orderEntry type="library" name="Maven: ch.qos.logback:logback-core:1.2.3" level="project" />
-    <orderEntry type="library" name="Maven: commons-lang:commons-lang:2.6" level="project" />
   </component>
 </module>

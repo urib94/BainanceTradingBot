@@ -13,11 +13,7 @@ public class Main {
         client.subscribeCandlestickEvent("btcusdt", CandlestickInterval.ONE_MINUTE, ((event) -> {
             rlt.updateData(event);
 
-            executorService.execute(()->{
-
-
-
-            });
+            executorService.execute(()-> System.out.println("omri the king"));
         }), null);
         client.unsubscribeAll();
     }
