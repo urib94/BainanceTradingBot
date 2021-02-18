@@ -3,6 +3,7 @@ import com.binance.client.SubscriptionClient;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.constant.*;
 import com.binance.client.model.enums.CandlestickInterval;
+import com.binance.client.model.event.CandlestickEvent;
 import com.binance.client.model.market.Candlestick;
 import org.ta4j.core.BaseBarSeries;
 
@@ -19,15 +20,11 @@ public class RealTimeData{
 
     private static Candlestick updateCandlestick;
     private BaseBarSeries realTimeData;
-    private final String symbol;
-    private final CandlestickInterval interval;
     private final ReentrantReadWriteLock lock;
 
     public RealTimeData(String symbol, CandlestickInterval interval, int amount){
         updateCandlestick = new Candlestick();
         realTimeData = new BaseBarSeries();
-        this.symbol = symbol;
-        this.interval = interval;
         lock = new ReentrantReadWriteLock();
         RequestOptions options = new RequestOptions();
         SyncRequestClient syncRequestClient = SyncRequestClient.create(PrivateConfig.API_KEY, PrivateConfig.SECRET_KEY,
@@ -46,41 +43,31 @@ public class RealTimeData{
         }
     }
 
-    public void updateData(){
-        SubscriptionClient client = SubscriptionClient.create(PrivateConfig.API_KEY, PrivateConfig.SECRET_KEY);
-        try{
-            client.subscribeCandlestickEvent(symbol, interval, ((event) -> {
-                System.out.println("updating------------------------------------------------------------------");
-                updateCandlestick = new Candlestick();
-                updateCandlestick.setOpenTime(event.getStartTime());
-                updateCandlestick.setOpen(event.getOpen());
-                updateCandlestick.setLow(event.getLow());
-                updateCandlestick.setHigh(event.getHigh());
-                updateCandlestick.setClose(event.getClose());
-                updateCandlestick.setCloseTime(event.getCloseTime());
-                updateCandlestick.setVolume(event.getVolume());
-                updateCandlestick.setNumTrades(Math.toIntExact(event.getNumTrades()));
-                updateCandlestick.setQuoteAssetVolume(event.getQuoteAssetVolume());
-                updateCandlestick.setTakerBuyQuoteAssetVolume(event.getTakerBuyQuoteAssetVolume());
-                updateCandlestick.setTakerBuyBaseAssetVolume(event.getTakerBuyQuoteAssetVolume());
-                ZonedDateTime closeTime = getZonedDateTime(updateCandlestick.getCloseTime());
-                Duration candleDuration = Duration.ofMillis(updateCandlestick.getCloseTime()
-                        - updateCandlestick.getOpenTime());
-                double open = updateCandlestick.getOpenTime().doubleValue();
-                double high = updateCandlestick.getHigh().doubleValue();
-                double low = updateCandlestick.getLow().doubleValue();
-                double close = updateCandlestick.getCloseTime().doubleValue();
-                double volume = updateCandlestick.getVolume().doubleValue();
-                lock.writeLock().lock();
-                realTimeData = realTimeData.getSubSeries(0, realTimeData.getBarCount() - 1);
-                realTimeData.addBar(candleDuration, closeTime, open, high, low, close, volume);
-                lock.writeLock().unlock();
-                System.out.println("finished updating------------------------------------------------------------------");
-                //client.unsubscribeAll();
-            }), null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void updateData(CandlestickEvent event){
+        updateCandlestick = new Candlestick();
+        updateCandlestick.setOpenTime(event.getStartTime());
+        updateCandlestick.setOpen(event.getOpen());
+        updateCandlestick.setLow(event.getLow());
+        updateCandlestick.setHigh(event.getHigh());
+        updateCandlestick.setClose(event.getClose());
+        updateCandlestick.setCloseTime(event.getCloseTime());
+        updateCandlestick.setVolume(event.getVolume());
+        updateCandlestick.setNumTrades(Math.toIntExact(event.getNumTrades()));
+        updateCandlestick.setQuoteAssetVolume(event.getQuoteAssetVolume());
+        updateCandlestick.setTakerBuyQuoteAssetVolume(event.getTakerBuyQuoteAssetVolume());
+        updateCandlestick.setTakerBuyBaseAssetVolume(event.getTakerBuyQuoteAssetVolume());
+        ZonedDateTime closeTime = getZonedDateTime(updateCandlestick.getCloseTime());
+        Duration candleDuration = Duration.ofMillis(updateCandlestick.getCloseTime()
+                - updateCandlestick.getOpenTime());
+        double open = updateCandlestick.getOpenTime().doubleValue();
+        double high = updateCandlestick.getHigh().doubleValue();
+        double low = updateCandlestick.getLow().doubleValue();
+        double close = updateCandlestick.getCloseTime().doubleValue();
+        double volume = updateCandlestick.getVolume().doubleValue();
+        lock.writeLock().lock();
+        realTimeData = realTimeData.getSubSeries(0, realTimeData.getBarCount() - 1);
+        realTimeData.addBar(candleDuration, closeTime, open, high, low, close, volume);
+        lock.writeLock().unlock();
     }
 
     public BaseBarSeries getRealTimeData(){

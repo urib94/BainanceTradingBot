@@ -1,18 +1,25 @@
+import com.binance.client.SubscriptionClient;
 import com.binance.client.model.enums.CandlestickInterval;
-import org.ta4j.core.BaseBarSeries;
 
-import static java.lang.Thread.sleep;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 
 public class Main {
     public static void main(String[] args) throws InterruptedException {
         RealTimeData rlt = new RealTimeData("btcusdt", CandlestickInterval.ONE_MINUTE, 40);
-        rlt.updateData();
+        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        SubscriptionClient client = SubscriptionClient.create(PrivateConfig.API_KEY, PrivateConfig.SECRET_KEY);
+        client.subscribeCandlestickEvent("btcusdt", CandlestickInterval.ONE_MINUTE, ((event) -> {
+            rlt.updateData(event);
 
-        while(true){
-            //Perform operations;
-            BaseBarSeries data = rlt.getRealTimeData();
-        }
+            executorService.execute(()->{
 
+
+
+            });
+        }), null);
+        client.unsubscribeAll();
     }
 }
 
