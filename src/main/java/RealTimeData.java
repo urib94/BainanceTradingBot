@@ -15,17 +15,17 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class RealTimeData{
 
-    private static Candlestick updateCandlestick;
+    private Long lastCandleOpenTime = 0L;
     private BaseBarSeries realTimeData;
     private final ReentrantReadWriteLock lock;
 
     public RealTimeData(String symbol, CandlestickInterval interval, int amount){
-        updateCandlestick = new Candlestick();
         realTimeData = new BaseBarSeries();
         lock = new ReentrantReadWriteLock();
         RequestOptions options = new RequestOptions();
         SyncRequestClient syncRequestClient = SyncRequestClient.create(PrivateConfig.API_KEY, PrivateConfig.SECRET_KEY, options);
         List<Candlestick> candlestickBars = syncRequestClient.getCandlestick(symbol, interval, null, null, amount);
+        lastCandleOpenTime = candlestickBars.get(candlestickBars.size() - 1).getOpenTime();
         for (Candlestick candlestickBar : candlestickBars) {
             ZonedDateTime closeTime = getZonedDateTime(candlestickBar.getCloseTime());
             Duration candleDuration = Duration.ofMillis(candlestickBar.getCloseTime()
@@ -42,7 +42,7 @@ public class RealTimeData{
     /**
      *
      * @param updateCandlestick - the current candlestick the class maintains
-     * @param event - the candlestick event from the subscribtion of candlesticks in Main Class.
+     * @param event - the candlestick event from the subscription of candlesticks in Main Class.
      */
     private static void fillCandleStickFromEvent(Candlestick updateCandlestick, CandlestickEvent event) {
         updateCandlestick.setOpenTime(event.getStartTime());
@@ -60,8 +60,8 @@ public class RealTimeData{
     }
 
     public void updateData(CandlestickEvent event){
-        boolean isNewCandle = !(event.getStartTime().doubleValue() == updateCandlestick.getOpenTime());
-        updateCandlestick = new Candlestick();
+        boolean isNewCandle = !(event.getStartTime().doubleValue() == lastCandleOpenTime);
+        Candlestick updateCandlestick = new Candlestick();
         fillCandleStickFromEvent(updateCandlestick,event);
         ZonedDateTime closeTime = getZonedDateTime(updateCandlestick.getCloseTime());
         Duration candleDuration = Duration.ofMillis(updateCandlestick.getCloseTime() - updateCandlestick.getOpenTime());
@@ -70,6 +70,7 @@ public class RealTimeData{
         double low = updateCandlestick.getLow().doubleValue();
         double close = updateCandlestick.getCloseTime().doubleValue();
         double volume = updateCandlestick.getVolume().doubleValue();
+        lastCandleOpenTime = updateCandlestick.getOpenTime();
         lock.writeLock().lock();
         if (isNewCandle){
             realTimeData = realTimeData.getSubSeries(1, realTimeData.getBarCount());
