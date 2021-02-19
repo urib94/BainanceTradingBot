@@ -1,7 +1,0 @@
-package Strategies;
-
-public enum RSI_EXIT_STRATEGY_TYPE {
-	EXIT_STRATEGY_ONE,
-	EXIT_STRATEGY_TWO,
-	EXIT_STRATEGY_THREE
-}

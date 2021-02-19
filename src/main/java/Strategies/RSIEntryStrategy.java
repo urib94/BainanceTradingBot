@@ -24,13 +24,12 @@ public class RSIEntryStrategy implements EntryStrategy {
     public PositionEntry run(AccountBalance accountBalance, RealTimeData realTimeData) {
         BaseBarSeries baseBarSeries = realTimeData.getRealTimeData();
         ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
-        RSIIndicator rsi1 = new RSIIndicator(closePriceIndicator, PrivateConfig.RSI_CANDLE_NUM);
-        RSIIndicator rsi2 = new RSIIndicator(closePriceIndicator, PrivateConfig.RSI_CANDLE_NUM);
-        RSIIndicator rsi3 = new RSIIndicator(closePriceIndicator, PrivateConfig.RSI_CANDLE_NUM - PrivateConfig.AMOUNT_OF_CANDLES_TO_IDENTIFY_TREND_RSI);
-        Rule entryRule1 = new UnderIndicatorRule(rsi1, PrivateConfig.RSI_ENTRY_TRHESHOLD_1);
-        Rule entryRule2 = new OverIndicatorRule(rsi2, PrivateConfig.RSI_ENTRY_TRHESHOLD_2);
-        Rule entryRule3Helper1 = new OverIndicatorRule(rsi3, PrivateConfig.RSI_ENTRY_TRHESHOLD_3);
-        Rule entryRule3Helper2 = new OverIndicatorRule(rsi3, PrivateConfig.RSI_ENTRY_TRHESHOLD_2);
+        RSIIndicator rsi_full = new RSIIndicator(closePriceIndicator, PrivateConfig.RSI_CANDLE_NUM);
+        RSIIndicator rsi_semi= new RSIIndicator(closePriceIndicator, PrivateConfig.RSI_CANDLE_NUM - PrivateConfig.AMOUNT_OF_CANDLES_TO_IDENTIFY_TREND_RSI);
+        Rule entryRule1 = new UnderIndicatorRule(rsi_full, PrivateConfig.RSI_ENTRY_TRHESHOLD_1);
+        Rule entryRule2 = new OverIndicatorRule(rsi_full, PrivateConfig.RSI_ENTRY_TRHESHOLD_2);
+        Rule entryRule3Helper1 = new OverIndicatorRule(rsi_semi, PrivateConfig.RSI_ENTRY_TRHESHOLD_3);
+        Rule entryRule3Helper2 = new OverIndicatorRule(rsi_semi, PrivateConfig.RSI_ENTRY_TRHESHOLD_2);
         int last_bar_index = baseBarSeries.getEndIndex();
         if (entryRule1.isSatisfied(last_bar_index)) {
             // @TODO: implement
