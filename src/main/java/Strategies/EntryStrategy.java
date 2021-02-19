@@ -8,5 +8,5 @@ public interface EntryStrategy{
      *
      * @return Position entry if purchased coins else null.
      */
-    PositionEntry run(AccountBalance accountBalance, RealTimeData realTimeData);
+    PositionEntry run(RealTimeData realTimeData);
 }

@@ -8,6 +8,4 @@ public class PositionEntry {
     private BigDecimal balance;
     private String asset;
     private ArrayList<ExitStrategy> exitStrategies;
-
-
 }

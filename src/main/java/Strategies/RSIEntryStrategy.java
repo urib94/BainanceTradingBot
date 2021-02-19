@@ -16,12 +16,12 @@ public class RSIEntryStrategy implements EntryStrategy {
 
     /**
      *
-     * @param accountBalance - the singleton - account balance of the user
      * @param realTimeData - also singleton - the realtimedata from the binance api. list of candles basically.
-     * @return
+     * @return PositionEntry if purchased else return null.
      */
     @Override
-    public PositionEntry run(AccountBalance accountBalance, RealTimeData realTimeData) {
+    public PositionEntry run(RealTimeData realTimeData) {
+        AccountBalance accountBalance = AccountBalance.getAccountBalance();
         BaseBarSeries baseBarSeries = realTimeData.getRealTimeData();
         ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
         RSIIndicator rsi_full = new RSIIndicator(closePriceIndicator, PrivateConfig.RSI_CANDLE_NUM);
