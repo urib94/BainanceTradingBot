@@ -1,3 +1,5 @@
+package Data;
+
 import com.binance.client.model.user.BalanceUpdate;
 import com.binance.client.model.user.UserDataUpdateEvent;
 

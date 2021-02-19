@@ -1,3 +1,6 @@
+package Data;
+
+import Data.PrivateConfig;
 import com.binance.client.RequestOptions;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.CandlestickInterval;
