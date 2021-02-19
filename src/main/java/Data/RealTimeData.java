@@ -19,6 +19,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class RealTimeData{
 
     private Long lastCandleOpenTime = 0L;
+
+    //* For us, in realTimeData, the last candle is always open. The previous ones are closed.
     private BaseBarSeries realTimeData;
     private final ReentrantReadWriteLock lock;
 
