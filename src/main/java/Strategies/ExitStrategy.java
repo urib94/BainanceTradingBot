@@ -4,6 +4,5 @@ import Data.AccountBalance;
 import Data.RealTimeData;
 
 public interface ExitStrategy {
-    void run(AccountBalance accountBalance, RealTimeData realTimeData);
-
+    PositionAction run(AccountBalance accountBalance, RealTimeData realTimeData);
 }

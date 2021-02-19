@@ -1,11 +1,18 @@
 import Data.AccountBalance;
+import Data.PositionEntry;
 import Data.PrivateConfig;
 import Data.RealTimeData;
+import Strategies.EntryStrategy;
+import Strategies.RSIEntryStrategy;
 import com.binance.client.RequestOptions;
 import com.binance.client.SubscriptionClient;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.CandlestickInterval;
+import com.sun.corba.se.impl.logging.POASystemException;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
@@ -17,12 +24,15 @@ public class Main {
         AtomicReference<LocalDateTime> baseTime = new AtomicReference<>(LocalDateTime.now()); // to check if 30 minutes have passed since the last keep alive request.
         ExecutorService executorService = Executors.newFixedThreadPool(PrivateConfig.THREAD_NUM);
         AccountBalance accountBalance = AccountBalance.getAccountBalance();
-        RealTimeData rtd = new RealTimeData("btcusdt", CandlestickInterval.ONE_MINUTE, PrivateConfig.THREAD_NUM);
+        RealTimeData realTimeData = new RealTimeData("btcusdt", CandlestickInterval.ONE_MINUTE, PrivateConfig.THREAD_NUM);
         RequestOptions options = new RequestOptions();
         SyncRequestClient syncRequestClient = SyncRequestClient.create(PrivateConfig.API_KEY, PrivateConfig.SECRET_KEY, options);
         SubscriptionClient subscriptionClient = SubscriptionClient.create(PrivateConfig.API_KEY, PrivateConfig.SECRET_KEY);
         String listenKey = syncRequestClient.startUserDataStream();
         syncRequestClient.keepUserDataStream(listenKey);
+        ArrayList<EntryStrategy> entryStrategies = new ArrayList<>();
+        ArrayList<PositionEntry> positionEntries = new ArrayList<>();
+        entryStrategies.add(new RSIEntryStrategy());
         subscriptionClient.subscribeUserDataEvent(listenKey, ((event)-> {
             LocalDateTime programTimeNow = LocalDateTime.now();
             if (utils.minutePassed(baseTime.get(),programTimeNow,PrivateConfig.MINUTES_TO_KEEP_ALIVE)) {
@@ -34,12 +44,24 @@ public class Main {
             accountBalance.updateBalance(event, "usdt");
         }),System.out::println);
         subscriptionClient.subscribeCandlestickEvent("btcusdt", CandlestickInterval.ONE_MINUTE, ((event) -> {
-            rtd.updateData(event);
-           executorService.execute(()-> {
-                System.out.println("omri the king");
-            });
-        }), System.out::println);
-       //subscriptionClient.unsubscribeAll();
+            realTimeData.updateData(event);
+            for (EntryStrategy entryStrategy: entryStrategies){
+                executorService.execute(()->{
+                    PositionEntry positionEntry = entryStrategy.run(realTimeData);
+                    if (positionEntry != null) positionEntries.add(positionEntry);
+                });
+            }
+            for (PositionEntry positionEntry:positionEntries){
+                if (positionEntry.getBalance().compareTo(new BigDecimal(0)) <= 0) positionEntries.remove(positionEntry);
+                else{
+                    executorService.execute(()->{
+                        positionEntry.update();
+                        positionEntry.run(realTimeData);
+                    });
+                }
+            }
+        }), System.out::print);
+        //subscriptionClient.unsubscribeAll();
     }
 }
 
