@@ -1,4 +1,4 @@
-package Strategies;
+package Data;
 
 import java.math.BigDecimal;
 

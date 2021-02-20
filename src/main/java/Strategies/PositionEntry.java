@@ -1,6 +1,8 @@
-package Data;
+package Strategies;
+import Data.AccountBalance;
+import Data.RealTimeData;
+import Data.PositionAction;
 import Strategies.ExitStrategy;
-import Strategies.PositionAction;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -26,7 +28,7 @@ public class PositionEntry {
 
     public void run(RealTimeData realTimeData){
         for (ExitStrategy exitStrategy: exitStrategies){
-            PositionAction positionAction = exitStrategy.run(AccountBalance.getAccountBalance(),realTimeData);
+            PositionAction positionAction = exitStrategy.run(realTimeData);
             if (positionAction != null){
 
             }

@@ -1,19 +1,16 @@
-package Strategies;
+package Strategies.RSIStrategies;
 
 import Data.AccountBalance;
-import Data.PositionEntry;
 import Data.PrivateConfig;
 import Data.RealTimeData;
+import Strategies.EntryStrategy;
+import Strategies.PositionEntry;
 import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.Rule;
 import org.ta4j.core.indicators.RSIIndicator;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import org.ta4j.core.trading.rules.CrossedDownIndicatorRule;
 import org.ta4j.core.trading.rules.CrossedUpIndicatorRule;
-import org.ta4j.core.trading.rules.OverIndicatorRule;
-import org.ta4j.core.trading.rules.UnderIndicatorRule;
-
-import java.util.ArrayList;
 
 public class RSIEntryStrategy implements EntryStrategy {
     private int position_in_strategy = 1;
@@ -26,8 +23,7 @@ public class RSIEntryStrategy implements EntryStrategy {
      */
     public PositionEntry run(RealTimeData realTimeData) {
         AccountBalance accountBalance = AccountBalance.getAccountBalance();
-        BaseBarSeries baseBarSeries = realTimeData.getRealTimeData();
-        baseBarSeries = baseBarSeries.getSubSeries(baseBarSeries.getBarCount() - 10, baseBarSeries.getBarCount() - 1);
+        BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfClosedCandles(PrivateConfig.RSI_CANDLE_NUM);
         int last_bar_index = baseBarSeries.getEndIndex();
         ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
         RSIIndicator rsi = new RSIIndicator(closePriceIndicator, PrivateConfig.RSI_CANDLE_NUM);
@@ -58,5 +54,6 @@ public class RSIEntryStrategy implements EntryStrategy {
                 return null; //TODO: PositionEntry!
             }
         }
+        return null;
     }
 }

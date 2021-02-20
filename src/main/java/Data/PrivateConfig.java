@@ -10,11 +10,12 @@ public class PrivateConfig {
 	public static final int RSI_ENTRY_TRHESHOLD_1 = 27;
 	public static final int RSI_ENTRY_TRHESHOLD_2 = 30;
 	public static final int RSI_ENTRY_TRHESHOLD_3 = 35;
-	public static final int AMOUNT_OF_CANDLES_TO_IDENTIFY_TREND_RSI = 2;
 	public static final int RSI_CANDLE_NUM = 9;
 	public static final int RSI_EXIT_OPTION_1_OVER_THRESHOLD1 = 65;
+	public static final int RSI_EXIT_OPTION_1_UNDER_THRESHOLD1 = 65;
+	public static final int RSI_EXIT_OPTION_1_UNDER_THRESHOLD2 = 50;
 	public static final int RSI_EXIT_OPTION_2_OVER_THRESHOLD1 = 73;
-	public static final int RSI_EXIT_OPTION_1_UNDER_THRESHOLD_2 = 50;
-
+	public static final int RSI_EXIT_OPTION_2_UNDER_THRESHOLD1 = 70;
+	public static final int RSI_EXIT_OPTION_2_UNDER_THRESHOLD2 = 60;
 
 }
