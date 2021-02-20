@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 public class Main {
@@ -24,13 +26,14 @@ public class Main {
         AtomicReference<LocalDateTime> baseTime = new AtomicReference<>(LocalDateTime.now()); // to check if 30 minutes have passed since the last keep alive request.
         ExecutorService executorService = Executors.newFixedThreadPool(PrivateConfig.THREAD_NUM);
         AccountBalance accountBalance = AccountBalance.getAccountBalance();
-        RealTimeData realTimeData = new RealTimeData("btcusdt", CandlestickInterval.ONE_MINUTE, PrivateConfig.THREAD_NUM);
+        RealTimeData realTimeData = new RealTimeData("btcusdt", CandlestickInterval.ONE_MINUTE, PrivateConfig.CANDLE_NUM);
         RequestOptions options = new RequestOptions();
         SyncRequestClient syncRequestClient = SyncRequestClient.create(PrivateConfig.API_KEY, PrivateConfig.SECRET_KEY, options);
         SubscriptionClient subscriptionClient = SubscriptionClient.create(PrivateConfig.API_KEY, PrivateConfig.SECRET_KEY);
         String listenKey = syncRequestClient.startUserDataStream();
         syncRequestClient.keepUserDataStream(listenKey);
         ArrayList<EntryStrategy> entryStrategies = new ArrayList<>();
+        ReadWriteLock lock = new ReentrantReadWriteLock();
         ArrayList<PositionEntry> positionEntries = new ArrayList<>();
         entryStrategies.add(new RSIEntryStrategy());
         subscriptionClient.subscribeUserDataEvent(listenKey, ((event)-> {
@@ -45,12 +48,7 @@ public class Main {
         }),System.out::println);
         subscriptionClient.subscribeCandlestickEvent("btcusdt", CandlestickInterval.ONE_MINUTE, ((event) -> {
             realTimeData.updateData(event);
-            for (EntryStrategy entryStrategy: entryStrategies){
-                executorService.execute(()->{
-                    PositionEntry positionEntry = entryStrategy.run(realTimeData);
-                    if (positionEntry != null) positionEntries.add(positionEntry);
-                });
-            }
+            lock.readLock().lock();
             for (PositionEntry positionEntry:positionEntries){
                 if (positionEntry.getBalance().compareTo(new BigDecimal(0)) <= 0) positionEntries.remove(positionEntry);
                 else{
@@ -59,6 +57,17 @@ public class Main {
                         positionEntry.run(realTimeData);
                     });
                 }
+            }
+            lock.readLock().unlock();
+            for (EntryStrategy entryStrategy: entryStrategies){
+                executorService.execute(()->{
+                    PositionEntry positionEntry = entryStrategy.run(realTimeData);
+                    if (positionEntry != null){
+                        lock.writeLock().lock();
+                        positionEntries.add(positionEntry);
+                        lock.writeLock().unlock();
+                    }
+                });
             }
         }), System.out::print);
         //subscriptionClient.unsubscribeAll();
