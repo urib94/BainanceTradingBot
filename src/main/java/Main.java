@@ -1,14 +1,13 @@
 import Data.AccountBalance;
-import Data.PositionEntry;
+import Strategies.PositionEntry;
 import Data.PrivateConfig;
 import Data.RealTimeData;
 import Strategies.EntryStrategy;
-import Strategies.RSIEntryStrategy;
+import Strategies.RSIStrategies.RSIEntryStrategy;
 import com.binance.client.RequestOptions;
 import com.binance.client.SubscriptionClient;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.CandlestickInterval;
-import com.sun.corba.se.impl.logging.POASystemException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -38,14 +37,16 @@ public class Main {
         entryStrategies.add(new RSIEntryStrategy());
         subscriptionClient.subscribeUserDataEvent(listenKey, ((event)-> {
             LocalDateTime programTimeNow = LocalDateTime.now();
-            if (utils.minutePassed(baseTime.get(),programTimeNow,PrivateConfig.MINUTES_TO_KEEP_ALIVE)) {
-                syncRequestClient.keepUserDataStream(listenKey);
+            LocalDateTime baseLocalTime = baseTime.get();
+            if (utils.minutePassed(baseLocalTime,programTimeNow,PrivateConfig.MINUTES_TO_KEEP_ALIVE)) {
+                syncRequestClient.keepUserDataStream(listenKey); // keep user stream alive (it dies after 60 minutes).
                 System.out.println("Sent keep User Alive request");
                 baseTime.set(programTimeNow);
             }
             System.out.println(event);
             accountBalance.updateBalance(event, "usdt");
         }),System.out::println);
+
         subscriptionClient.subscribeCandlestickEvent("btcusdt", CandlestickInterval.ONE_MINUTE, ((event) -> {
             realTimeData.updateData(event);
             lock.readLock().lock();

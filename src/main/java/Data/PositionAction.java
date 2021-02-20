@@ -1,4 +1,4 @@
-package Strategies;
+package Data;
 
 import com.binance.client.impl.RestApiInvoker;
 import com.binance.client.model.enums.*;

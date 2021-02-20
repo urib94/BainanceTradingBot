@@ -95,7 +95,22 @@ public class RealTimeData{
             lock.readLock().unlock();
         }
     }
-
+    public BaseBarSeries getLastAmountOfClosedCandles(int amount) {
+        try {
+            lock.readLock().lock();
+            return realTimeData.getSubSeries(realTimeData.getBarCount() - (amount + 1), realTimeData.getBarCount() - 1);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+    public BaseBarSeries getLastAmountOfCandles(int amount) {
+        try {
+            lock.readLock().lock();
+            return realTimeData.getSubSeries(realTimeData.getBarCount() - amount, realTimeData.getBarCount());
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
     private ZonedDateTime getZonedDateTime(Long timestamp) {
         return ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
                 ZoneId.systemDefault());

@@ -1,28 +1,14 @@
 package Data;
 import Strategies.ExitStrategy;
-import Strategies.PositionAction;
-import com.binance.client.RequestOptions;
-import com.binance.client.SyncRequestClient;
-import com.binance.client.model.trade.Order;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
 public class PositionEntry {
-    private String clientPositionId;
     private String positionId;
-    private String  asset;
-    private BigDecimal origQty;
-    private BigDecimal executedQty;
-    private String side;
-
-
-
-
-
-    private BigDecimal balance; //depends on order status
+    private BigDecimal balance;
     private BigDecimal expectedBalance;
-
+    private String  asset;
     private ArrayList<ExitStrategy> exitStrategies;
 
     public PositionEntry(String _positionId, BigDecimal _balance, String _asset, ArrayList<ExitStrategy> _exitStrategies){
@@ -39,7 +25,7 @@ public class PositionEntry {
 
     public synchronized void run(RealTimeData realTimeData){
         for (ExitStrategy exitStrategy: exitStrategies){
-            PositionAction positionAction = exitStrategy.run(AccountBalance.getAccountBalance(),realTimeData);
+            PositionAction positionAction = exitStrategy.run(realTimeData);
             if (positionAction != null){
 
             }
