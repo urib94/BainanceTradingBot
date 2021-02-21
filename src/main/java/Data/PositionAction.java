@@ -1,15 +1,12 @@
 package Data;
 
-import com.binance.client.impl.RestApiInvoker;
-import com.binance.client.model.enums.*;
-import com.binance.client.model.trade.Order;
+
 
 import java.math.BigDecimal;
 
 public class PositionAction {
 	private BigDecimal price;
-	private Enum orderType;
-	private boolean reduceOnly;
+	private BigDecimal qty;
 }
 
 

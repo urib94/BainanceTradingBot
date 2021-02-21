@@ -4,7 +4,7 @@ import Data.AccountBalance;
 import Data.PrivateConfig;
 import Data.RealTimeData;
 import Strategies.EntryStrategy;
-import Strategies.PositionEntry;
+import Strategies.PositionHandler;
 import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.Rule;
 import org.ta4j.core.indicators.RSIIndicator;
@@ -21,7 +21,7 @@ public class RSIEntryStrategy implements EntryStrategy {
      * @param realTimeData - also singleton - the realtimedata from the binance api. list of candles basically.
      * @return PositionEntry if purchased else return null.
      */
-    public PositionEntry run(RealTimeData realTimeData) {
+    public PositionHandler run(RealTimeData realTimeData) {
         AccountBalance accountBalance = AccountBalance.getAccountBalance();
         BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfClosedCandles(PrivateConfig.RSI_CANDLE_NUM);
         int last_bar_index = baseBarSeries.getEndIndex();

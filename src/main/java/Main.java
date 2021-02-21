@@ -1,15 +1,14 @@
 import Data.AccountBalance;
-import Strategies.PositionEntry;
 import Data.PrivateConfig;
 import Data.RealTimeData;
 import Strategies.EntryStrategy;
+import Strategies.PositionHandler;
 import Strategies.RSIStrategies.RSIEntryStrategy;
 import com.binance.client.RequestOptions;
 import com.binance.client.SubscriptionClient;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.CandlestickInterval;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -33,7 +32,7 @@ public class Main {
         syncRequestClient.keepUserDataStream(listenKey);
         ArrayList<EntryStrategy> entryStrategies = new ArrayList<>();
         ReadWriteLock lock = new ReentrantReadWriteLock();
-        ArrayList<PositionEntry> positionEntries = new ArrayList<>();
+        ArrayList<PositionHandler> positionEntries = new ArrayList<>();
         entryStrategies.add(new RSIEntryStrategy());
         subscriptionClient.subscribeUserDataEvent(listenKey, ((event)-> {
             LocalDateTime programTimeNow = LocalDateTime.now();
@@ -50,22 +49,22 @@ public class Main {
         subscriptionClient.subscribeCandlestickEvent("btcusdt", CandlestickInterval.ONE_MINUTE, ((event) -> {
             realTimeData.updateData(event);
             lock.readLock().lock();
-            for (PositionEntry positionEntry:positionEntries){
-                if (positionEntry.getBalance().compareTo(new BigDecimal(0)) <= 0) positionEntries.remove(positionEntry);
+            for (PositionHandler positionHandler :positionEntries){
+                if (positionHandler.isSoldOut()) positionEntries.remove(positionHandler);
                 else{
                     executorService.execute(()->{
-                        positionEntry.update();
-                        positionEntry.run(realTimeData);
+                        positionHandler.update();
+                        positionHandler.run(realTimeData);
                     });
                 }
             }
             lock.readLock().unlock();
             for (EntryStrategy entryStrategy: entryStrategies){
                 executorService.execute(()->{
-                    PositionEntry positionEntry = entryStrategy.run(realTimeData);
-                    if (positionEntry != null){
+                    PositionHandler positionHandler = entryStrategy.run(realTimeData);
+                    if (positionHandler != null){
                         lock.writeLock().lock();
-                        positionEntries.add(positionEntry);
+                        positionEntries.add(positionHandler);
                         lock.writeLock().unlock();
                     }
                 });
