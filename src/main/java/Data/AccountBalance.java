@@ -1,13 +1,11 @@
 package Data;
 
-import com.binance.client.RequestOptions;
-import com.binance.client.SyncRequestClient;
-import com.binance.client.model.market.Candlestick;
-import com.binance.client.model.trade.AccountInformation;
-import com.binance.client.model.trade.Position;
-import com.binance.client.model.user.BalanceUpdate;
-import com.binance.client.model.user.PositionUpdate;
-import com.binance.client.model.user.UserDataUpdateEvent;
+import com.binance.client.api.RequestOptions;
+import com.binance.client.api.SyncRequestClient;
+import com.binance.client.api.model.trade.AccountInformation;
+import com.binance.client.api.model.trade.Position;
+import com.binance.client.api.model.user.BalanceUpdate;
+import com.binance.client.api.model.user.UserDataUpdateEvent;
 
 import java.math.BigDecimal;
 import java.util.List;

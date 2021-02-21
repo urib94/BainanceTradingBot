@@ -1,11 +1,10 @@
 package Data;
 
-import Data.PrivateConfig;
-import com.binance.client.RequestOptions;
-import com.binance.client.SyncRequestClient;
-import com.binance.client.model.enums.CandlestickInterval;
-import com.binance.client.model.event.CandlestickEvent;
-import com.binance.client.model.market.Candlestick;
+import com.binance.client.api.RequestOptions;
+import com.binance.client.api.SyncRequestClient;
+import com.binance.client.api.model.enums.CandlestickInterval;
+import com.binance.client.api.model.event.CandlestickEvent;
+import com.binance.client.api.model.market.Candlestick;
 import org.ta4j.core.BaseBarSeries;
 
 import java.time.Duration;

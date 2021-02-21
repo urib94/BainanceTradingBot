@@ -2,9 +2,9 @@ package Positions;
 import Data.PrivateConfig;
 import Data.RealTimeData;
 import Strategies.ExitStrategy;
-import com.binance.client.RequestOptions;
-import com.binance.client.SyncRequestClient;
-import com.binance.client.model.trade.Order;
+import com.binance.client.api.RequestOptions;
+import com.binance.client.api.SyncRequestClient;
+import com.binance.client.api.model.trade.Order;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

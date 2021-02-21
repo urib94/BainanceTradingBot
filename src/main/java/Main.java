@@ -4,10 +4,10 @@ import Data.RealTimeData;
 import Strategies.EntryStrategy;
 import Positions.PositionHandler;
 import Strategies.RSIStrategies.RSIEntryStrategy;
-import com.binance.client.RequestOptions;
-import com.binance.client.SubscriptionClient;
-import com.binance.client.SyncRequestClient;
-import com.binance.client.model.enums.CandlestickInterval;
+import com.binance.client.api.RequestOptions;
+import com.binance.client.api.SubscriptionClient;
+import com.binance.client.api.SyncRequestClient;
+import com.binance.client.api.model.enums.CandlestickInterval;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
