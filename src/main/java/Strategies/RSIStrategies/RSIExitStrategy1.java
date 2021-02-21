@@ -12,33 +12,39 @@ import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import org.ta4j.core.trading.rules.CrossedDownIndicatorRule;
 import org.ta4j.core.trading.rules.CrossedUpIndicatorRule;
 
+import java.math.BigDecimal;
+
 public class RSIExitStrategy1 implements ExitStrategy {
 	private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_ONE;
 
 	public PositionAction run(RealTimeData realTimeData) {
 		AccountBalance accountBalance = AccountBalance.getAccountBalance();
 		BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfClosedCandles(Config.RSI_CANDLE_NUM);
-		int last_bar_index = baseBarSeries.getEndIndex();
+		int lastBarIndex = baseBarSeries.getEndIndex();
 		ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
 		RSIIndicator rsi = new RSIIndicator(closePriceIndicator, Config.RSI_CANDLE_NUM);
 		if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
 			Rule exitRule1 = (new CrossedUpIndicatorRule(rsi, Config.RSI_EXIT_OPTION_1_OVER_THRESHOLD1)) //Go over 65
 					.and(new CrossedDownIndicatorRule(rsi, Config.RSI_EXIT_OPTION_2_OVER_THRESHOLD1)); // Don't go over 73.
-			if (exitRule1.isSatisfied(last_bar_index)) {
+			if (exitRule1.isSatisfied(lastBarIndex)) {
 				positionInStrategy = PositionInStrategy.POSITION_TWO;
 			}
 			return null;
 		} else if (positionInStrategy == PositionInStrategy.POSITION_TWO) {
 			Rule exitRule2 = new CrossedDownIndicatorRule(rsi, Config.RSI_EXIT_OPTION_1_UNDER_THRESHOLD1);
-			if (exitRule2.isSatisfied(last_bar_index)) {
-				//TODO: return PositionAction of selling 50% of position
+			if (exitRule2.isSatisfied(lastBarIndex)) {
 				positionInStrategy = PositionInStrategy.POSITION_THREE;
+
+				//TODO: Fix inputs.
+				return new PositionAction(BigDecimal.TEN,Config.RSI_EXIT_OPTION_1_SELLING_PERCENTAGE);
 			}
 		} else if(positionInStrategy == PositionInStrategy.POSITION_THREE) {
 			Rule exitRule3 = new CrossedDownIndicatorRule(rsi, Config.RSI_EXIT_OPTION_1_UNDER_THRESHOLD2);
-			if (exitRule3.isSatisfied(last_bar_index)) {
-				//TODO: return PositionAction of selling the rest of position
+			if (exitRule3.isSatisfied(lastBarIndex)) {
 				positionInStrategy = PositionInStrategy.POSITION_ONE;
+				//TODO: Fix inputs.
+				return new PositionAction(BigDecimal.TEN,Config.RSI_EXIT_OPTION_1_SELLING_PERCENTAGE);
+
 			}
 		}
 		return null;

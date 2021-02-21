@@ -1,6 +1,7 @@
 import Data.AccountBalance;
 import Data.Config;
 import Data.RealTimeData;
+import Data.RequestClient;
 import Strategies.EntryStrategy;
 import Positions.PositionHandler;
 import Strategies.RSIStrategies.RSIEntryStrategy;
@@ -25,14 +26,12 @@ public class Main {
         ExecutorService executorService = Executors.newFixedThreadPool(Config.THREAD_NUM);
         AccountBalance accountBalance = AccountBalance.getAccountBalance();
         RealTimeData realTimeData = new RealTimeData("btcusdt", CandlestickInterval.ONE_MINUTE, Config.CANDLE_NUM);
-        RequestOptions options = new RequestOptions();
-        SyncRequestClient syncRequestClient = SyncRequestClient.create(Config.API_KEY, Config.SECRET_KEY, options);
+        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         SubscriptionClient subscriptionClient = SubscriptionClient.create(Config.API_KEY, Config.SECRET_KEY);
         String listenKey = syncRequestClient.startUserDataStream();
-        syncRequestClient.keepUserDataStream(listenKey);
         ArrayList<EntryStrategy> entryStrategies = new ArrayList<>();
-        ReadWriteLock lock = new ReentrantReadWriteLock();
         ArrayList<PositionHandler> positionEntries = new ArrayList<>();
+        ReadWriteLock lock = new ReentrantReadWriteLock();
         entryStrategies.add(new RSIEntryStrategy());
         TimerTask timerTask = new TimerTask() {
             @Override
@@ -53,9 +52,8 @@ public class Main {
             System.out.println("ok");
             lock.readLock().lock();
             for (PositionHandler positionHandler :positionEntries){
-                positionHandler.update();
                 executorService.execute(()->{
-                    positionHandler.update();
+                    positionHandler.update(Config.INTERVAL);
                     if (positionHandler.isSoldOut()) positionEntries.remove(positionHandler);
                     else{
                         positionHandler.run(realTimeData);

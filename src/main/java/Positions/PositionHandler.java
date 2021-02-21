@@ -2,10 +2,11 @@ package Positions;
 import Data.AccountBalance;
 import Data.Config;
 import Data.RealTimeData;
+import Data.RequestClient;
 import Strategies.ExitStrategy;
 import com.binance.client.api.RequestOptions;
 import com.binance.client.api.SyncRequestClient;
-import com.binance.client.api.model.enums.CandlestickInterval;
+import com.binance.client.api.model.enums.*;
 import com.binance.client.api.model.trade.Order;
 import com.binance.client.api.model.trade.Position;
 
@@ -53,21 +54,22 @@ public class PositionHandler {
         for (ExitStrategy exitStrategy: exitStrategies){
             PositionAction positionAction = exitStrategy.run(realTimeData);
             if (positionAction != null){
-                //TODO: check exit strategies and sell if needed.
+                String sellingQty = percentageOfQuantityAsString(positionAction.getQty());
+                SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+// !               syncRequestClient.postOrder(symbol,OrderSide.SELL, PositionSide.LONG, OrderType.LIMIT, TimeInForce.GTC,
+// !                      sellingQty,positionAction.getPrice().toString(),"true",null, null,null,null);
             }
         }
     }
 
     public synchronized void update(CandlestickInterval interval) {
         Position position = AccountBalance.getAccountBalance().getPosition(symbol);
-        RequestOptions options = new RequestOptions();
-        SyncRequestClient syncRequestClient = SyncRequestClient.create(Config.API_KEY, Config.SECRET_KEY, options);
+        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         Order order = syncRequestClient.getOrder(symbol, orderID , clientOrderId);
         status = order.getStatus();
         pNL = position.getUnrealizedProfit();
         qty = position.getPositionAmt();
         if (!status.equals(Config.NEW)) isActive(order,interval);
-        //TODO: complete this function and change isActive
     }
 
     private void isActive(Order order,CandlestickInterval interval) {
@@ -79,7 +81,8 @@ public class PositionHandler {
                long difference = updateTime - baseTime;
                Long intervalInMilliSeconds = candleStickIntervalToMilliseconds(interval);
                if  (difference >= (intervalInMilliSeconds/2.0)) {
-                   //TODO: cancel order!
+                   SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+                   syncRequestClient.cancelOrder(symbol,orderID,clientOrderId);
                    isActive = true;
                }
             }
@@ -88,6 +91,12 @@ public class PositionHandler {
             isActive = true;
         }
     }
+
+    private String percentageOfQuantityAsString(BigDecimal percentage) {
+        BigDecimal percentageBigDecimal = new BigDecimal(1/100);
+        return qty.multiply(percentageBigDecimal).toString();
+    }
+
     private Long candleStickIntervalToMilliseconds(CandlestickInterval interval) {
         String intervalCode = interval.toString();
         int value = Integer.parseInt(intervalCode.substring(0,intervalCode.length()-1));

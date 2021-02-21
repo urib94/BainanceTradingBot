@@ -6,7 +6,16 @@ import java.math.BigDecimal;
 
 public class PositionAction {
 	private BigDecimal price;
-	private BigDecimal qty;
+	private BigDecimal qtyPercentage;
+
+	public PositionAction(BigDecimal price, BigDecimal qtyPercentage){
+		this.price = price;
+		this.qtyPercentage = qtyPercentage;
+	}
+
+	public BigDecimal getQty() { return qtyPercentage; }
+	public BigDecimal getPrice() { return price; }
+
 }
 
 

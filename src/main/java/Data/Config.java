@@ -2,6 +2,8 @@ package Data;
 
 import com.binance.client.api.model.enums.CandlestickInterval;
 
+import java.math.BigDecimal;
+
 public class Config {
 
 	public static final String API_KEY = "h4AdqbWrKlF5wOxWmbNTKLq7IpDReZOvVXeOujGwUfU0HjXdIejUmqKvoVLbcXJ6";
@@ -19,12 +21,20 @@ public class Config {
 	public static final int RSI_ENTRY_TRHESHOLD_2 = 30;
 	public static final int RSI_ENTRY_TRHESHOLD_3 = 35;
 	public static final int RSI_CANDLE_NUM = 9;
+	public static final Integer leverage = 40;
 	public static final int RSI_EXIT_OPTION_1_OVER_THRESHOLD1 = 65;
 	public static final int RSI_EXIT_OPTION_1_UNDER_THRESHOLD1 = 65;
 	public static final int RSI_EXIT_OPTION_1_UNDER_THRESHOLD2 = 50;
 	public static final int RSI_EXIT_OPTION_2_OVER_THRESHOLD1 = 73;
 	public static final int RSI_EXIT_OPTION_2_UNDER_THRESHOLD1 = 70;
 	public static final int RSI_EXIT_OPTION_2_UNDER_THRESHOLD2 = 60;
+	public static final int RSI_EXIT_OPTION_4_UNDER_THRESHOLD = 30;
+	public static final BigDecimal RSI_EXIT_OPTION_1_SELLING_PERCENTAGE = new BigDecimal(50);
+	public static final BigDecimal RSI_EXIT_OPTION_2_SELLING_PERCENTAGE1 = new BigDecimal(40);
+	public static final BigDecimal RSI_EXIT_OPTION_2_SELLING_PERCENTAGE2 = new BigDecimal(60);
+	public static final BigDecimal RSI_EXIT_OPTION_3_SELLING_PERCENTAGE = new BigDecimal(100);
+	public static final BigDecimal RSI_EXIT_OPTION_4_SELLING_PERCENTAGE = new BigDecimal(100);
+
 	public static final String NEW = "NEW";
 	public static final String PARTIALLY_FILLED = "PARTIALLY_FILLED";
 	public static final String FILLED = "FILLED";

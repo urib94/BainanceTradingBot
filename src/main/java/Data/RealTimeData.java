@@ -26,8 +26,7 @@ public class RealTimeData{
     public RealTimeData(String symbol, CandlestickInterval interval, int amount){
         realTimeData = new BaseBarSeries();
         lock = new ReentrantReadWriteLock();
-        RequestOptions options = new RequestOptions();
-        SyncRequestClient syncRequestClient = SyncRequestClient.create(Config.API_KEY, Config.SECRET_KEY, options);
+        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         List<Candlestick> candlestickBars = syncRequestClient.getCandlestick(symbol, interval, null, null, amount);
         lastCandleOpenTime = candlestickBars.get(candlestickBars.size() - 1).getOpenTime();
         for (Candlestick candlestickBar : candlestickBars) {
