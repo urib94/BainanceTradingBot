@@ -1,7 +1,5 @@
 package Strategies.RSIStrategies;
 
-import Data.AccountBalance;
-import Positions.PositionAction;
 import Data.Config;
 import Data.RealTimeData;
 import Strategies.ExitStrategy;
@@ -17,8 +15,7 @@ import java.math.BigDecimal;
 public class RSIExitStrategy1 implements ExitStrategy {
 	private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_ONE;
 
-	public PositionAction run(RealTimeData realTimeData) {
-		AccountBalance accountBalance = AccountBalance.getAccountBalance();
+	public BigDecimal run(RealTimeData realTimeData) {
 		BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfClosedCandles(Config.RSI_CANDLE_NUM);
 		int lastBarIndex = baseBarSeries.getEndIndex();
 		ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
@@ -34,17 +31,13 @@ public class RSIExitStrategy1 implements ExitStrategy {
 			Rule exitRule2 = new CrossedDownIndicatorRule(rsi, Config.RSI_EXIT_OPTION_1_UNDER_THRESHOLD1);
 			if (exitRule2.isSatisfied(lastBarIndex)) {
 				positionInStrategy = PositionInStrategy.POSITION_THREE;
-
-				//TODO: Fix inputs.
-				return new PositionAction(BigDecimal.TEN,Config.RSI_EXIT_OPTION_1_SELLING_PERCENTAGE);
+				return Config.RSI_EXIT_OPTION_1_SELLING_PERCENTAGE;
 			}
 		} else if(positionInStrategy == PositionInStrategy.POSITION_THREE) {
 			Rule exitRule3 = new CrossedDownIndicatorRule(rsi, Config.RSI_EXIT_OPTION_1_UNDER_THRESHOLD2);
 			if (exitRule3.isSatisfied(lastBarIndex)) {
 				positionInStrategy = PositionInStrategy.POSITION_ONE;
-				//TODO: Fix inputs.
-				return new PositionAction(BigDecimal.TEN,Config.RSI_EXIT_OPTION_1_SELLING_PERCENTAGE);
-
+				return Config.RSI_EXIT_OPTION_1_SELLING_PERCENTAGE;
 			}
 		}
 		return null;

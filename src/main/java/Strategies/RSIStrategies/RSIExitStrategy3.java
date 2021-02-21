@@ -1,6 +1,5 @@
 package Strategies.RSIStrategies;
 import Data.AccountBalance;
-import Positions.PositionAction;
 import Data.Config;
 import Data.RealTimeData;
 import Strategies.ExitStrategy;
@@ -15,7 +14,7 @@ public class RSIExitStrategy3 implements ExitStrategy {
 	private double rsiValueTwoBefore = Double.MAX_VALUE;
 	private double rsiValueBefore = Double.MAX_VALUE;
 
-	public PositionAction run(RealTimeData realTimeData) {
+	public BigDecimal run(RealTimeData realTimeData) {
 		AccountBalance accountBalance = AccountBalance.getAccountBalance();
 		BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfCandles(Config.RSI_CANDLE_NUM);
 		int lastBarIndex = baseBarSeries.getEndIndex();
@@ -25,13 +24,11 @@ public class RSIExitStrategy3 implements ExitStrategy {
 		double rsiDoubleValue = rsiNumValue.doubleValue();
 		if (rsiValueBefore != Double.MAX_VALUE) {
 			if (lostMoreThan15Percent(rsiValueBefore,rsiDoubleValue)) {
-				//TODO: Fix inputs.
-				return new PositionAction(BigDecimal.TEN,Config.RSI_EXIT_OPTION_3_SELLING_PERCENTAGE);
+				return Config.RSI_EXIT_OPTION_3_SELLING_PERCENTAGE;
 			}
 			if (rsiValueTwoBefore != Double.MAX_VALUE) {
 				if (lostMoreThan15Percent(rsiValueTwoBefore,rsiDoubleValue)) {
-					//TODO: Fix inputs.
-					return new PositionAction(BigDecimal.TEN,Config.RSI_EXIT_OPTION_3_SELLING_PERCENTAGE);
+					return Config.RSI_EXIT_OPTION_3_SELLING_PERCENTAGE;
 				}
 			}
 		}

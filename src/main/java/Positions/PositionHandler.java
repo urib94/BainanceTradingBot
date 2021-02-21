@@ -33,7 +33,7 @@ public class PositionHandler {
     public PositionHandler(Order order, Integer leverage, ArrayList<ExitStrategy> exitStrategies){
         clientOrderId = order.getClientOrderId();
         orderID = order.getOrderId();
-        qty = BigDecimal.ZERO; //order.getOrigQty(); TODO: originalQty or executedQty
+        qty = BigDecimal.ZERO;
         symbol = order.getSymbol();
         side = order.getSide();
         purchasePrice = order.getPrice();
@@ -52,12 +52,12 @@ public class PositionHandler {
 
     public synchronized void run(RealTimeData realTimeData){
         for (ExitStrategy exitStrategy: exitStrategies){
-            PositionAction positionAction = exitStrategy.run(realTimeData);
-            if (positionAction != null){
-                String sellingQty = percentageOfQuantityAsString(positionAction.getQty());
+            BigDecimal sellingQtyPercentage  = exitStrategy.run(realTimeData);
+            if (sellingQtyPercentage != null){
+                String sellingQty = percentageOfQuantityAsString(sellingQtyPercentage);
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-// !               syncRequestClient.postOrder(symbol,OrderSide.SELL, PositionSide.LONG, OrderType.LIMIT, TimeInForce.GTC,
-// !                      sellingQty,positionAction.getPrice().toString(),"true",null, null,null,null);
+               syncRequestClient.postOrder(symbol,OrderSide.SELL, PositionSide.LONG, OrderType.LIMIT, TimeInForce.GTC,
+                      sellingQty,realTimeData.getCurrentPrice().toString(),"true",null, null,null,NewOrderRespType.RESULT);
             }
         }
     }
