@@ -17,11 +17,11 @@ public class Config {
 	public static final int WEEKS_TO_MILLISECONDS_CONVERTER = 7 * DAYS_TO_MILLISECONDS_CONVERTER;
 	public static final int MONTHS_TO_MILLISECONDS_CONVERTER = 30 * DAYS_TO_MILLISECONDS_CONVERTER;
 	public static final int THIRTY_MINUTES_IN_MILLISECONDS = 30 * MINUTES_TO_MILLISECONDS_CONVERTER;
-	public static final int RSI_ENTRY_TRHESHOLD_1 = 27;
-	public static final int RSI_ENTRY_TRHESHOLD_2 = 30;
-	public static final int RSI_ENTRY_TRHESHOLD_3 = 35;
+	public static final int RSI_ENTRY_THRESHOLD_1 = 27;
+	public static final int RSI_ENTRY_THRESHOLD_2 = 30;
+	public static final int RSI_ENTRY_THRESHOLD_3 = 35;
 	public static final int RSI_CANDLE_NUM = 9;
-	public static final Integer leverage = 40;
+	public static final Integer LEVERAGE = 6;
 	public static final int RSI_EXIT_OPTION_1_OVER_THRESHOLD1 = 65;
 	public static final int RSI_EXIT_OPTION_1_UNDER_THRESHOLD1 = 65;
 	public static final int RSI_EXIT_OPTION_1_UNDER_THRESHOLD2 = 50;
@@ -34,16 +34,14 @@ public class Config {
 	public static final BigDecimal RSI_EXIT_OPTION_2_SELLING_PERCENTAGE2 = new BigDecimal(60);
 	public static final BigDecimal RSI_EXIT_OPTION_3_SELLING_PERCENTAGE = new BigDecimal(100);
 	public static final BigDecimal RSI_EXIT_OPTION_4_SELLING_PERCENTAGE = new BigDecimal(100);
+	public static final BigDecimal BUYING_AMOUNT_REQUESTED = new BigDecimal(1/10);
+
 
 	public static final String NEW = "NEW";
 	public static final String PARTIALLY_FILLED = "PARTIALLY_FILLED";
 	public static final String FILLED = "FILLED";
 	public static final String CANCELED = "CANCELED";
 	public static final String EXPIRED = "EXPIRED";
-
-
-
-
 
 
 }

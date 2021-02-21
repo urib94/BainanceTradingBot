@@ -4,12 +4,11 @@ import Data.AccountBalance;
 import Data.Config;
 import Data.RealTimeData;
 import Data.RequestClient;
-import Positions.PositionAction;
 import Strategies.EntryStrategy;
 import Positions.PositionHandler;
 import Strategies.ExitStrategy;
 import com.binance.client.api.SyncRequestClient;
-import com.binance.client.api.model.enums.OrderSide;
+import com.binance.client.api.model.enums.*;
 import com.binance.client.api.model.trade.Order;
 import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.Rule;
@@ -26,6 +25,14 @@ public class RSIEntryStrategy implements EntryStrategy {
     private int time_passed_from_position_2 = 0;
     private ArrayList<ExitStrategy> exitStrategies;
 
+
+    public RSIEntryStrategy(){
+        exitStrategies = new ArrayList<>();
+        exitStrategies.add(new RSIExitStrategy1());
+        exitStrategies.add(new RSIExitStrategy2());
+        exitStrategies.add(new RSIExitStrategy3());
+        exitStrategies.add(new RSIExitStrategy4());
+    }
     /**
      *
      * @param realTimeData - also singleton - the realtimedata from the binance api. list of candles basically.
@@ -39,19 +46,19 @@ public class RSIEntryStrategy implements EntryStrategy {
         RSIIndicator rsi = new RSIIndicator(closePriceIndicator, Config.RSI_CANDLE_NUM);
 
         if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
-            Rule entryRule1 = new CrossedDownIndicatorRule(rsi, Config.RSI_ENTRY_TRHESHOLD_1);
+            Rule entryRule1 = new CrossedDownIndicatorRule(rsi, Config.RSI_ENTRY_THRESHOLD_1);
             if (entryRule1.isSatisfied(last_bar_index)) {
                 positionInStrategy = PositionInStrategy.POSITION_TWO;
             }
             return null;
         } else if (positionInStrategy == PositionInStrategy.POSITION_TWO) {
-            Rule entryRule2 = new CrossedUpIndicatorRule(rsi, Config.RSI_ENTRY_TRHESHOLD_2);
+            Rule entryRule2 = new CrossedUpIndicatorRule(rsi, Config.RSI_ENTRY_THRESHOLD_2);
             if (entryRule2.isSatisfied(last_bar_index)) {
                 positionInStrategy = PositionInStrategy.POSITION_THREE;
             }
             return null;
         } else if (positionInStrategy == PositionInStrategy.POSITION_THREE) {
-            Rule entryRule3 = new CrossedUpIndicatorRule(rsi, Config.RSI_ENTRY_TRHESHOLD_3);
+            Rule entryRule3 = new CrossedUpIndicatorRule(rsi, Config.RSI_ENTRY_THRESHOLD_3);
             if (time_passed_from_position_2 >= 2) {
                 time_passed_from_position_2 = 2;
                 positionInStrategy = PositionInStrategy.POSITION_TWO;
@@ -62,13 +69,18 @@ public class RSIEntryStrategy implements EntryStrategy {
                 time_passed_from_position_2 = 0;
                 positionInStrategy = PositionInStrategy.POSITION_ONE;
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-                syncRequestClient.changeInitialLeverage(symbol,Config.leverage);
-                Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.LONG, OrderType.LIMIT, TimeInForce.GTC,
-                        sellingQty,positionAction.getPrice().toString(),"true",null, null,null,null);
-                return new PositionHandler(buyOrder,Config.leverage, exitStrategies);
-
+                syncRequestClient.changeInitialLeverage(symbol,Config.LEVERAGE);
+                String buyingQty = getBuyingQtyAsString(realTimeData);
+//                Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.LONG, OrderType.LIMIT, TimeInForce.GTC,
+//                       buyingQty,realTimeData.getCurrentPrice().toString(),"false",null, null, WorkingType.MARK_PRICE,NewOrderRespType.RESULT);
+//                return new PositionHandler(buyOrder,Config.LEVERAGE, exitStrategies);//TODO: retrieve code
             }
         }
         return null;
+    }
+
+    private String getBuyingQtyAsString(RealTimeData realTimeData) {
+        BigDecimal buyingQty = realTimeData.getCurrentPrice().multiply(Config.BUYING_AMOUNT_REQUESTED).multiply(new BigDecimal(Config.LEVERAGE));
+        return buyingQty.toString();
     }
 }

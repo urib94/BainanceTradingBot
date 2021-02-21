@@ -7,6 +7,7 @@ import com.binance.client.api.model.event.CandlestickEvent;
 import com.binance.client.api.model.market.Candlestick;
 import org.ta4j.core.BaseBarSeries;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -22,6 +23,7 @@ public class RealTimeData{
     //* For us, in realTimeData, the last candle is always open. The previous ones are closed.
     private BaseBarSeries realTimeData;
     private final ReentrantReadWriteLock lock;
+    private BigDecimal currentPrice;
 
     public RealTimeData(String symbol, CandlestickInterval interval, int amount){
         realTimeData = new BaseBarSeries();
@@ -29,6 +31,7 @@ public class RealTimeData{
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         List<Candlestick> candlestickBars = syncRequestClient.getCandlestick(symbol, interval, null, null, amount);
         lastCandleOpenTime = candlestickBars.get(candlestickBars.size() - 1).getOpenTime();
+        currentPrice = candlestickBars.get(candlestickBars.size() -1).getOpen();
         for (Candlestick candlestickBar : candlestickBars) {
             ZonedDateTime closeTime = getZonedDateTime(candlestickBar.getCloseTime());
             Duration candleDuration = Duration.ofMillis(candlestickBar.getCloseTime()
@@ -63,6 +66,7 @@ public class RealTimeData{
     }
 
     public void updateData(CandlestickEvent event){
+        currentPrice = event.getOpen();
         boolean isNewCandle = !(event.getStartTime().doubleValue() == lastCandleOpenTime);
         Candlestick updateCandlestick = new Candlestick();
         fillCandleStickFromEvent(updateCandlestick,event);
@@ -112,5 +116,9 @@ public class RealTimeData{
     private ZonedDateTime getZonedDateTime(Long timestamp) {
         return ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
                 ZoneId.systemDefault());
+    }
+
+    public BigDecimal getCurrentPrice() {
+        return currentPrice;
     }
 }

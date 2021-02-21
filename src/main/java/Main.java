@@ -63,7 +63,7 @@ public class Main {
             lock.readLock().unlock();
             for (EntryStrategy entryStrategy: entryStrategies){
                 executorService.execute(()->{
-                    PositionHandler positionHandler = entryStrategy.run(realTimeData);
+                    PositionHandler positionHandler = entryStrategy.run(realTimeData, "btcusdt");
                     if (positionHandler != null){
                         lock.writeLock().lock();
                         positionEntries.add(positionHandler);

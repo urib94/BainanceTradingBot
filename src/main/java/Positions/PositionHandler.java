@@ -30,7 +30,7 @@ public class PositionHandler {
     private ArrayList<ExitStrategy> exitStrategies;
     private Long baseTime;
 
-    public PositionHandler(Order order, BigDecimal leverage, ArrayList<ExitStrategy> exitStrategies){
+    public PositionHandler(Order order, Integer leverage, ArrayList<ExitStrategy> exitStrategies){
         clientOrderId = order.getClientOrderId();
         orderID = order.getOrderId();
         qty = BigDecimal.ZERO; //order.getOrigQty(); TODO: originalQty or executedQty
@@ -42,7 +42,7 @@ public class PositionHandler {
         pNLPercentage = BigDecimal.ZERO;
         liquidationPrice = BigDecimal.ZERO;
         distanceToLiquidation = BigDecimal.ZERO;
-        this.leverage = leverage;
+        this.leverage = new BigDecimal(leverage);
         this.exitStrategies = exitStrategies;
         status = Config.NEW;
         this.baseTime = 0L;
