@@ -7,6 +7,10 @@ import Strategies.EntryStrategy;
 import Positions.PositionHandler;
 import Strategies.ExitStrategy;
 import com.binance.client.api.SyncRequestClient;
+import eu.verdelhan.ta4j.Decimal;
+import eu.verdelhan.ta4j.Indicator;
+import eu.verdelhan.ta4j.TimeSeries;
+import eu.verdelhan.ta4j.indicators.SmoothedRSIIndicator;
 import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.Rule;
 import org.ta4j.core.indicators.RSIIndicator;
@@ -42,15 +46,6 @@ public class RSIEntryStrategy implements EntryStrategy {
         int lastBarIndex = baseBarSeries.getEndIndex();
         ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
         RSIIndicator rsi = new RSIIndicator(closePriceIndicator, Config.RSI_CANDLE_NUM);
-        //TODO: test{
-        BaseBarSeries baseBarSeriesCheck = realTimeData.getLastAmountOfCandles(Config.RSI_CANDLE_NUM);
-        int lastBarIndexCheck = baseBarSeriesCheck.getEndIndex();
-        ClosePriceIndicator closePriceIndicatorCheck = new ClosePriceIndicator(baseBarSeriesCheck);
-        RSIIndicator rsiCheck = new RSIIndicator(closePriceIndicatorCheck, Config.RSI_CANDLE_NUM);
-        System.out.println(rsiCheck.getValue(lastBarIndexCheck));
-        //TODO}
-
-
 
         if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
             Rule entryRule1 = new CrossedDownIndicatorRule(rsi, Config.RSI_ENTRY_THRESHOLD_1);
