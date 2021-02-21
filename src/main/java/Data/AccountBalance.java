@@ -31,8 +31,6 @@ public class AccountBalance {
         positions = new HashMap<>();
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         AccountInformation accountInformation = syncRequestClient.getAccountInformation();
-        for (Position position: accountInformation.getPositions()) System.out.println(position);
-
         for (Position position: accountInformation.getPositions())positions.put(position.getSymbol(), position);
         for (Asset asset: accountInformation.getAssets())assets.put(asset.getAsset(), asset);
     }

@@ -49,7 +49,6 @@ public class Main {
 
         subscriptionClient.subscribeCandlestickEvent("btcusdt", Config.INTERVAL, ((event) -> {
             realTimeData.updateData(event);
-            System.out.println("ok");
             lock.readLock().lock();
             for (PositionHandler positionHandler :positionEntries){
                 executorService.execute(()->{

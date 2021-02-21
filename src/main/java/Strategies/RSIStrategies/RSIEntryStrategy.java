@@ -1,6 +1,5 @@
 package Strategies.RSIStrategies;
 
-import Data.AccountBalance;
 import Data.Config;
 import Data.RealTimeData;
 import Data.RequestClient;
@@ -8,8 +7,6 @@ import Strategies.EntryStrategy;
 import Positions.PositionHandler;
 import Strategies.ExitStrategy;
 import com.binance.client.api.SyncRequestClient;
-import com.binance.client.api.model.enums.*;
-import com.binance.client.api.model.trade.Order;
 import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.Rule;
 import org.ta4j.core.indicators.RSIIndicator;
@@ -19,6 +16,8 @@ import org.ta4j.core.trading.rules.CrossedUpIndicatorRule;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+
+import static java.lang.Thread.sleep;
 
 public class RSIEntryStrategy implements EntryStrategy {
     private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_ONE;
@@ -35,15 +34,15 @@ public class RSIEntryStrategy implements EntryStrategy {
     }
     /**
      *
-     * @param realTimeData - also singleton - the realtimedata from the binance api. list of candles basically.
+     * @param realTimeData - also singleton - the real time data from the binance api. list of candles basically.
      * @return PositionEntry if purchased else return null.
      */
     public PositionHandler run(RealTimeData realTimeData,String symbol) {
-        AccountBalance accountBalance = AccountBalance.getAccountBalance();
         BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfClosedCandles(Config.RSI_CANDLE_NUM);
         int last_bar_index = baseBarSeries.getEndIndex();
         ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
         RSIIndicator rsi = new RSIIndicator(closePriceIndicator, Config.RSI_CANDLE_NUM);
+        System.out.println(realTimeData.getRealTimeData().getBar(realTimeData.getRealTimeData().getBarCount() -1));
 
         if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
             Rule entryRule1 = new CrossedDownIndicatorRule(rsi, Config.RSI_ENTRY_THRESHOLD_1);
@@ -71,6 +70,7 @@ public class RSIEntryStrategy implements EntryStrategy {
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
                 syncRequestClient.changeInitialLeverage(symbol,Config.LEVERAGE);
                 String buyingQty = getBuyingQtyAsString(realTimeData);
+                System.out.println("buying+++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 //                Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.LONG, OrderType.LIMIT, TimeInForce.GTC,
 //                       buyingQty,realTimeData.getCurrentPrice().toString(),"false",null, null, WorkingType.MARK_PRICE,NewOrderRespType.RESULT);
 //                return new PositionHandler(buyOrder,Config.LEVERAGE, exitStrategies);//TODO: retrieve code
