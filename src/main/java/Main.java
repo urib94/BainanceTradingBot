@@ -50,6 +50,7 @@ public class Main {
             realTimeData.updateData(event);
             lock.readLock().lock();
             for (PositionHandler positionHandler :positionEntries){
+                positionHandler.update();
                 if (positionHandler.isSoldOut()) positionEntries.remove(positionHandler);
                 else{
                     executorService.execute(()->{
