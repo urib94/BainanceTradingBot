@@ -73,6 +73,7 @@ public class Main {
             }
         }), System.out::print);
         //subscriptionClient.unsubscribeAll();
+        //TODO: code termination;
     }
 }
 
