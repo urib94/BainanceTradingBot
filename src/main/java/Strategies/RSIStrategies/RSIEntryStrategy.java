@@ -39,21 +39,31 @@ public class RSIEntryStrategy implements EntryStrategy {
      */
     public PositionHandler run(RealTimeData realTimeData,String symbol) {
         BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfClosedCandles(Config.RSI_CANDLE_NUM);
-        int last_bar_index = baseBarSeries.getEndIndex();
+        int lastBarIndex = baseBarSeries.getEndIndex();
         ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
         RSIIndicator rsi = new RSIIndicator(closePriceIndicator, Config.RSI_CANDLE_NUM);
-        System.out.println(realTimeData.getRealTimeData().getBar(realTimeData.getRealTimeData().getBarCount() -1));
+        //TODO: test{
+        BaseBarSeries baseBarSeriesCheck = realTimeData.getLastAmountOfCandles(Config.RSI_CANDLE_NUM);
+        int lastBarIndexCheck = baseBarSeriesCheck.getEndIndex();
+        ClosePriceIndicator closePriceIndicatorCheck = new ClosePriceIndicator(baseBarSeriesCheck);
+        RSIIndicator rsiCheck = new RSIIndicator(closePriceIndicatorCheck, Config.RSI_CANDLE_NUM);
+        System.out.println(rsiCheck.getValue(lastBarIndexCheck));
+        //TODO}
+
+
 
         if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
             Rule entryRule1 = new CrossedDownIndicatorRule(rsi, Config.RSI_ENTRY_THRESHOLD_1);
-            if (entryRule1.isSatisfied(last_bar_index)) {
+            if (entryRule1.isSatisfied(lastBarIndex)) {
                 positionInStrategy = PositionInStrategy.POSITION_TWO;
+                System.out.println("entryRule1 satisfied");
             }
             return null;
         } else if (positionInStrategy == PositionInStrategy.POSITION_TWO) {
             Rule entryRule2 = new CrossedUpIndicatorRule(rsi, Config.RSI_ENTRY_THRESHOLD_2);
-            if (entryRule2.isSatisfied(last_bar_index)) {
+            if (entryRule2.isSatisfied(lastBarIndex)) {
                 positionInStrategy = PositionInStrategy.POSITION_THREE;
+                System.out.println("entryRule2 satisfied");
             }
             return null;
         } else if (positionInStrategy == PositionInStrategy.POSITION_THREE) {
@@ -64,7 +74,7 @@ public class RSIEntryStrategy implements EntryStrategy {
                 return null;
             }
             time_passed_from_position_2++;
-            if (entryRule3.isSatisfied(last_bar_index)) {
+            if (entryRule3.isSatisfied(lastBarIndex)) {
                 time_passed_from_position_2 = 0;
                 positionInStrategy = PositionInStrategy.POSITION_ONE;
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();

@@ -8,7 +8,7 @@ public class Config {
 
 	public static final String API_KEY = "h4AdqbWrKlF5wOxWmbNTKLq7IpDReZOvVXeOujGwUfU0HjXdIejUmqKvoVLbcXJ6";
 	public static final String SECRET_KEY = "7qqNLwB7ZXiZu2nBJhrdv7ARVpNDhImNA1Rj1oXR6eGjZFkGsRC9ayEO7HLYVm6w";
-	public static final int THREAD_NUM = 3;
+	public static final int THREAD_NUM = 1;
 	public static final int CANDLE_NUM = 40;
 	public static final CandlestickInterval INTERVAL =  CandlestickInterval.ONE_MINUTE;
 	public static final int MINUTES_TO_MILLISECONDS_CONVERTER = 60000;
@@ -20,7 +20,7 @@ public class Config {
 	public static final int RSI_ENTRY_THRESHOLD_1 = 27;
 	public static final int RSI_ENTRY_THRESHOLD_2 = 30;
 	public static final int RSI_ENTRY_THRESHOLD_3 = 35;
-	public static final int RSI_CANDLE_NUM = 9;
+	public static final int RSI_CANDLE_NUM = 10;
 	public static final Integer LEVERAGE = 6;
 	public static final int RSI_EXIT_OPTION_1_OVER_THRESHOLD1 = 65;
 	public static final int RSI_EXIT_OPTION_1_UNDER_THRESHOLD1 = 65;

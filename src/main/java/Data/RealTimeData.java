@@ -48,7 +48,6 @@ public class RealTimeData{
 
     public void updateData(CandlestickEvent event){
         currentPrice = event.getClose();
-        System.out.println("current price: " + currentPrice);
         boolean isNewCandle = !(event.getStartTime().doubleValue() == lastCandleOpenTime);
         ZonedDateTime closeTime = getZonedDateTime(event.getCloseTime());
         Duration candleDuration = Duration.ofMillis(event.getCloseTime() - event.getStartTime());
