@@ -22,7 +22,8 @@ public class RSIExitStrategy1 implements ExitStrategy {
 		ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
 		RSIIndicator rsi = new RSIIndicator(closePriceIndicator, PrivateConfig.RSI_CANDLE_NUM);
 		if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
-			Rule exitRule1 = new CrossedUpIndicatorRule(rsi, PrivateConfig.RSI_EXIT_OPTION_1_OVER_THRESHOLD1);
+			Rule exitRule1 = (new CrossedUpIndicatorRule(rsi, PrivateConfig.RSI_EXIT_OPTION_1_OVER_THRESHOLD1)) //Go over 65
+					.and(new CrossedDownIndicatorRule(rsi,PrivateConfig.RSI_EXIT_OPTION_2_OVER_THRESHOLD1)); // Don't go over 73.
 			if (exitRule1.isSatisfied(last_bar_index)) {
 				positionInStrategy = PositionInStrategy.POSITION_TWO;
 			}

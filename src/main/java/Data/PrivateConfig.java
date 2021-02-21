@@ -6,6 +6,7 @@ public class PrivateConfig {
 	public static final String SECRET_KEY = "7qqNLwB7ZXiZu2nBJhrdv7ARVpNDhImNA1Rj1oXR6eGjZFkGsRC9ayEO7HLYVm6w";
 	public static final int THREAD_NUM = 3;
 	public static final int CANDLE_NUM = 40;
+	public static final int THIRTY_MINUTES_IN_MILLISECONDS = 1800000;
 	public static final int MINUTES_TO_KEEP_ALIVE = 30;
 	public static final int RSI_ENTRY_TRHESHOLD_1 = 27;
 	public static final int RSI_ENTRY_TRHESHOLD_2 = 30;

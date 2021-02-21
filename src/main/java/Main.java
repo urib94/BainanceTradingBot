@@ -11,6 +11,8 @@ import com.binance.client.model.enums.CandlestickInterval;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
@@ -21,7 +23,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class Main {
     public static void main(String[] args){
         LocalDateTime programStartTime = LocalDateTime.now();
-        AtomicReference<LocalDateTime> baseTime = new AtomicReference<>(LocalDateTime.now()); // to check if 30 minutes have passed since the last keep alive request.
         ExecutorService executorService = Executors.newFixedThreadPool(PrivateConfig.THREAD_NUM);
         AccountBalance accountBalance = AccountBalance.getAccountBalance();
         RealTimeData realTimeData = new RealTimeData("btcusdt", CandlestickInterval.ONE_MINUTE, PrivateConfig.CANDLE_NUM);
@@ -34,14 +35,16 @@ public class Main {
         ReadWriteLock lock = new ReentrantReadWriteLock();
         ArrayList<PositionHandler> positionEntries = new ArrayList<>();
         entryStrategies.add(new RSIEntryStrategy());
-        subscriptionClient.subscribeUserDataEvent(listenKey, ((event)-> {
-            LocalDateTime programTimeNow = LocalDateTime.now();
-            LocalDateTime baseLocalTime = baseTime.get();
-            if (utils.minutePassed(baseLocalTime,programTimeNow,PrivateConfig.MINUTES_TO_KEEP_ALIVE)) {
-                syncRequestClient.keepUserDataStream(listenKey); // keep user stream alive (it dies after 60 minutes).
-                System.out.println("Sent keep User Alive request");
-                baseTime.set(programTimeNow);
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                syncRequestClient.keepUserDataStream(listenKey);
+                System.out.println("Sent keep user Alive request");
             }
+        };
+        Timer timer = new Timer();
+        timer.schedule(timerTask,PrivateConfig.THIRTY_MINUTES_IN_MILLISECONDS,PrivateConfig.THIRTY_MINUTES_IN_MILLISECONDS);
+        subscriptionClient.subscribeUserDataEvent(listenKey, ((event)-> {
             System.out.println(event);
             accountBalance.updateBalance(event, "usdt");
         }),System.out::println);

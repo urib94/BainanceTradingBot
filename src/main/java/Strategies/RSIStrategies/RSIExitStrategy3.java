@@ -10,8 +10,8 @@ import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import org.ta4j.core.num.Num;
 
 public class RSIExitStrategy3 implements ExitStrategy {
-	private double valueTwoBefore = Double.MAX_VALUE;
-	private double valueBefore = Double.MAX_VALUE;
+	private double rsiValueTwoBefore = Double.MAX_VALUE;
+	private double rsiValueBefore = Double.MAX_VALUE;
 
 	public PositionAction run(RealTimeData realTimeData) {
 		AccountBalance accountBalance = AccountBalance.getAccountBalance();
@@ -21,13 +21,13 @@ public class RSIExitStrategy3 implements ExitStrategy {
 		RSIIndicator rsi = new RSIIndicator(closePriceIndicator, PrivateConfig.RSI_CANDLE_NUM);
 		Num rsiNumValue = rsi.getValue(last_bar_index);
 		double rsiDoubleValue = rsiNumValue.doubleValue();
-		if (valueBefore != Double.MAX_VALUE) {
-			if (lostMoreThan15Percent(valueBefore,rsiDoubleValue)) {
+		if (rsiValueBefore != Double.MAX_VALUE) {
+			if (lostMoreThan15Percent(rsiValueBefore,rsiDoubleValue)) {
 				//TODO: create PositionAction
 				return null;
 			}
-			if (valueTwoBefore != Double.MAX_VALUE) {
-				if (lostMoreThan15Percent(valueTwoBefore,rsiDoubleValue)) {
+			if (rsiValueTwoBefore != Double.MAX_VALUE) {
+				if (lostMoreThan15Percent(rsiValueTwoBefore,rsiDoubleValue)) {
 					//TODO: create PositionAction
 					return null;
 				}
@@ -35,8 +35,6 @@ public class RSIExitStrategy3 implements ExitStrategy {
 		}
 		updateValues(rsiDoubleValue);
 		return null;
-
-
 	}
 
 	private boolean lostMoreThan15Percent(double oldVal, double newVal) {
@@ -44,8 +42,8 @@ public class RSIExitStrategy3 implements ExitStrategy {
 	}
 
 	private void updateValues(double newValue) {
-		double temp = valueBefore;
-		valueBefore = newValue;
-		valueTwoBefore = temp;
+		double temp = rsiValueBefore;
+		rsiValueBefore = newValue;
+		rsiValueTwoBefore = temp;
 	}
 }
