@@ -9,6 +9,8 @@ public class Asset {
 
     private String asset;
 
+    private BigDecimal walletBalance;
+
     private BigDecimal initialMargin;
 
     private BigDecimal maintMargin;
@@ -29,6 +31,12 @@ public class Asset {
 
     public void setAsset(String asset) {
         this.asset = asset;
+    }
+
+    public BigDecimal getWalletBalance() { return walletBalance; }
+
+    public void setWalletBalance(BigDecimal walletBalance) {
+        this.walletBalance = walletBalance;
     }
 
     public BigDecimal getInitialMargin() {
@@ -90,6 +98,7 @@ public class Asset {
     @Override
     public String toString() {
         return new ToStringBuilder(this, BinanceApiConstants.TO_STRING_BUILDER_STYLE).append("asset", asset)
+                .append("walletBalance", walletBalance)
                 .append("initialMargin", initialMargin).append("maintMargin", maintMargin)
                 .append("marginBalance", marginBalance).append("maxWithdrawAmount", maxWithdrawAmount)
                 .append("openOrderInitialMargin", openOrderInitialMargin)

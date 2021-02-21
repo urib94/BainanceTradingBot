@@ -19,6 +19,8 @@ public class Position {
 
     private BigDecimal positionInitialMargin;
 
+    private BigDecimal positionAmt;
+
     private String symbol;
 
     private BigDecimal unrealizedProfit;
@@ -55,6 +57,14 @@ public class Position {
 
     public BigDecimal getMaintMargin() {
         return maintMargin;
+    }
+
+    public void setPositionAmt(BigDecimal positionAmt) {
+        this.positionAmt = positionAmt;
+    }
+
+    public BigDecimal getPositionAmt() {
+        return positionAmt;
     }
 
     public void setMaintMargin(BigDecimal maintMargin) {

@@ -3,73 +3,77 @@ package Data;
 import com.binance.client.api.RequestOptions;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.trade.AccountInformation;
+import com.binance.client.api.model.trade.Asset;
 import com.binance.client.api.model.trade.Position;
+import com.binance.client.api.model.user.AccountUpdate;
 import com.binance.client.api.model.user.BalanceUpdate;
+import com.binance.client.api.model.user.PositionUpdate;
 import com.binance.client.api.model.user.UserDataUpdateEvent;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class AccountBalance {
-    private BigDecimal freeBalance;
-    private List<BalanceUpdate> totalBalance;
-    private List<Position> positions;
-    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private HashMap<String, Asset> assets;
+    private HashMap<String, Position> positions;
+    private final ReadWriteLock assetsLock = new ReentrantReadWriteLock();
+    private final ReadWriteLock positionsLock = new ReentrantReadWriteLock();
 
     private static class AccountBalanceHolder{
         private static AccountBalance accountBalance = new AccountBalance();
     }
 
     private AccountBalance(){
+        assets = new HashMap<>();
+        positions = new HashMap<>();
         RequestOptions options = new RequestOptions();
         SyncRequestClient syncRequestClient = SyncRequestClient.create(PrivateConfig.API_KEY, PrivateConfig.SECRET_KEY, options);
         AccountInformation accountInformation = syncRequestClient.getAccountInformation();
-        positions = accountInformation.getPositions();
+        for (Position position: accountInformation.getPositions())positions.put(position.getSymbol(), position);
+        for (Asset asset: accountInformation.getAssets())assets.put(asset.getAsset(), asset);
+        System.out.println(assets);
     }
     public static AccountBalance getAccountBalance() {
         return AccountBalanceHolder.accountBalance;
     }
 
-    public BigDecimal getFreeBalance() {
-        lock.readLock().lock();
-        try {
-            return freeBalance;
-        }finally {
-            lock.readLock().unlock();
-        }
-    }
-
     public BigDecimal getCoinBalance(String symbol) {
-        lock.readLock().lock();
+        assetsLock.readLock().lock();
         try {
-            for (BalanceUpdate balanceUpdate:totalBalance) if (balanceUpdate.getAsset().equals(symbol)) return balanceUpdate.getWalletBalance();
+            if (assets.containsKey(symbol)) return assets.get(symbol).getWalletBalance();
             return null;
         }finally {
-            lock.readLock().unlock();
+            assetsLock.readLock().unlock();
         }
     }
 
     public Position getPosition(String symbol) {
-        lock.readLock().lock();
+        positionsLock.readLock().lock();
         try {
-            for (Position position:positions) if (position.getSymbol().equals(symbol)) return position;
+            if (positions.containsKey(symbol)) return positions.get(symbol);
             return null;
         }finally {
-            lock.readLock().unlock();
+            positionsLock.readLock().unlock();
         }
     }
 
     public void updateBalance(UserDataUpdateEvent event, String baseCurrency) {
-        System.out.println("balance");
-        lock.writeLock().lock();
-        RequestOptions options = new RequestOptions();
-        SyncRequestClient syncRequestClient = SyncRequestClient.create(PrivateConfig.API_KEY, PrivateConfig.SECRET_KEY, options);
-        AccountInformation accountInformation = syncRequestClient.getAccountInformation();
-        positions = accountInformation.getPositions();
-        totalBalance = event.getAccountUpdate().getBalances();
-        for (BalanceUpdate balanceUpdate:totalBalance) if (balanceUpdate.getAsset().equals(baseCurrency)) freeBalance = balanceUpdate.getWalletBalance();
-        lock.writeLock().unlock();
+        AccountUpdate accountUpdate = event.getAccountUpdate();
+        List<BalanceUpdate> balances = accountUpdate.getBalances();
+        assetsLock.writeLock().lock();
+        for (BalanceUpdate balanceUpdate : balances) assets.get(balanceUpdate.getAsset()).setWalletBalance(balanceUpdate.getWalletBalance()); //update assets
+        assetsLock.writeLock().unlock();
+        List<PositionUpdate> positionUpdates = accountUpdate.getPositions();
+        positionsLock.writeLock().lock();
+        for (PositionUpdate positionUpdate : positionUpdates){
+            positions.get(positionUpdate.getSymbol()).setPositionAmt(positionUpdate.getAmount()); //update assets
+            positions.get(positionUpdate.getSymbol()).setUnrealizedProfit(positionUpdate.getUnrealizedPnl()); //update assets
+        }
+        positionsLock.writeLock().unlock();
     }
 }
+
+//TODO: Think about the possibility where a new asset or position occurs
