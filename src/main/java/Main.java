@@ -50,6 +50,7 @@ public class Main {
 
         subscriptionClient.subscribeCandlestickEvent("btcusdt", CandlestickInterval.ONE_MINUTE, ((event) -> {
             realTimeData.updateData(event);
+            System.out.println("ok");
             lock.readLock().lock();
             for (PositionHandler positionHandler :positionEntries){
                 positionHandler.update();
