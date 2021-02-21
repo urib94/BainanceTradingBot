@@ -54,13 +54,13 @@ public class Main {
             lock.readLock().lock();
             for (PositionHandler positionHandler :positionEntries){
                 positionHandler.update();
-                if (positionHandler.isSoldOut()) positionEntries.remove(positionHandler);
-                else{
-                    executorService.execute(()->{
-                        positionHandler.update();
+                executorService.execute(()->{
+                    positionHandler.update();
+                    if (positionHandler.isSoldOut()) positionEntries.remove(positionHandler);
+                    else{
                         positionHandler.run(realTimeData);
-                    });
-                }
+                    }
+                });
             }
             lock.readLock().unlock();
             for (EntryStrategy entryStrategy: entryStrategies){

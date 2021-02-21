@@ -20,9 +20,8 @@ public class PositionHandler {
     private BigDecimal pNL;
     private BigDecimal liquidationPrice;
     private BigDecimal distanceToLiquidation;
-
-
     private ArrayList<ExitStrategy> exitStrategies;
+
     //private Order baseOrder;
     //private Position position;
 
