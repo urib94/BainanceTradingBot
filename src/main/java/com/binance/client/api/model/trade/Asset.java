@@ -1,6 +1,7 @@
 package com.binance.client.api.model.trade;
 
 import com.binance.client.api.constant.BinanceApiConstants;
+import com.binance.client.api.model.user.BalanceUpdate;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.math.BigDecimal;

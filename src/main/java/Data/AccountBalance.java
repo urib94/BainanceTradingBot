@@ -32,9 +32,10 @@ public class AccountBalance {
         RequestOptions options = new RequestOptions();
         SyncRequestClient syncRequestClient = SyncRequestClient.create(PrivateConfig.API_KEY, PrivateConfig.SECRET_KEY, options);
         AccountInformation accountInformation = syncRequestClient.getAccountInformation();
+        for (Position position: accountInformation.getPositions()) System.out.println(position);
+
         for (Position position: accountInformation.getPositions())positions.put(position.getSymbol(), position);
         for (Asset asset: accountInformation.getAssets())assets.put(asset.getAsset(), asset);
-        System.out.println(assets);
     }
     public static AccountBalance getAccountBalance() {
         return AccountBalanceHolder.accountBalance;
@@ -60,11 +61,19 @@ public class AccountBalance {
         }
     }
 
-    public void updateBalance(UserDataUpdateEvent event, String baseCurrency) {
+    public void updateBalance(UserDataUpdateEvent event) {
         AccountUpdate accountUpdate = event.getAccountUpdate();
         List<BalanceUpdate> balances = accountUpdate.getBalances();
         assetsLock.writeLock().lock();
-        for (BalanceUpdate balanceUpdate : balances) assets.get(balanceUpdate.getAsset()).setWalletBalance(balanceUpdate.getWalletBalance()); //update assets
+        for (BalanceUpdate balanceUpdate : balances){
+            if (assets.containsKey(balanceUpdate.getAsset())) assets.get(balanceUpdate.getAsset()).setWalletBalance(balanceUpdate.getWalletBalance());
+            else{
+                Asset asset = new Asset();
+                asset.setAsset(balanceUpdate.getAsset());
+                asset.setWalletBalance(balanceUpdate.getWalletBalance());
+                assets.put(balanceUpdate.getAsset(), asset);
+            }
+        }
         assetsLock.writeLock().unlock();
         List<PositionUpdate> positionUpdates = accountUpdate.getPositions();
         positionsLock.writeLock().lock();
@@ -76,4 +85,4 @@ public class AccountBalance {
     }
 }
 
-//TODO: Think about the possibility where a new asset or position occurs
+//TODO: Think about the possibility where a new asset occurs

@@ -45,7 +45,7 @@ public class Main {
         timer.schedule(timerTask,PrivateConfig.THIRTY_MINUTES_IN_MILLISECONDS,PrivateConfig.THIRTY_MINUTES_IN_MILLISECONDS);
         subscriptionClient.subscribeUserDataEvent(listenKey, ((event)-> {
             System.out.println(event);
-            accountBalance.updateBalance(event, "usdt");
+            accountBalance.updateBalance(event);
         }),System.out::println);
 
         subscriptionClient.subscribeCandlestickEvent("btcusdt", CandlestickInterval.ONE_MINUTE, ((event) -> {

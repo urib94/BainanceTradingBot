@@ -18,5 +18,15 @@ public class PrivateConfig {
 	public static final int RSI_EXIT_OPTION_2_OVER_THRESHOLD1 = 73;
 	public static final int RSI_EXIT_OPTION_2_UNDER_THRESHOLD1 = 70;
 	public static final int RSI_EXIT_OPTION_2_UNDER_THRESHOLD2 = 60;
+	public static final String NEW = "NEW";
+	public static final String PARTIALLY_FILLED = "PARTIALLY_FILLED";
+	public static final String FILLED = "FILLED";
+	public static final String CANCELED = "CANCELED";
+	public static final String EXPIRED = "EXPIRED";
+
+
+
+
+
 
 }
