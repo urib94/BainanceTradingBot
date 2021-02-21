@@ -1,7 +1,7 @@
 package Strategies.RSIStrategies;
 
 import Data.AccountBalance;
-import Data.PositionAction;
+import Positions.PositionAction;
 import Data.PrivateConfig;
 import Data.RealTimeData;
 import Strategies.ExitStrategy;

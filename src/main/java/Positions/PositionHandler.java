@@ -1,7 +1,7 @@
-package Strategies;
-import Data.PositionAction;
+package Positions;
 import Data.PrivateConfig;
 import Data.RealTimeData;
+import Strategies.ExitStrategy;
 import com.binance.client.RequestOptions;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.trade.Order;

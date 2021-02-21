@@ -4,7 +4,7 @@ import Data.AccountBalance;
 import Data.PrivateConfig;
 import Data.RealTimeData;
 import Strategies.EntryStrategy;
-import Strategies.PositionHandler;
+import Positions.PositionHandler;
 import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.Rule;
 import org.ta4j.core.indicators.RSIIndicator;
