@@ -2,7 +2,7 @@ import Data.AccountBalance;
 import Data.PrivateConfig;
 import Data.RealTimeData;
 import Strategies.EntryStrategy;
-import Strategies.PositionHandler;
+import Positions.PositionHandler;
 import Strategies.RSIStrategies.RSIEntryStrategy;
 import com.binance.client.RequestOptions;
 import com.binance.client.SubscriptionClient;

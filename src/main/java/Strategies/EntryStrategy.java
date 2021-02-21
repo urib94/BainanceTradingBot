@@ -1,5 +1,6 @@
 package Strategies;
 import Data.RealTimeData;
+import Positions.PositionHandler;
 
 public interface EntryStrategy{
     /**
