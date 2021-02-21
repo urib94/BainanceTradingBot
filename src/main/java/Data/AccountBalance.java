@@ -30,7 +30,7 @@ public class AccountBalance {
         assets = new HashMap<>();
         positions = new HashMap<>();
         RequestOptions options = new RequestOptions();
-        SyncRequestClient syncRequestClient = SyncRequestClient.create(PrivateConfig.API_KEY, PrivateConfig.SECRET_KEY, options);
+        SyncRequestClient syncRequestClient = SyncRequestClient.create(Config.API_KEY, Config.SECRET_KEY, options);
         AccountInformation accountInformation = syncRequestClient.getAccountInformation();
         for (Position position: accountInformation.getPositions()) System.out.println(position);
 

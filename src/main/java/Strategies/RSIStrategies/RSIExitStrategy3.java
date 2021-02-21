@@ -1,7 +1,7 @@
 package Strategies.RSIStrategies;
 import Data.AccountBalance;
 import Positions.PositionAction;
-import Data.PrivateConfig;
+import Data.Config;
 import Data.RealTimeData;
 import Strategies.ExitStrategy;
 import org.ta4j.core.BaseBarSeries;
@@ -15,10 +15,10 @@ public class RSIExitStrategy3 implements ExitStrategy {
 
 	public PositionAction run(RealTimeData realTimeData) {
 		AccountBalance accountBalance = AccountBalance.getAccountBalance();
-		BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfCandles(PrivateConfig.RSI_CANDLE_NUM);
+		BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfCandles(Config.RSI_CANDLE_NUM);
 		int last_bar_index = baseBarSeries.getEndIndex();
 		ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
-		RSIIndicator rsi = new RSIIndicator(closePriceIndicator, PrivateConfig.RSI_CANDLE_NUM);
+		RSIIndicator rsi = new RSIIndicator(closePriceIndicator, Config.RSI_CANDLE_NUM);
 		Num rsiNumValue = rsi.getValue(last_bar_index);
 		double rsiDoubleValue = rsiNumValue.doubleValue();
 		if (rsiValueBefore != Double.MAX_VALUE) {

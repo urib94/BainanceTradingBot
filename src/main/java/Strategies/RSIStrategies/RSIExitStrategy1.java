@@ -2,7 +2,7 @@ package Strategies.RSIStrategies;
 
 import Data.AccountBalance;
 import Positions.PositionAction;
-import Data.PrivateConfig;
+import Data.Config;
 import Data.RealTimeData;
 import Strategies.ExitStrategy;
 import org.ta4j.core.BaseBarSeries;
@@ -17,25 +17,25 @@ public class RSIExitStrategy1 implements ExitStrategy {
 
 	public PositionAction run(RealTimeData realTimeData) {
 		AccountBalance accountBalance = AccountBalance.getAccountBalance();
-		BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfClosedCandles(PrivateConfig.RSI_CANDLE_NUM);
+		BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfClosedCandles(Config.RSI_CANDLE_NUM);
 		int last_bar_index = baseBarSeries.getEndIndex();
 		ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
-		RSIIndicator rsi = new RSIIndicator(closePriceIndicator, PrivateConfig.RSI_CANDLE_NUM);
+		RSIIndicator rsi = new RSIIndicator(closePriceIndicator, Config.RSI_CANDLE_NUM);
 		if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
-			Rule exitRule1 = (new CrossedUpIndicatorRule(rsi, PrivateConfig.RSI_EXIT_OPTION_1_OVER_THRESHOLD1)) //Go over 65
-					.and(new CrossedDownIndicatorRule(rsi,PrivateConfig.RSI_EXIT_OPTION_2_OVER_THRESHOLD1)); // Don't go over 73.
+			Rule exitRule1 = (new CrossedUpIndicatorRule(rsi, Config.RSI_EXIT_OPTION_1_OVER_THRESHOLD1)) //Go over 65
+					.and(new CrossedDownIndicatorRule(rsi, Config.RSI_EXIT_OPTION_2_OVER_THRESHOLD1)); // Don't go over 73.
 			if (exitRule1.isSatisfied(last_bar_index)) {
 				positionInStrategy = PositionInStrategy.POSITION_TWO;
 			}
 			return null;
 		} else if (positionInStrategy == PositionInStrategy.POSITION_TWO) {
-			Rule exitRule2 = new CrossedDownIndicatorRule(rsi,PrivateConfig.RSI_EXIT_OPTION_1_UNDER_THRESHOLD1);
+			Rule exitRule2 = new CrossedDownIndicatorRule(rsi, Config.RSI_EXIT_OPTION_1_UNDER_THRESHOLD1);
 			if (exitRule2.isSatisfied(last_bar_index)) {
 				//TODO: return PositionAction of selling 50% of position
 				positionInStrategy = PositionInStrategy.POSITION_THREE;
 			}
 		} else if(positionInStrategy == PositionInStrategy.POSITION_THREE) {
-			Rule exitRule3 = new CrossedDownIndicatorRule(rsi,PrivateConfig.RSI_EXIT_OPTION_1_UNDER_THRESHOLD2);
+			Rule exitRule3 = new CrossedDownIndicatorRule(rsi, Config.RSI_EXIT_OPTION_1_UNDER_THRESHOLD2);
 			if (exitRule3.isSatisfied(last_bar_index)) {
 				//TODO: return PositionAction of selling the rest of position
 				positionInStrategy = PositionInStrategy.POSITION_ONE;

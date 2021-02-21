@@ -1,13 +1,20 @@
 package Data;
 
-public class PrivateConfig {
+import com.binance.client.api.model.enums.CandlestickInterval;
+
+public class Config {
 
 	public static final String API_KEY = "h4AdqbWrKlF5wOxWmbNTKLq7IpDReZOvVXeOujGwUfU0HjXdIejUmqKvoVLbcXJ6";
 	public static final String SECRET_KEY = "7qqNLwB7ZXiZu2nBJhrdv7ARVpNDhImNA1Rj1oXR6eGjZFkGsRC9ayEO7HLYVm6w";
 	public static final int THREAD_NUM = 3;
 	public static final int CANDLE_NUM = 40;
-	public static final int THIRTY_MINUTES_IN_MILLISECONDS = 1800000;
-	public static final int MINUTES_TO_KEEP_ALIVE = 30;
+	public static final CandlestickInterval INTERVAL =  CandlestickInterval.ONE_MINUTE;
+	public static final int MINUTES_TO_MILLISECONDS_CONVERTER = 60000;
+	public static final int HOURS_TO_MILLISECONDS_CONVERTER = 60 * MINUTES_TO_MILLISECONDS_CONVERTER;
+	public static final int DAYS_TO_MILLISECONDS_CONVERTER = 24 * HOURS_TO_MILLISECONDS_CONVERTER;
+	public static final int WEEKS_TO_MILLISECONDS_CONVERTER = 7 * DAYS_TO_MILLISECONDS_CONVERTER;
+	public static final int MONTHS_TO_MILLISECONDS_CONVERTER = 30 * DAYS_TO_MILLISECONDS_CONVERTER;
+	public static final int THIRTY_MINUTES_IN_MILLISECONDS = 30 * MINUTES_TO_MILLISECONDS_CONVERTER;
 	public static final int RSI_ENTRY_TRHESHOLD_1 = 27;
 	public static final int RSI_ENTRY_TRHESHOLD_2 = 30;
 	public static final int RSI_ENTRY_TRHESHOLD_3 = 35;

@@ -1,7 +1,7 @@
 package Strategies.RSIStrategies;
 
 import Data.AccountBalance;
-import Data.PrivateConfig;
+import Data.Config;
 import Data.RealTimeData;
 import Strategies.EntryStrategy;
 import Positions.PositionHandler;
@@ -23,25 +23,25 @@ public class RSIEntryStrategy implements EntryStrategy {
      */
     public PositionHandler run(RealTimeData realTimeData) {
         AccountBalance accountBalance = AccountBalance.getAccountBalance();
-        BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfClosedCandles(PrivateConfig.RSI_CANDLE_NUM);
+        BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfClosedCandles(Config.RSI_CANDLE_NUM);
         int last_bar_index = baseBarSeries.getEndIndex();
         ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
-        RSIIndicator rsi = new RSIIndicator(closePriceIndicator, PrivateConfig.RSI_CANDLE_NUM);
+        RSIIndicator rsi = new RSIIndicator(closePriceIndicator, Config.RSI_CANDLE_NUM);
 
         if (position_in_strategy == 1) {
-            Rule entryRule1 = new CrossedDownIndicatorRule(rsi, PrivateConfig.RSI_ENTRY_TRHESHOLD_1);
+            Rule entryRule1 = new CrossedDownIndicatorRule(rsi, Config.RSI_ENTRY_TRHESHOLD_1);
             if (entryRule1.isSatisfied(last_bar_index)) {
                 position_in_strategy++;
             }
             return null;
         } else if (position_in_strategy == 2) {
-            Rule entryRule2 = new CrossedUpIndicatorRule(rsi, PrivateConfig.RSI_ENTRY_TRHESHOLD_2);
+            Rule entryRule2 = new CrossedUpIndicatorRule(rsi, Config.RSI_ENTRY_TRHESHOLD_2);
             if (entryRule2.isSatisfied(last_bar_index)) {
                 position_in_strategy++;
             }
             return null;
         } else if (position_in_strategy == 3) {
-            Rule entryRule3 = new CrossedUpIndicatorRule(rsi, PrivateConfig.RSI_ENTRY_TRHESHOLD_3);
+            Rule entryRule3 = new CrossedUpIndicatorRule(rsi, Config.RSI_ENTRY_TRHESHOLD_3);
             if (time_passed_from_position_2 >= 2) {
                 time_passed_from_position_2 = 2;
                 position_in_strategy = 2;
