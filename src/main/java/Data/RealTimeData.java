@@ -55,7 +55,7 @@ public class RealTimeData{
         boolean isNewCandle = !(event.getStartTime().doubleValue() == lastCandleOpenTime);
         ZonedDateTime closeTime = getZonedDateTime(event.getCloseTime());
         Duration candleDuration = Duration.ofMillis(event.getCloseTime() - event.getStartTime());
-        double open = event.getOpen().doubleValue();//updateCandlestick.getOpen().doubleValue();
+        double open = event.getOpen().doubleValue();
         double high = event.getHigh().doubleValue();
         double low = event.getLow().doubleValue();
         double close = event.getClose().doubleValue();
