@@ -10,7 +10,7 @@ public class Config {
 	public static final String SECRET_KEY = "7qqNLwB7ZXiZu2nBJhrdv7ARVpNDhImNA1Rj1oXR6eGjZFkGsRC9ayEO7HLYVm6w";
 	public static final int THREAD_NUM = 1;
 	public static final int CANDLE_NUM = 40;
-	public static final int ROUNDING_MODE = 5;
+
 	public static final CandlestickInterval INTERVAL =  CandlestickInterval.ONE_MINUTE;
 	public static final int MINUTES_TO_MILLISECONDS_CONVERTER = 60000;
 	public static final int HOURS_TO_MILLISECONDS_CONVERTER = 60 * MINUTES_TO_MILLISECONDS_CONVERTER;
@@ -36,8 +36,7 @@ public class Config {
 	public static final BigDecimal RSI_EXIT_OPTION_3_SELLING_PERCENTAGE = new BigDecimal(100);
 	public static final BigDecimal RSI_EXIT_OPTION_4_SELLING_PERCENTAGE = new BigDecimal(100);
 	public static final BigDecimal BUYING_AMOUNT_REQUESTED = new BigDecimal(1/10);
-
-
+	public static final double ALPHA = 1.0/RSI_CANDLE_NUM;
 	public static final String NEW = "NEW";
 	public static final String PARTIALLY_FILLED = "PARTIALLY_FILLED";
 	public static final String FILLED = "FILLED";

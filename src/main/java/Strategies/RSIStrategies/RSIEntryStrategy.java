@@ -45,11 +45,12 @@ public class RSIEntryStrategy implements EntryStrategy {
      * @return PositionEntry if purchased else return null.
      */
     public PositionHandler run(RealTimeData realTimeData,String symbol) {
-        BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfCandles(Config.RSI_CANDLE_NUM + 1);
-        ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
-        RSIIndicator rsiIndicator = new RSIIndicator(closePriceIndicator,Config.RSI_CANDLE_NUM + 1);
-        BigDecimal rsiValue = BigDecimal.valueOf(rsiIndicator.getValue(baseBarSeries.getEndIndex()).doubleValue());
-        System.out.println("one step RSI VALUE:"+rsiValue);
+        BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfCandles(Config.RSI_CANDLE_NUM);
+//        ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
+//        RSIIndicator rsiIndicator = new RSIIndicator(closePriceIndicator,Config.RSI_CANDLE_NUM);
+//        BigDecimal rsiValue = BigDecimal.valueOf(rsiIndicator.getValue(baseBarSeries.getEndIndex()).doubleValue());
+        BigDecimal rsiValue = RSIUtiles.rsiStepTwoCalculatorForOpen(realTimeData);
+        System.out.println(rsiValue);
         if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
             if (RSIUtiles.belowThreshold(rsiValue,Config.RSI_ENTRY_THRESHOLD_1)) {
                 positionInStrategy = PositionInStrategy.POSITION_TWO;
