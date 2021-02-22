@@ -49,18 +49,17 @@ public class RSIEntryStrategy implements EntryStrategy {
 //        ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
 //        RSIIndicator rsiIndicator = new RSIIndicator(closePriceIndicator,Config.RSI_CANDLE_NUM);
 //        BigDecimal rsiValue = BigDecimal.valueOf(rsiIndicator.getValue(baseBarSeries.getEndIndex()).doubleValue());
-        BigDecimal rsiValue = RSIUtiles.rsiStepTwoCalculatorForOpen(realTimeData);
-        System.out.println(rsiValue);
+        //BigDecimal rsiValue = realTimeData.getOpenCandleRsiValue();
+        //System.out.println(rsiValue);
+        BigDecimal rsiValue = BigDecimal.ONE;
         if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
             if (RSIUtiles.belowThreshold(rsiValue,Config.RSI_ENTRY_THRESHOLD_1)) {
                 positionInStrategy = PositionInStrategy.POSITION_TWO;
-                System.out.println("entryRule1 satisfied");
             }
             return null;
         } else if (positionInStrategy == PositionInStrategy.POSITION_TWO) {
             if (RSIUtiles.aboveThreshold(rsiValue,Config.RSI_ENTRY_THRESHOLD_2)) {
                 positionInStrategy = PositionInStrategy.POSITION_THREE;
-                System.out.println("entryRule2 satisfied");
             }
             return null;
         } else if (positionInStrategy == PositionInStrategy.POSITION_THREE) {
@@ -76,7 +75,6 @@ public class RSIEntryStrategy implements EntryStrategy {
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
                 syncRequestClient.changeInitialLeverage(symbol,Config.LEVERAGE);
                 String buyingQty = getBuyingQtyAsString(realTimeData);
-                System.out.println("buying++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 //                Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.LONG, OrderType.LIMIT, TimeInForce.GTC,
 //                       buyingQty,realTimeData.getCurrentPrice().toString(),"false",null, null, WorkingType.MARK_PRICE,NewOrderRespType.RESULT);
 //                return new PositionHandler(buyOrder,Config.LEVERAGE, exitStrategies);//TODO: retrieve code

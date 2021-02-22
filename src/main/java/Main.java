@@ -24,7 +24,7 @@ public class Main {
     public static void main(String[] args){
         LocalDateTime programStartTime = LocalDateTime.now();
         ExecutorService executorService = Executors.newFixedThreadPool(Config.THREAD_NUM);
-        AccountBalance accountBalance = AccountBalance.getAccountBalance();
+        //AccountBalance accountBalance = AccountBalance.getAccountBalance();
         RealTimeData realTimeData = new RealTimeData("btcusdt", CandlestickInterval.ONE_MINUTE, Config.CANDLE_NUM);
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         SubscriptionClient subscriptionClient = SubscriptionClient.create(Config.API_KEY, Config.SECRET_KEY);
@@ -43,8 +43,7 @@ public class Main {
         Timer timer = new Timer();
         timer.schedule(timerTask, Config.THIRTY_MINUTES_IN_MILLISECONDS, Config.THIRTY_MINUTES_IN_MILLISECONDS);
         subscriptionClient.subscribeUserDataEvent(listenKey, ((event)-> {
-            System.out.println(event);
-            accountBalance.updateBalance(event);
+            //accountBalance.updateBalance(event);
         }),System.out::println);
 
         subscriptionClient.subscribeCandlestickEvent("btcusdt", Config.INTERVAL, ((event) -> {

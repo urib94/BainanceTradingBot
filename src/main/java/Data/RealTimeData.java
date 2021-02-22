@@ -6,6 +6,7 @@ import com.binance.client.api.model.enums.CandlestickInterval;
 import com.binance.client.api.model.event.CandlestickEvent;
 import com.binance.client.api.model.market.Candlestick;
 import org.ta4j.core.BaseBarSeries;
+import utilities.RSIUtiles;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -25,6 +26,7 @@ public class RealTimeData{
     private BaseBarSeries realTimeData;
     private final ReentrantReadWriteLock lock;
     private BigDecimal currentPrice;
+    private BigDecimal rsiValue;
 
     public RealTimeData(String symbol, CandlestickInterval interval, int amount){
         realTimeData = new BaseBarSeries();
@@ -44,10 +46,12 @@ public class RealTimeData{
             double volume = candlestickBar.getVolume().doubleValue();
             realTimeData.addBar(candleDuration, closeTime, open, high, low, close, volume);
         }
+        rsiValue = RSIUtiles.rsiStepTwoCalculatorForOpen(this);
     }
 
     public void updateData(CandlestickEvent event){
         currentPrice = event.getClose();
+        System.out.println(currentPrice);
         boolean isNewCandle = !(event.getStartTime().doubleValue() == lastCandleOpenTime);
         ZonedDateTime closeTime = getZonedDateTime(event.getCloseTime());
         Duration candleDuration = Duration.ofMillis(event.getCloseTime() - event.getStartTime());
@@ -65,6 +69,8 @@ public class RealTimeData{
             realTimeData = realTimeData.getSubSeries(0, realTimeData.getEndIndex());
         }
         realTimeData.addBar(candleDuration, closeTime, open, high, low, close, volume);
+        rsiValue = RSIUtiles.rsiStepTwoCalculatorForOpen(this);
+        System.out.println(rsiValue);
         lock.writeLock().unlock();
     }
 
@@ -99,5 +105,15 @@ public class RealTimeData{
 
     public BigDecimal getCurrentPrice() {
         return currentPrice;
+    }
+
+    public BigDecimal getOpenCandleRsiValue() {
+        try{
+            lock.readLock().lock();
+            return rsiValue;
+        }
+        finally {
+            lock.readLock().unlock();
+        }
     }
 }

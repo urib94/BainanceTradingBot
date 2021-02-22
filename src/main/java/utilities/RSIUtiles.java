@@ -5,7 +5,6 @@ import Data.RealTimeData;
 import com.binance.client.api.model.market.Candlestick;
 import com.sun.org.apache.bcel.internal.generic.RETURN;
 import com.sun.org.apache.xpath.internal.operations.Minus;
-import javafx.util.Pair;
 import org.ta4j.core.Bar;
 import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.indicators.EMAIndicator;
@@ -54,10 +53,7 @@ public class RSIUtiles {
 			gains.add(up(closePrices.get(i),closePrices.get(i-1)));
 			losses.add(down(closePrices.get(i),closePrices.get(i-1)));
 		}
-		System.out.println("gains:" + gains);
-		System.out.println("losses:" + losses);
 		int lastIndex = gains.size()-1;
-		System.out.println(closePrices);
 		double up = ema(gains,lastIndex);
 		double down = ema(losses,lastIndex);
 		double RS = up / down;
@@ -67,14 +63,25 @@ public class RSIUtiles {
 	private static double down(Num nt2, Num nt1) {
 		return Math.max(nt1.minus(nt2).doubleValue(),0);
 	}
+
 	private static double up(Num nt2, Num nt1) {
 		return Math.max(nt2.minus(nt1).doubleValue(), 0);
 	}
+
 	private static double ema(List<Double> list, int index) {
 		if (index == 0) {
 			return list.get(0);
 		}
-		return Config.ALPHA*list.get(index) + (1-Config.ALPHA)*ema(list,index -1);
+		return Config.ALPHA*list.get(index) + (1.0-Config.ALPHA)*ema(list,index -1);
+	}
+
+	private static double iterativeEma(List<Double> list, int index) {
+		List<Double> s = new ArrayList<>();
+		s.add(list.get(0));
+		for(int i = 1; i <= index; i++){
+			s.add(Config.ALPHA* list.get(i) + (1 - Config.ALPHA)*s.get(i-1));
+		}
+		return s.get(index);
 	}
 
 
