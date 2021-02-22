@@ -10,6 +10,7 @@ public class Config {
 	public static final String SECRET_KEY = "7qqNLwB7ZXiZu2nBJhrdv7ARVpNDhImNA1Rj1oXR6eGjZFkGsRC9ayEO7HLYVm6w";
 	public static final int THREAD_NUM = 1;
 	public static final int CANDLE_NUM = 40;
+	public static final int ROUNDING_MODE = 5;
 	public static final CandlestickInterval INTERVAL =  CandlestickInterval.ONE_MINUTE;
 	public static final int MINUTES_TO_MILLISECONDS_CONVERTER = 60000;
 	public static final int HOURS_TO_MILLISECONDS_CONVERTER = 60 * MINUTES_TO_MILLISECONDS_CONVERTER;
