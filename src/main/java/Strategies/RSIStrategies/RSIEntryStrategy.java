@@ -75,7 +75,7 @@ public class RSIEntryStrategy implements EntryStrategy {
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
                 syncRequestClient.changeInitialLeverage(symbol,Config.LEVERAGE);
                 String buyingQty = getBuyingQtyAsString(realTimeData);
-                System.out.println("buying+++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+                System.out.println("buying++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 //                Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.LONG, OrderType.LIMIT, TimeInForce.GTC,
 //                       buyingQty,realTimeData.getCurrentPrice().toString(),"false",null, null, WorkingType.MARK_PRICE,NewOrderRespType.RESULT);
 //                return new PositionHandler(buyOrder,Config.LEVERAGE, exitStrategies);//TODO: retrieve code
