@@ -8,10 +8,6 @@ import Strategies.EntryStrategy;
 import Positions.PositionHandler;
 import Strategies.ExitStrategy;
 import com.binance.client.api.SyncRequestClient;
-import eu.verdelhan.ta4j.Decimal;
-import eu.verdelhan.ta4j.Indicator;
-import eu.verdelhan.ta4j.TimeSeries;
-import eu.verdelhan.ta4j.indicators.SmoothedRSIIndicator;
 import com.binance.client.api.model.enums.OrderSide;
 import com.binance.client.api.model.enums.OrderType;
 import com.binance.client.api.model.enums.PositionSide;
@@ -49,29 +45,31 @@ public class RSIEntryStrategy implements EntryStrategy {
      * @return PositionEntry if purchased else return null.
      */
     public PositionHandler run(RealTimeData realTimeData,String symbol) {
-        AccountBalance accountBalance = AccountBalance.getAccountBalance();
-        BigDecimal twoStepRSIValue = RSIUtiles.rsiStepTwoCalculatorForClosed(realTimeData);
-
+        BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfCandles(Config.RSI_CANDLE_NUM + 1);
+        ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
+        RSIIndicator rsiIndicator = new RSIIndicator(closePriceIndicator,Config.RSI_CANDLE_NUM + 1);
+        BigDecimal rsiValue = BigDecimal.valueOf(rsiIndicator.getValue(baseBarSeries.getEndIndex()).doubleValue());
+        System.out.println("one step RSI VALUE:"+rsiValue);
         if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
-            if (RSIUtiles.aboveThreshold(twoStepRSIValue,Config.RSI_ENTRY_THRESHOLD_1)) {
+            if (RSIUtiles.belowThreshold(rsiValue,Config.RSI_ENTRY_THRESHOLD_1)) {
                 positionInStrategy = PositionInStrategy.POSITION_TWO;
                 System.out.println("entryRule1 satisfied");
             }
             return null;
         } else if (positionInStrategy == PositionInStrategy.POSITION_TWO) {
-            if (RSIUtiles.aboveThreshold(twoStepRSIValue,Config.RSI_ENTRY_THRESHOLD_2)) {
+            if (RSIUtiles.aboveThreshold(rsiValue,Config.RSI_ENTRY_THRESHOLD_2)) {
                 positionInStrategy = PositionInStrategy.POSITION_THREE;
                 System.out.println("entryRule2 satisfied");
             }
             return null;
         } else if (positionInStrategy == PositionInStrategy.POSITION_THREE) {
             if (time_passed_from_position_2 >= 2) {
-                time_passed_from_position_2 = 1;
+                time_passed_from_position_2 = 0;
                 positionInStrategy = PositionInStrategy.POSITION_TWO;
                 return null;
             }
             time_passed_from_position_2++;
-            if (RSIUtiles.aboveThreshold(twoStepRSIValue,Config.RSI_ENTRY_THRESHOLD_3)) {
+            if (RSIUtiles.aboveThreshold(rsiValue,Config.RSI_ENTRY_THRESHOLD_3)) {
                 time_passed_from_position_2 = 0;
                 positionInStrategy = PositionInStrategy.POSITION_ONE;
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();

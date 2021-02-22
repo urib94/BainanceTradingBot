@@ -79,7 +79,7 @@ public class RealTimeData{
     public BaseBarSeries getLastAmountOfClosedCandles(int amount) {
         try {
             lock.readLock().lock();
-            return realTimeData.getSubSeries(realTimeData.getBarCount() - (amount + 1), realTimeData.getBarCount() - 1);
+            return realTimeData.getSubSeries(realTimeData.getBarCount() - (amount + 1), realTimeData.getEndIndex()-1);
         } finally {
             lock.readLock().unlock();
         }

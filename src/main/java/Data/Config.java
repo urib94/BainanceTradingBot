@@ -21,7 +21,7 @@ public class Config {
 	public static final int RSI_ENTRY_THRESHOLD_1 = 27;
 	public static final int RSI_ENTRY_THRESHOLD_2 = 30;
 	public static final int RSI_ENTRY_THRESHOLD_3 = 35;
-	public static final int RSI_CANDLE_NUM = 10;
+	public static final int RSI_CANDLE_NUM = 9;
 	public static final Integer LEVERAGE = 6;
 	public static final int RSI_EXIT_OPTION_1_OVER_THRESHOLD1 = 65;
 	public static final int RSI_EXIT_OPTION_1_UNDER_THRESHOLD1 = 65;
