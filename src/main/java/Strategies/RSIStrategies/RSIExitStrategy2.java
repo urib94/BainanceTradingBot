@@ -18,24 +18,22 @@ public class RSIExitStrategy2 implements ExitStrategy {
 
 	public BigDecimal run(RealTimeData realTimeData) {
 		AccountBalance accountBalance = AccountBalance.getAccountBalance();
-		BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfClosedCandles(Config.RSI_CANDLE_NUM);
-		int lastBarIndex = baseBarSeries.getEndIndex();
-		ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
-		RSIIndicator rsi = new RSIIndicator(closePriceIndicator, Config.RSI_CANDLE_NUM);
+		RSIIndicator rsiIndicator = realTimeData.getRSICloseValue();
+		int lastBarIndex = realTimeData.getRealTimeData().getEndIndex();
 		if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
-			Rule exitRule1 = new CrossedUpIndicatorRule(rsi, Config.RSI_EXIT_OPTION_2_OVER_THRESHOLD1);
+			Rule exitRule1 = new CrossedUpIndicatorRule(rsiIndicator, Config.RSI_EXIT_OPTION_2_OVER_THRESHOLD1);
 			if (exitRule1.isSatisfied(lastBarIndex)) {
 				positionInStrategy = PositionInStrategy.POSITION_TWO;
 			}
 			return null;
 		} else if (positionInStrategy == PositionInStrategy.POSITION_TWO) {
-			Rule exitRule2 = new CrossedDownIndicatorRule(rsi, Config.RSI_EXIT_OPTION_2_UNDER_THRESHOLD1);
+			Rule exitRule2 = new CrossedDownIndicatorRule(rsiIndicator, Config.RSI_EXIT_OPTION_2_UNDER_THRESHOLD1);
 			if (exitRule2.isSatisfied(lastBarIndex)) {
 				positionInStrategy = PositionInStrategy.POSITION_THREE;
 				return Config.RSI_EXIT_OPTION_2_SELLING_PERCENTAGE1;
 			}
 		} else if(positionInStrategy == PositionInStrategy.POSITION_THREE) {
-			Rule exitRule3 = new CrossedDownIndicatorRule(rsi, Config.RSI_EXIT_OPTION_1_UNDER_THRESHOLD2);
+			Rule exitRule3 = new CrossedDownIndicatorRule(rsiIndicator, Config.RSI_EXIT_OPTION_1_UNDER_THRESHOLD2);
 			if (exitRule3.isSatisfied(lastBarIndex)) {
 				positionInStrategy = PositionInStrategy.POSITION_ONE;
 				return Config.RSI_EXIT_OPTION_2_SELLING_PERCENTAGE2;

@@ -15,15 +15,12 @@ import java.math.BigDecimal;
 public class RSIExitStrategy4 implements ExitStrategy {
 	public BigDecimal run(RealTimeData realTimeData) {
 		AccountBalance accountBalance = AccountBalance.getAccountBalance();
-		BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfCandles(Config.RSI_CANDLE_NUM);
-		int lastBarIndex = baseBarSeries.getEndIndex();
-		ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
-		RSIIndicator rsi = new RSIIndicator(closePriceIndicator, Config.RSI_CANDLE_NUM);
-		Rule exitRule = new CrossedDownIndicatorRule(rsi, Config.RSI_EXIT_OPTION_4_UNDER_THRESHOLD);
+		RSIIndicator rsiIndicator = realTimeData.getRSIOpenIndicator();
+		int lastBarIndex = realTimeData.getRealTimeData().getEndIndex();
+		Rule exitRule = new CrossedDownIndicatorRule(rsiIndicator, Config.RSI_EXIT_OPTION_4_UNDER_THRESHOLD);
 		if (exitRule.isSatisfied(lastBarIndex)) {
 			return Config.RSI_EXIT_OPTION_4_SELLING_PERCENTAGE;
 		}
-
 		return null;
 	}
 }

@@ -1,6 +1,5 @@
 package Strategies.RSIStrategies;
 
-import Data.AccountBalance;
 import Data.Config;
 import Data.RealTimeData;
 import Data.RequestClient;
@@ -8,15 +7,8 @@ import Strategies.EntryStrategy;
 import Positions.PositionHandler;
 import Strategies.ExitStrategy;
 import com.binance.client.api.SyncRequestClient;
-import com.binance.client.api.model.enums.OrderSide;
-import com.binance.client.api.model.enums.OrderType;
-import com.binance.client.api.model.enums.PositionSide;
-import com.binance.client.api.model.enums.TimeInForce;
-import com.binance.client.api.model.trade.Order;
-import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.Rule;
 import org.ta4j.core.indicators.RSIIndicator;
-import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import org.ta4j.core.trading.rules.CrossedDownIndicatorRule;
 import org.ta4j.core.trading.rules.CrossedUpIndicatorRule;
 import utilities.RSIUtiles;
@@ -45,20 +37,18 @@ public class RSIEntryStrategy implements EntryStrategy {
      * @return PositionEntry if purchased else return null.
      */
     public PositionHandler run(RealTimeData realTimeData,String symbol) {
-        BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfCandles(Config.RSI_CANDLE_NUM);
-//        ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
-//        RSIIndicator rsiIndicator = new RSIIndicator(closePriceIndicator,Config.RSI_CANDLE_NUM);
-//        BigDecimal rsiValue = BigDecimal.valueOf(rsiIndicator.getValue(baseBarSeries.getEndIndex()).doubleValue());
-        //BigDecimal rsiValue = realTimeData.getOpenCandleRsiValue();
-        //System.out.println(rsiValue);
-        BigDecimal rsiValue = BigDecimal.ONE;
+        RSIIndicator rsiIndicator = realTimeData.getRSICloseValue();
+        int lastBarIndex = realTimeData.getAllClosedCandles().getEndIndex();
+        System.out.println("rsi indicator" + rsiIndicator.getValue(lastBarIndex));
         if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
-            if (RSIUtiles.belowThreshold(rsiValue,Config.RSI_ENTRY_THRESHOLD_1)) {
+            Rule entryRule1 = new CrossedDownIndicatorRule(rsiIndicator,Config.RSI_ENTRY_THRESHOLD_1);
+            if (entryRule1.isSatisfied(lastBarIndex)) {
                 positionInStrategy = PositionInStrategy.POSITION_TWO;
             }
             return null;
         } else if (positionInStrategy == PositionInStrategy.POSITION_TWO) {
-            if (RSIUtiles.aboveThreshold(rsiValue,Config.RSI_ENTRY_THRESHOLD_2)) {
+            Rule entryRule2 = new CrossedUpIndicatorRule(rsiIndicator,Config.RSI_ENTRY_THRESHOLD_2);
+            if (entryRule2.isSatisfied(lastBarIndex)) {
                 positionInStrategy = PositionInStrategy.POSITION_THREE;
             }
             return null;
@@ -69,7 +59,8 @@ public class RSIEntryStrategy implements EntryStrategy {
                 return null;
             }
             time_passed_from_position_2++;
-            if (RSIUtiles.aboveThreshold(rsiValue,Config.RSI_ENTRY_THRESHOLD_3)) {
+            Rule entryRule3 = new CrossedUpIndicatorRule(rsiIndicator,Config.RSI_ENTRY_THRESHOLD_3);
+            if (entryRule3.isSatisfied(lastBarIndex)) {
                 time_passed_from_position_2 = 0;
                 positionInStrategy = PositionInStrategy.POSITION_ONE;
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();

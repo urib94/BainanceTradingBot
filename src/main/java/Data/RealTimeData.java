@@ -1,12 +1,12 @@
 package Data;
 
-import com.binance.client.api.RequestOptions;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.CandlestickInterval;
 import com.binance.client.api.model.event.CandlestickEvent;
 import com.binance.client.api.model.market.Candlestick;
 import org.ta4j.core.BaseBarSeries;
-import utilities.RSIUtiles;
+import org.ta4j.core.indicators.RSIIndicator;
+import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -14,7 +14,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
@@ -26,7 +25,8 @@ public class RealTimeData{
     private BaseBarSeries realTimeData;
     private final ReentrantReadWriteLock lock;
     private BigDecimal currentPrice;
-    private BigDecimal rsiValue;
+    private RSIIndicator RSIOpenIndicator;
+    private RSIIndicator RSICloseIndicator;
 
     public RealTimeData(String symbol, CandlestickInterval interval, int amount){
         realTimeData = new BaseBarSeries();
@@ -46,7 +46,9 @@ public class RealTimeData{
             double volume = candlestickBar.getVolume().doubleValue();
             realTimeData.addBar(candleDuration, closeTime, open, high, low, close, volume);
         }
-        rsiValue = RSIUtiles.rsiStepTwoCalculatorForOpen(this);
+        RSIOpenIndicator = calculateRSI(RSI_TYPE.OPEN);
+        RSICloseIndicator = calculateRSI(RSI_TYPE.CLOSE);
+
     }
 
     public void updateData(CandlestickEvent event){
@@ -68,9 +70,29 @@ public class RealTimeData{
             realTimeData = realTimeData.getSubSeries(0, realTimeData.getEndIndex());
         }
         realTimeData.addBar(candleDuration, closeTime, open, high, low, close, volume);
-        rsiValue = RSIUtiles.rsiStepTwoCalculatorForOpen(this);
-        System.out.println(rsiValue);
+        RSIOpenIndicator = calculateRSI(RSI_TYPE.OPEN);
+        RSICloseIndicator = calculateRSI(RSI_TYPE.CLOSE);
         lock.writeLock().unlock();
+    }
+
+    public RSIIndicator getRSICloseValue() {
+        try{
+            lock.readLock().lock();
+            return RSICloseIndicator;
+        }
+        finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public RSIIndicator getRSIOpenIndicator() {
+        try{
+            lock.readLock().lock();
+            return RSIOpenIndicator;
+        }
+        finally {
+            lock.readLock().unlock();
+        }
     }
 
     public BaseBarSeries getRealTimeData(){
@@ -81,10 +103,10 @@ public class RealTimeData{
             lock.readLock().unlock();
         }
     }
-    public BaseBarSeries getLastAmountOfClosedCandles(int amount) {
+    public BaseBarSeries getAllClosedCandles() {
         try {
             lock.readLock().lock();
-            return realTimeData.getSubSeries(realTimeData.getBarCount() - (amount + 1), realTimeData.getEndIndex()-1);
+            return realTimeData.getSubSeries(0, realTimeData.getEndIndex());
         } finally {
             lock.readLock().unlock();
         }
@@ -97,6 +119,20 @@ public class RealTimeData{
             lock.readLock().unlock();
         }
     }
+
+    private RSIIndicator calculateRSI(RSI_TYPE type) {
+        ClosePriceIndicator closePriceIndicator;
+        if (type == RSI_TYPE.OPEN) {
+            closePriceIndicator = new ClosePriceIndicator(realTimeData);
+        } else {
+            closePriceIndicator = new ClosePriceIndicator(getAllClosedCandles());
+        }
+        return new RSIIndicator(closePriceIndicator,Config.RSI_CANDLE_NUM);
+
+    }
+
+
+
     private ZonedDateTime getZonedDateTime(Long timestamp) {
         return ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
                 ZoneId.systemDefault());
@@ -106,13 +142,4 @@ public class RealTimeData{
         return currentPrice;
     }
 
-    public BigDecimal getOpenCandleRsiValue() {
-        try{
-            lock.readLock().lock();
-            return rsiValue;
-        }
-        finally {
-            lock.readLock().unlock();
-        }
-    }
 }

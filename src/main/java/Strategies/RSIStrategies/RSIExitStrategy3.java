@@ -16,11 +16,9 @@ public class RSIExitStrategy3 implements ExitStrategy {
 
 	public BigDecimal run(RealTimeData realTimeData) {
 		AccountBalance accountBalance = AccountBalance.getAccountBalance();
-		BaseBarSeries baseBarSeries = realTimeData.getLastAmountOfCandles(Config.RSI_CANDLE_NUM);
-		int lastBarIndex = baseBarSeries.getEndIndex();
-		ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(baseBarSeries);
-		RSIIndicator rsi = new RSIIndicator(closePriceIndicator, Config.RSI_CANDLE_NUM);
-		Num rsiNumValue = rsi.getValue(lastBarIndex);
+		RSIIndicator rsiIndicator = realTimeData.getRSIOpenIndicator();
+		int lastBarIndex = realTimeData.getRealTimeData().getEndIndex();
+		Num rsiNumValue = rsiIndicator.getValue(lastBarIndex);
 		double rsiDoubleValue = rsiNumValue.doubleValue();
 		if (rsiValueBefore != Double.MAX_VALUE) {
 			if (lostMoreThan15Percent(rsiValueBefore,rsiDoubleValue)) {
