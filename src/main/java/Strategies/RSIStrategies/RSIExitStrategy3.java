@@ -3,9 +3,7 @@ import Data.AccountBalance;
 import Data.Config;
 import Data.RealTimeData;
 import Strategies.ExitStrategy;
-import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.indicators.RSIIndicator;
-import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import org.ta4j.core.num.Num;
 
 import java.math.BigDecimal;
@@ -15,8 +13,7 @@ public class RSIExitStrategy3 implements ExitStrategy {
 	private double rsiValueBefore = Double.MAX_VALUE;
 
 	public BigDecimal run(RealTimeData realTimeData) {
-		AccountBalance accountBalance = AccountBalance.getAccountBalance();
-		RSIIndicator rsiIndicator = realTimeData.getRSIOpenIndicator();
+		RSIIndicator rsiIndicator = realTimeData.getRsiOpenIndicator();
 		int lastBarIndex = realTimeData.getRealTimeData().getEndIndex();
 		Num rsiNumValue = rsiIndicator.getValue(lastBarIndex);
 		double rsiDoubleValue = rsiNumValue.doubleValue();

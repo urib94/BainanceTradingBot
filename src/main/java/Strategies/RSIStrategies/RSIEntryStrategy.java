@@ -11,7 +11,6 @@ import org.ta4j.core.Rule;
 import org.ta4j.core.indicators.RSIIndicator;
 import org.ta4j.core.trading.rules.CrossedDownIndicatorRule;
 import org.ta4j.core.trading.rules.CrossedUpIndicatorRule;
-import utilities.RSIUtiles;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -37,18 +36,13 @@ public class RSIEntryStrategy implements EntryStrategy {
      * @return PositionEntry if purchased else return null.
      */
     public PositionHandler run(RealTimeData realTimeData,String symbol) {
-        RSIIndicator rsiIndicator = realTimeData.getRSICloseValue();
-        int lastBarIndex = realTimeData.getAllClosedCandles().getEndIndex();
-        System.out.println("rsi indicator" + rsiIndicator.getValue(lastBarIndex));
         if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
-            Rule entryRule1 = new CrossedDownIndicatorRule(rsiIndicator,Config.RSI_ENTRY_THRESHOLD_1);
-            if (entryRule1.isSatisfied(lastBarIndex)) {
+            if (realTimeData.crossed(RealTimeData.CrossType.DOWN, RealTimeData.RSIType.CLOSE,Config.RSI_ENTRY_THRESHOLD_1)) {
                 positionInStrategy = PositionInStrategy.POSITION_TWO;
             }
             return null;
         } else if (positionInStrategy == PositionInStrategy.POSITION_TWO) {
-            Rule entryRule2 = new CrossedUpIndicatorRule(rsiIndicator,Config.RSI_ENTRY_THRESHOLD_2);
-            if (entryRule2.isSatisfied(lastBarIndex)) {
+            if (realTimeData.crossed(RealTimeData.CrossType.UP, RealTimeData.RSIType.CLOSE,Config.RSI_ENTRY_THRESHOLD_2)) {
                 positionInStrategy = PositionInStrategy.POSITION_THREE;
             }
             return null;
@@ -59,8 +53,7 @@ public class RSIEntryStrategy implements EntryStrategy {
                 return null;
             }
             time_passed_from_position_2++;
-            Rule entryRule3 = new CrossedUpIndicatorRule(rsiIndicator,Config.RSI_ENTRY_THRESHOLD_3);
-            if (entryRule3.isSatisfied(lastBarIndex)) {
+            if (realTimeData.crossed(RealTimeData.CrossType.UP, RealTimeData.RSIType.CLOSE,Config.RSI_ENTRY_THRESHOLD_3)) {
                 time_passed_from_position_2 = 0;
                 positionInStrategy = PositionInStrategy.POSITION_ONE;
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
