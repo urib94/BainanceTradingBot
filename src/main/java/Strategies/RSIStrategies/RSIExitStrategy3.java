@@ -1,5 +1,4 @@
 package Strategies.RSIStrategies;
-import Data.AccountBalance;
 import Data.Config;
 import Data.RealTimeData;
 import Strategies.ExitStrategy;
@@ -18,11 +17,11 @@ public class RSIExitStrategy3 implements ExitStrategy {
 		Num rsiNumValue = rsiIndicator.getValue(lastBarIndex);
 		double rsiDoubleValue = rsiNumValue.doubleValue();
 		if (rsiValueBefore != Double.MAX_VALUE) {
-			if (lostMoreThan15Percent(rsiValueBefore,rsiDoubleValue)) {
+			if (lostValueOf15(rsiValueBefore,rsiDoubleValue)) {
 				return Config.RSI_EXIT_OPTION_3_SELLING_PERCENTAGE;
 			}
 			if (rsiValueTwoBefore != Double.MAX_VALUE) {
-				if (lostMoreThan15Percent(rsiValueTwoBefore,rsiDoubleValue)) {
+				if (lostValueOf15(rsiValueTwoBefore,rsiDoubleValue)) {
 					return Config.RSI_EXIT_OPTION_3_SELLING_PERCENTAGE;
 				}
 			}
@@ -31,8 +30,8 @@ public class RSIExitStrategy3 implements ExitStrategy {
 		return null;
 	}
 
-	private boolean lostMoreThan15Percent(double oldVal, double newVal) {
-		return newVal <= oldVal*0.85;
+	private boolean lostValueOf15(double oldVal, double newVal) {
+		return oldVal - newVal >= 15;
 	}
 
 	private void updateValues(double newValue) {
