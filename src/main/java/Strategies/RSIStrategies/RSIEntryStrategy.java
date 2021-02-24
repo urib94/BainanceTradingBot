@@ -3,13 +3,9 @@ package Strategies.RSIStrategies;
 import Data.BinanceInfo;
 import Data.Config;
 import Data.RealTimeData;
-import Data.RequestClient;
 import Strategies.EntryStrategy;
 import Positions.PositionHandler;
 import Strategies.ExitStrategy;
-import com.binance.client.api.SyncRequestClient;
-import com.binance.client.api.model.enums.*;
-import com.binance.client.api.model.trade.Order;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -72,29 +68,22 @@ public class RSIEntryStrategy implements EntryStrategy {
         }
         return null;
     }
-
     private String getBuyingQtyAsString(RealTimeData realTimeData, String symbol) {
         BigDecimal buyingQty = Config.BUYING_AMOUNT_REQUESTED.multiply(BigDecimal.valueOf(Config.LEVERAGE.doubleValue())).divide(realTimeData.getCurrentPrice(), MathContext.DECIMAL32);
-        return formatBuyingQty(buyingQty, symbol);
+        return BinanceInfo.formatQty(buyingQty, symbol);
     }
 
     private String getTakeProfitPriceAsString(RealTimeData realTimeData, String symbol) {
         BigDecimal takeProfitPrice = realTimeData.getCurrentPrice().add((realTimeData.getCurrentPrice().multiply(BigDecimal.valueOf(1.0 / 1000))));
-        return formatPrice(takeProfitPrice, symbol);
+        return BinanceInfo.formatPrice(takeProfitPrice, symbol);
     }
 
     private String getStopLossPriceAsString(RealTimeData realTimeData, String symbol) {
         BigDecimal stopLossPrice = realTimeData.getCurrentPrice().subtract(realTimeData.getCurrentPrice().multiply(BigDecimal.valueOf(1.0 / 200)));
-        return formatPrice(stopLossPrice, symbol);
+        return BinanceInfo.formatPrice(stopLossPrice, symbol);
     }
 
 
 
-    private String formatBuyingQty(BigDecimal buyingQty, String symbol){
-        return String.format("%." + BinanceInfo.getSymbolInformation(symbol).getQuantityPrecision() + "f", buyingQty);
-    }
 
-    private String formatPrice(BigDecimal price, String symbol){
-        return String.format("%." + BinanceInfo.getSymbolInformation(symbol).getPricePrecision() + "f", price);
-    }
 }

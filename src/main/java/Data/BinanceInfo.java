@@ -4,6 +4,7 @@ import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.market.ExchangeInfoEntry;
 import com.binance.client.api.model.market.ExchangeInformation;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +32,14 @@ public class BinanceInfo {
      */
     public static ExchangeInfoEntry getSymbolInformation(String symbol){
         return symbolInformation.get(symbol);
+    }
+
+    public static String formatQty(BigDecimal buyingQty, String symbol){
+        return String.format("%." + symbolInformation.get(symbol).getQuantityPrecision() + "f", buyingQty);
+    }
+
+    public static String formatPrice(BigDecimal price, String symbol){
+        return String.format("%." + symbolInformation.get(symbol).getPricePrecision() + "f", price);
     }
 
 }
