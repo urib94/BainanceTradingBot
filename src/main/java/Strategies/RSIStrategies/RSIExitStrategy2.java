@@ -26,7 +26,7 @@ public class RSIExitStrategy2 implements ExitStrategy {
 				return Config.RSI_EXIT_OPTION_2_SELLING_PERCENTAGE1;
 			}
 		} else if(positionInStrategy == PositionInStrategy.POSITION_THREE) {
-			if (realTimeData.crossed(RealTimeData.CrossType.DOWN, RealTimeData.RSIType.CLOSE,Config.RSI_EXIT_OPTION_1_UNDER_THRESHOLD2)) {
+			if (realTimeData.crossed(RealTimeData.CrossType.DOWN, RealTimeData.RSIType.CLOSE,Config.RSI_EXIT_OPTION_2_UNDER_THRESHOLD2)) {
 				positionInStrategy = PositionInStrategy.POSITION_ONE;
 				return Config.RSI_EXIT_OPTION_2_SELLING_PERCENTAGE2;
 			}

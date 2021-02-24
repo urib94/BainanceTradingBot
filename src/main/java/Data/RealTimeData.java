@@ -118,8 +118,6 @@ public class RealTimeData{
             rsiValueNow = rsiCloseIndicator.getValue(lastBarIndex).doubleValue();
             rsiValuePrev = rsiCloseIndicator.getValue(lastBarIndex-1).doubleValue();
         }
-        System.out.println("prev: " + rsiValuePrev + "now: "+rsiValueNow);
-        System.out.println("----------------------------------------");
         lock.readLock().unlock();
         if (crossType == CrossType.UP) return rsiValueNow > threshold && rsiValuePrev <= threshold;
         return rsiValuePrev >= threshold && rsiValueNow < threshold;

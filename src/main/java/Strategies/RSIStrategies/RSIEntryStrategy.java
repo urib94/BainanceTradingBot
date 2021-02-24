@@ -7,15 +7,11 @@ import Strategies.EntryStrategy;
 import Positions.PositionHandler;
 import Strategies.ExitStrategy;
 import com.binance.client.api.SyncRequestClient;
-import org.ta4j.core.Rule;
-import org.ta4j.core.indicators.RSIIndicator;
-import org.ta4j.core.trading.rules.CrossedDownIndicatorRule;
-import org.ta4j.core.trading.rules.CrossedUpIndicatorRule;
+import com.binance.client.api.model.enums.*;
+import com.binance.client.api.model.trade.Order;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-
-import static java.lang.Thread.sleep;
 
 public class RSIEntryStrategy implements EntryStrategy {
     private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_ONE;
@@ -59,10 +55,16 @@ public class RSIEntryStrategy implements EntryStrategy {
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
                 syncRequestClient.changeInitialLeverage(symbol,Config.LEVERAGE);
                 String buyingQty = getBuyingQtyAsString(realTimeData);
-                System.out.println("-----BUYING MOTHERFUCKER!!!!!!!------");
-//                Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.LONG, OrderType.LIMIT, TimeInForce.GTC,
-//                       buyingQty,realTimeData.getCurrentPrice().toString(),"false",null, null, WorkingType.MARK_PRICE,NewOrderRespType.RESULT);
-//                return new PositionHandler(buyOrder,Config.LEVERAGE, exitStrategies);//TODO: retrieve code
+                Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.LONG, OrderType.LIMIT, TimeInForce.GTC,
+                       buyingQty,realTimeData.getCurrentPrice().toString(),null,null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+                String takeProfitPrice = (realTimeData.getCurrentPrice().add(realTimeData.getCurrentPrice().multiply(new BigDecimal(1/1000)))).toString();
+                Order takeProfitOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.LONG, OrderType.TAKE_RPOFIT, TimeInForce.GTC,
+                        buyingQty,takeProfitPrice,"true",null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+                String stopLossPrice = (realTimeData.getCurrentPrice().subtract(realTimeData.getCurrentPrice().multiply(new BigDecimal(1/200)))).toString();
+                Order stopLossOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.LONG, OrderType.STOP, TimeInForce.GTC,
+                        buyingQty,stopLossPrice,"true",null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+                System.out.println("Bought: " + buyOrder.getClientOrderId());
+                return new PositionHandler(buyOrder,Config.LEVERAGE, exitStrategies);
             }
         }
         return null;

@@ -55,9 +55,10 @@ public class PositionHandler {
             BigDecimal sellingQtyPercentage  = exitStrategy.run(realTimeData);
             if (sellingQtyPercentage != null){
                 String sellingQty = percentageOfQuantityAsString(sellingQtyPercentage);
+                System.out.println("Selling: " + clientOrderId + " Symbol: " + symbol + " sellingQty: " + sellingQty);
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-//               syncRequestClient.postOrder(symbol,OrderSide.SELL, PositionSide.LONG, OrderType.LIMIT, TimeInForce.GTC,
-//                      sellingQty,realTimeData.getCurrentPrice().toString(),"true",null, null,null,NewOrderRespType.RESULT);
+               syncRequestClient.postOrder(symbol,OrderSide.SELL, PositionSide.LONG, OrderType.LIMIT, TimeInForce.GTC,
+                      sellingQty,realTimeData.getCurrentPrice().toString(),"true",null, null,null,NewOrderRespType.RESULT);
             }
         }
     }
