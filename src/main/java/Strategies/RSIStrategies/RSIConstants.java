@@ -20,5 +20,7 @@ public class RSIConstants {
 	public static final int RSI_ENTRY_THRESHOLD_1 = 27;
 	public static final int RSI_ENTRY_THRESHOLD_2 = 30;
 	public static final int RSI_ENTRY_THRESHOLD_3 = 35;
+	public static final double TAKE_PROFIT_PERCENTAGE = 1.0 / 100;
 	public static final int RSI_CANDLE_NUM = 9;
+	public static final double STOP_LOSS_PERCENTAGE = 1.0 / 200;
 }

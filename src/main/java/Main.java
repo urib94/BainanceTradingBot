@@ -26,8 +26,9 @@ public class Main {
     public static void main(String[] args){
         LocalDateTime programStartTime = LocalDateTime.now();
         AccountBalance accountBalance = AccountBalance.getAccountBalance();
-        RealTimeData realTimeData = new RealTimeData("btcusdt", CandlestickInterval.ONE_MINUTE, Config.CANDLE_NUM);
+        RealTimeData realTimeData = new RealTimeData(Config.SYMBOL, CandlestickInterval.ONE_MINUTE, Config.CANDLE_NUM);
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+        syncRequestClient.changeInitialLeverage(Config.SYMBOL,Config.LEVERAGE);
         SubscriptionClient subscriptionClient = SubscriptionClient.create(Config.API_KEY, Config.SECRET_KEY);
         String listenKey = syncRequestClient.startUserDataStream();
         ArrayList<EntryStrategy> entryStrategies = new ArrayList<>();
@@ -46,7 +47,7 @@ public class Main {
         Timer timer = new Timer();
         timer.schedule(timerTask, TimeConstants.THIRTY_MINUTES_IN_MILLISECONDS, TimeConstants.THIRTY_MINUTES_IN_MILLISECONDS);
         subscriptionClient.subscribeUserDataEvent(listenKey, (accountBalance::updateBalance), null);
-        subscriptionClient.subscribeCandlestickEvent("btcusdt", Config.INTERVAL, ((event) -> {
+        subscriptionClient.subscribeCandlestickEvent(Config.SYMBOL, Config.INTERVAL, ((event) -> {
             waitUntilFinished(futures);
             realTimeData.updateData(event);
             positionHandlersLock.readLock().lock();
