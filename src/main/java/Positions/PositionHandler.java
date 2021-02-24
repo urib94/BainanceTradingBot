@@ -4,7 +4,7 @@ import Data.Config;
 import Data.RealTimeData;
 import Data.RequestClient;
 import Strategies.ExitStrategy;
-import com.binance.client.api.RequestOptions;
+import Utils.TimeConstants;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.*;
 import com.binance.client.api.model.trade.Order;
@@ -104,15 +104,15 @@ public class PositionHandler {
         char typeOfTime = intervalCode.charAt(intervalCode.length()-1);
         switch (typeOfTime) {
             case 'm':
-                return (long) value * Config.MINUTES_TO_MILLISECONDS_CONVERTER;
+                return (long) value * TimeConstants.MINUTES_TO_MILLISECONDS_CONVERTER;
             case 'h':
-                return (long) value * Config.HOURS_TO_MILLISECONDS_CONVERTER;
+                return (long) value * TimeConstants.HOURS_TO_MILLISECONDS_CONVERTER;
             case 'd':
-                return (long) value * Config.DAYS_TO_MILLISECONDS_CONVERTER;
+                return (long) value * TimeConstants.DAYS_TO_MILLISECONDS_CONVERTER;
             case 'w':
-                return (long) value * Config.WEEKS_TO_MILLISECONDS_CONVERTER;
+                return (long) value * TimeConstants.WEEKS_TO_MILLISECONDS_CONVERTER;
             case 'M':
-                return (long) value * Config.MONTHS_TO_MILLISECONDS_CONVERTER;
+                return (long) value * TimeConstants.MONTHS_TO_MILLISECONDS_CONVERTER;
             default:
                 return -1L;
         }

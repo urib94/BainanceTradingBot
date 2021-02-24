@@ -1,5 +1,6 @@
 package Data;
 
+import Strategies.RSIStrategies.RSIConstants;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.CandlestickInterval;
 import com.binance.client.api.model.event.CandlestickEvent;
@@ -147,7 +148,7 @@ public class RealTimeData{
         } else {
             closePriceIndicator = new ClosePriceIndicator(getAllClosedCandles());
         }
-        return new RSIIndicator(closePriceIndicator,Config.RSI_CANDLE_NUM);
+        return new RSIIndicator(closePriceIndicator, RSIConstants.RSI_CANDLE_NUM);
 
     }
 

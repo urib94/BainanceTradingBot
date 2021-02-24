@@ -33,12 +33,12 @@ public class RSIEntryStrategy implements EntryStrategy {
      */
     public PositionHandler run(RealTimeData realTimeData,String symbol) {
         if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
-            if (realTimeData.crossed(RealTimeData.CrossType.DOWN, RealTimeData.RSIType.CLOSE,Config.RSI_ENTRY_THRESHOLD_1)) {
+            if (realTimeData.crossed(RealTimeData.CrossType.DOWN, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_1)) {
                 positionInStrategy = PositionInStrategy.POSITION_TWO;
             }
             return null;
         } else if (positionInStrategy == PositionInStrategy.POSITION_TWO) {
-            if (realTimeData.crossed(RealTimeData.CrossType.UP, RealTimeData.RSIType.CLOSE,Config.RSI_ENTRY_THRESHOLD_2)) {
+            if (realTimeData.crossed(RealTimeData.CrossType.UP, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_2)) {
                 positionInStrategy = PositionInStrategy.POSITION_THREE;
             }
             return null;
@@ -49,7 +49,7 @@ public class RSIEntryStrategy implements EntryStrategy {
                 return null;
             }
             time_passed_from_position_2++;
-            if (realTimeData.crossed(RealTimeData.CrossType.UP, RealTimeData.RSIType.CLOSE,Config.RSI_ENTRY_THRESHOLD_3)) {
+            if (realTimeData.crossed(RealTimeData.CrossType.UP, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_3)) {
                 time_passed_from_position_2 = 0;
                 positionInStrategy = PositionInStrategy.POSITION_ONE;
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();

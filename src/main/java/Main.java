@@ -5,7 +5,7 @@ import Data.RequestClient;
 import Strategies.EntryStrategy;
 import Positions.PositionHandler;
 import Strategies.RSIStrategies.RSIEntryStrategy;
-import com.binance.client.api.RequestOptions;
+import Utils.TimeConstants;
 import com.binance.client.api.SubscriptionClient;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.CandlestickInterval;
@@ -41,7 +41,7 @@ public class Main {
             }
         };
         Timer timer = new Timer();
-        timer.schedule(timerTask, Config.THIRTY_MINUTES_IN_MILLISECONDS, Config.THIRTY_MINUTES_IN_MILLISECONDS);
+        timer.schedule(timerTask, TimeConstants.THIRTY_MINUTES_IN_MILLISECONDS, TimeConstants.THIRTY_MINUTES_IN_MILLISECONDS);
         subscriptionClient.subscribeUserDataEvent(listenKey, (accountBalance::updateBalance),System.out::println);
 
         subscriptionClient.subscribeCandlestickEvent("btcusdt", Config.INTERVAL, ((event) -> {
