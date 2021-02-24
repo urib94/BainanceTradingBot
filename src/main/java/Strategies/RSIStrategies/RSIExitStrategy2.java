@@ -28,6 +28,7 @@ public class RSIExitStrategy2 implements ExitStrategy {
 		} else if(positionInStrategy == PositionInStrategy.POSITION_THREE) {
 			if (realTimeData.crossed(RealTimeData.CrossType.DOWN, RealTimeData.RSIType.CLOSE,Config.RSI_EXIT_OPTION_2_UNDER_THRESHOLD2)) {
 				positionInStrategy = PositionInStrategy.POSITION_ONE;
+				System.out.println("Exiting with RSI exit strategy 2 ");
 				return Config.RSI_EXIT_OPTION_2_SELLING_PERCENTAGE2;
 			}
 		}
