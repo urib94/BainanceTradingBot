@@ -76,7 +76,6 @@ public class RealTimeData{
         realTimeData.addBar(candleDuration, closeTime, open, high, low, close, volume);
         rsiOpenIndicator = calculateRSI(RSIType.OPEN);
         rsiCloseIndicator = calculateRSI(RSIType.CLOSE);
-        System.out.println(rsiCloseIndicator.getValue(498));
     }
 
     public RSIIndicator getRsiCloseIndicator() {
@@ -144,7 +143,6 @@ public class RealTimeData{
         double rsiValue;
         if (type == RSIType.CLOSE){
             rsiValue = calculateCurrentClosedRSIValue();
-            System.out.println("here");
         }
         else{
             rsiValue = calculateCurrentOpenRSIValue();
