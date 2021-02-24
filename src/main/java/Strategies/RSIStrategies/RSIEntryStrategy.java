@@ -1,5 +1,6 @@
 package Strategies.RSIStrategies;
 
+import Data.BinanceInfo;
 import Data.Config;
 import Data.RealTimeData;
 import Data.RequestClient;
@@ -56,14 +57,14 @@ public class RSIEntryStrategy implements EntryStrategy {
 //                positionInStrategy = PositionInStrategy.POSITION_ONE;
 //                SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
 //                syncRequestClient.changeInitialLeverage(symbol,Config.LEVERAGE);
-//                String buyingQty = getBuyingQtyAsString(realTimeData);
+//                String buyingQty = getBuyingQtyAsString(realTimeData, symbol);
 //                System.out.println("buyingQty: " + buyingQty);
 //                Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
 //                        buyingQty,realTimeData.getCurrentPrice().toString(),null,null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-//                String takeProfitPrice = (realTimeData.getCurrentPrice().add((realTimeData.getCurrentPrice().multiply(BigDecimal.valueOf(1.0 / 1000))))).toString().substring(0,7);
+//                String takeProfitPrice = getTakeProfitPriceAsString(realTimeData, symbol);
 //                Order takeProfitOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.TAKE_PROFIT, TimeInForce.GTC,
 //                        buyingQty,takeProfitPrice,null,null, takeProfitPrice, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-//                String stopLossPrice = (realTimeData.getCurrentPrice().subtract(realTimeData.getCurrentPrice().multiply(BigDecimal.valueOf(1.0 / 200)))).toString().substring(0,7);
+//                String stopLossPrice = getStopLossPriceAsString(realTimeData, symbol);
 //                Order stopLossOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP, TimeInForce.GTC,
 //                        buyingQty,stopLossPrice,null,null, stopLossPrice, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
 //                return new PositionHandler(buyOrder,Config.LEVERAGE, exitStrategies);
@@ -72,8 +73,28 @@ public class RSIEntryStrategy implements EntryStrategy {
         return null;
     }
 
-    private String getBuyingQtyAsString(RealTimeData realTimeData) {
+    private String getBuyingQtyAsString(RealTimeData realTimeData, String symbol) {
         BigDecimal buyingQty = Config.BUYING_AMOUNT_REQUESTED.multiply(BigDecimal.valueOf(Config.LEVERAGE.doubleValue())).divide(realTimeData.getCurrentPrice(), MathContext.DECIMAL32);
-        return buyingQty.toString().substring(0,5);
+        return formatBuyingQty(buyingQty, symbol);
+    }
+
+    private String getTakeProfitPriceAsString(RealTimeData realTimeData, String symbol) {
+        BigDecimal takeProfitPrice = realTimeData.getCurrentPrice().add((realTimeData.getCurrentPrice().multiply(BigDecimal.valueOf(1.0 / 1000))));
+        return formatPrice(takeProfitPrice, symbol);
+    }
+
+    private String getStopLossPriceAsString(RealTimeData realTimeData, String symbol) {
+        BigDecimal stopLossPrice = realTimeData.getCurrentPrice().subtract(realTimeData.getCurrentPrice().multiply(BigDecimal.valueOf(1.0 / 200)));
+        return formatPrice(stopLossPrice, symbol);
+    }
+
+
+
+    private String formatBuyingQty(BigDecimal buyingQty, String symbol){
+        return String.format("%." + BinanceInfo.getSymbolInformation(symbol).getQuantityPrecision() + "f", buyingQty);
+    }
+
+    private String formatPrice(BigDecimal price, String symbol){
+        return String.format("%." + BinanceInfo.getSymbolInformation(symbol).getPricePrecision() + "f", price);
     }
 }

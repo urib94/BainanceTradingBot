@@ -9,9 +9,12 @@ import Utils.TimeConstants;
 import com.binance.client.api.SubscriptionClient;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.CandlestickInterval;
+import com.binance.client.api.model.market.ExchangeInfoEntry;
+import com.binance.client.api.model.market.ExchangeInformation;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
