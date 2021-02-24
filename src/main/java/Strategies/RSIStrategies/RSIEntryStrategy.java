@@ -36,6 +36,15 @@ public class RSIEntryStrategy implements EntryStrategy {
      * @return PositionEntry if purchased else return null.
      */
     public PositionHandler run(RealTimeData realTimeData,String symbol) {
+        if (realTimeData.above(RealTimeData.RSIType.CLOSE, 0)) {
+            time_passed_from_position_2 = 0;
+            positionInStrategy = PositionInStrategy.POSITION_ONE;
+            System.out.println("Inside the if!");
+            SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+            System.out.println("Buying in a second!");
+            String buyingQty = getBuyingQtyAsString(realTimeData, symbol);
+            System.out.println("returning buying quantity:"+buyingQty);
+        }
         System.out.println("position in strategy: " + positionInStrategy);
         if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
             if (realTimeData.crossed(RealTimeData.CrossType.DOWN, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_1)) {
@@ -62,9 +71,11 @@ public class RSIEntryStrategy implements EntryStrategy {
             if (realTimeData.above(RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_3)) {
                 time_passed_from_position_2 = 0;
                 positionInStrategy = PositionInStrategy.POSITION_ONE;
+                System.out.println("Inside the if!");
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+                System.out.println("Buying in a second!");
                 String buyingQty = getBuyingQtyAsString(realTimeData, symbol);
-                System.out.println("buyingQty: " + buyingQty);
+                System.out.println(buyingQty);
                 Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
                         buyingQty,realTimeData.getCurrentPrice().toString(),null,null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                 String takeProfitPrice = getTakeProfitPriceAsString(realTimeData, symbol);

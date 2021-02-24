@@ -6,6 +6,7 @@ import com.binance.client.api.model.market.ExchangeInformation;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class BinanceInfo {
@@ -17,7 +18,7 @@ public class BinanceInfo {
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         exchangeInformation = syncRequestClient.getExchangeInformation();
         for (ExchangeInfoEntry exchangeInfoEntry: exchangeInformation.getSymbols()){
-            symbolInformation.put(exchangeInfoEntry.getSymbol(), exchangeInfoEntry);
+            symbolInformation.put(exchangeInfoEntry.getSymbol().toLowerCase(), exchangeInfoEntry);
         }
     }
 
@@ -35,11 +36,12 @@ public class BinanceInfo {
     }
 
     public static String formatQty(BigDecimal buyingQty, String symbol){
-        return String.format("%." + symbolInformation.get(symbol).getQuantityPrecision() + "f", buyingQty);
+        String formatter = "%." + symbolInformation.get(symbol).getQuantityPrecision() + "f";
+        return String.format(formatter, buyingQty.doubleValue());
     }
 
     public static String formatPrice(BigDecimal price, String symbol){
-        return String.format("%." + symbolInformation.get(symbol).getPricePrecision() + "f", price);
+        return String.format("%." + symbolInformation.get(symbol).getPricePrecision() + "f", price.doubleValue());
     }
 
 }
