@@ -30,7 +30,7 @@ public class Main {
         SubscriptionClient subscriptionClient = SubscriptionClient.create(Config.API_KEY, Config.SECRET_KEY);
         String listenKey = syncRequestClient.startUserDataStream();
         ArrayList<EntryStrategy> entryStrategies = new ArrayList<>();
-        ArrayList<PositionHandler> positionEntries = new ArrayList<>();
+        ArrayList<PositionHandler> positionHandlers = new ArrayList<>();
         ReadWriteLock lock = new ReentrantReadWriteLock();
         entryStrategies.add(new RSIEntryStrategy());
         TimerTask timerTask = new TimerTask() {
@@ -42,15 +42,15 @@ public class Main {
         };
         Timer timer = new Timer();
         timer.schedule(timerTask, TimeConstants.THIRTY_MINUTES_IN_MILLISECONDS, TimeConstants.THIRTY_MINUTES_IN_MILLISECONDS);
-        subscriptionClient.subscribeUserDataEvent(listenKey, (accountBalance::updateBalance),System.out::println);
+        subscriptionClient.subscribeUserDataEvent(listenKey, (accountBalance::updateBalance),null);
 
         subscriptionClient.subscribeCandlestickEvent("btcusdt", Config.INTERVAL, ((event) -> {
             realTimeData.updateData(event);
             lock.readLock().lock();
-            for (PositionHandler positionHandler :positionEntries){
+            for (PositionHandler positionHandler :positionHandlers){
                 executorService.execute(()->{
                     positionHandler.update(Config.INTERVAL);
-                    if (positionHandler.isSoldOut()) positionEntries.remove(positionHandler);
+                    if (positionHandler.isSoldOut()) positionHandlers.remove(positionHandler);
                     else{
                         positionHandler.run(realTimeData);
                     }
@@ -62,7 +62,7 @@ public class Main {
                     PositionHandler positionHandler = entryStrategy.run(realTimeData, "btcusdt");
                     if (positionHandler != null){
                         lock.writeLock().lock();
-                        positionEntries.add(positionHandler);
+                        positionHandlers.add(positionHandler);
                         lock.writeLock().unlock();
                     }
                 });
