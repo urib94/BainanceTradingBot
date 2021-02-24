@@ -130,6 +130,7 @@ public class Position {
     @Override
     public String toString() {
         return new ToStringBuilder(this, BinanceApiConstants.TO_STRING_BUILDER_STYLE)
+                .append("positionAmt", positionAmt)
                 .append("initialMargin", initialMargin).append("maintMargin", maintMargin)
                 .append("openOrderInitialMargin", openOrderInitialMargin)
                 .append("positionInitialMargin", positionInitialMargin).append("symbol", symbol)

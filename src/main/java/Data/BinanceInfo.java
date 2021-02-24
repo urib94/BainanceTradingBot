@@ -13,13 +13,22 @@ public class BinanceInfo {
     private static ExchangeInformation exchangeInformation;
     private static Map<String, ExchangeInfoEntry> symbolInformation;
 
-    public BinanceInfo(){
+    private static class BinanceInfoHolder{
+        private static BinanceInfo binanceInfo = new BinanceInfo();
+    }
+
+    private BinanceInfo(){
         symbolInformation = new HashMap<>();
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         exchangeInformation = syncRequestClient.getExchangeInformation();
         for (ExchangeInfoEntry exchangeInfoEntry: exchangeInformation.getSymbols()){
             symbolInformation.put(exchangeInfoEntry.getSymbol().toLowerCase(), exchangeInfoEntry);
+            System.out.println(exchangeInfoEntry.getSymbol());
         }
+    }
+
+    public static BinanceInfo getBinanceInfo() {
+        return BinanceInfo.BinanceInfoHolder.binanceInfo;
     }
 
     public static ExchangeInformation getExchangeInformation(){
@@ -36,12 +45,12 @@ public class BinanceInfo {
     }
 
     public static String formatQty(BigDecimal buyingQty, String symbol){
-        String formatter = "%." + symbolInformation.get(symbol).getQuantityPrecision() + "f";
+        String formatter = "%." + symbolInformation.get(symbol).getQuantityPrecision().toString() + "f";
         return String.format(formatter, buyingQty.doubleValue());
     }
 
     public static String formatPrice(BigDecimal price, String symbol){
-        return String.format("%." + symbolInformation.get(symbol).getPricePrecision() + "f", price.doubleValue());
+        return String.format("%." + symbolInformation.get(symbol).getPricePrecision().toString() + "f", price.doubleValue());
     }
 
 }

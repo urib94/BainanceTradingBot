@@ -1,7 +1,4 @@
-import Data.AccountBalance;
-import Data.Config;
-import Data.RealTimeData;
-import Data.RequestClient;
+import Data.*;
 import Strategies.EntryStrategy;
 import Positions.PositionHandler;
 import Strategies.RSIStrategies.RSIEntryStrategy;
@@ -25,6 +22,7 @@ public class Main {
     public static void main(String[] args){
         LocalDateTime programStartTime = LocalDateTime.now();
         AccountBalance accountBalance = AccountBalance.getAccountBalance();
+        BinanceInfo binanceInfo = BinanceInfo.getBinanceInfo();
         RealTimeData realTimeData = new RealTimeData(Config.SYMBOL, CandlestickInterval.ONE_MINUTE, Config.CANDLE_NUM);
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         syncRequestClient.changeInitialLeverage(Config.SYMBOL,Config.LEVERAGE);
