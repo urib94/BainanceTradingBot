@@ -23,7 +23,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class Main {
     public static void main(String[] args){
         LocalDateTime programStartTime = LocalDateTime.now();
-        ExecutorService executorService = Executors.newFixedThreadPool(Config.THREAD_NUM);
         AccountBalance accountBalance = AccountBalance.getAccountBalance();
         RealTimeData realTimeData = new RealTimeData("btcusdt", CandlestickInterval.ONE_MINUTE, Config.CANDLE_NUM);
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
@@ -48,24 +47,20 @@ public class Main {
             realTimeData.updateData(event);
             lock.readLock().lock();
             for (PositionHandler positionHandler :positionHandlers){
-                executorService.execute(()->{
                     positionHandler.update(Config.INTERVAL);
                     if (positionHandler.isSoldOut()) positionHandlers.remove(positionHandler);
                     else{
                         positionHandler.run(realTimeData);
                     }
-                });
             }
             lock.readLock().unlock();
             for (EntryStrategy entryStrategy: entryStrategies){
-                executorService.execute(()->{
                     PositionHandler positionHandler = entryStrategy.run(realTimeData, "btcusdt");
                     if (positionHandler != null){
                         lock.writeLock().lock();
                         positionHandlers.add(positionHandler);
                         lock.writeLock().unlock();
                     }
-                });
             }
         }), System.out::print);
         //subscriptionClient.unsubscribeAll();
