@@ -45,9 +45,9 @@ public class PositionHandler {
         this.baseTime = 0L;
     }
 
-    public synchronized boolean isSoldOut(){ return isActive && (qty.compareTo(BigDecimal.ZERO) <= 0);}
+    public boolean isSoldOut(){ return isActive && (qty.compareTo(BigDecimal.ZERO) <= 0);}
 
-    public synchronized void run(RealTimeData realTimeData){
+    public void run(RealTimeData realTimeData){
         for (ExitStrategy exitStrategy: exitStrategies){
             BigDecimal sellingQtyPercentage  = exitStrategy.run(realTimeData);
             if (sellingQtyPercentage != null){
@@ -59,7 +59,7 @@ public class PositionHandler {
         }
     }
 
-    public synchronized void update(CandlestickInterval interval) {
+    public void update(CandlestickInterval interval) {
         Position position = AccountBalance.getAccountBalance().getPosition(symbol);
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         Order order = syncRequestClient.getOrder(symbol, orderID , clientOrderId);

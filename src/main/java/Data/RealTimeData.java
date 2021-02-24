@@ -69,6 +69,7 @@ public class RealTimeData{
         realTimeData.addBar(candleDuration, closeTime, open, high, low, close, volume);
         rsiOpenIndicator = calculateRSI(RSIType.OPEN);
         rsiCloseIndicator = calculateRSI(RSIType.CLOSE);
+        System.out.println(rsiCloseIndicator.getValue(498));
     }
 
     public RSIIndicator getRsiCloseIndicator() {
@@ -128,6 +129,22 @@ public class RealTimeData{
     public BigDecimal getCurrentPrice() {
         return currentPrice;
     }
+
+    public boolean above(RSIType close, int rsiEntryThreshold3) {
+        double rsiValue;
+        int lastBarIndex;
+        if (close == RSIType.CLOSE){
+            lastBarIndex = getAllClosedCandles().getEndIndex();
+            rsiValue = rsiOpenIndicator.getValue(lastBarIndex).doubleValue();
+            System.out.println("here");
+        }
+        else{
+            lastBarIndex = realTimeData.getEndIndex();
+            rsiValue = rsiCloseIndicator.getValue(lastBarIndex).doubleValue();
+        }
+        return rsiValue >= rsiEntryThreshold3;
+    }
+
 
     public enum RSIType {
         OPEN,CLOSE
