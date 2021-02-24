@@ -3,9 +3,13 @@ package Strategies.RSIStrategies;
 import Data.BinanceInfo;
 import Data.Config;
 import Data.RealTimeData;
+import Data.RequestClient;
 import Strategies.EntryStrategy;
 import Positions.PositionHandler;
 import Strategies.ExitStrategy;
+import com.binance.client.api.SyncRequestClient;
+import com.binance.client.api.model.enums.*;
+import com.binance.client.api.model.trade.Order;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -48,23 +52,23 @@ public class RSIEntryStrategy implements EntryStrategy {
                 return null;
             }
             time_passed_from_position_2++;
-//            if (realTimeData.crossed(RealTimeData.CrossType.UP, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_3)) {
-//                time_passed_from_position_2 = 0;
-//                positionInStrategy = PositionInStrategy.POSITION_ONE;
-//                SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-//                syncRequestClient.changeInitialLeverage(symbol,Config.LEVERAGE);
-//                String buyingQty = getBuyingQtyAsString(realTimeData, symbol);
-//                System.out.println("buyingQty: " + buyingQty);
-//                Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
-//                        buyingQty,realTimeData.getCurrentPrice().toString(),null,null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-//                String takeProfitPrice = getTakeProfitPriceAsString(realTimeData, symbol);
-//                Order takeProfitOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.TAKE_PROFIT, TimeInForce.GTC,
-//                        buyingQty,takeProfitPrice,null,null, takeProfitPrice, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-//                String stopLossPrice = getStopLossPriceAsString(realTimeData, symbol);
-//                Order stopLossOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP, TimeInForce.GTC,
-//                        buyingQty,stopLossPrice,null,null, stopLossPrice, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-//                return new PositionHandler(buyOrder,Config.LEVERAGE, exitStrategies);
-//            }
+            if (realTimeData.crossed(RealTimeData.CrossType.UP, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_3)) {
+                time_passed_from_position_2 = 0;
+                positionInStrategy = PositionInStrategy.POSITION_ONE;
+                SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+                syncRequestClient.changeInitialLeverage(symbol,Config.LEVERAGE);
+                String buyingQty = getBuyingQtyAsString(realTimeData, symbol);
+                System.out.println("buyingQty: " + buyingQty);
+                Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
+                        buyingQty,realTimeData.getCurrentPrice().toString(),null,null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+                String takeProfitPrice = getTakeProfitPriceAsString(realTimeData, symbol);
+                Order takeProfitOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.TAKE_PROFIT, TimeInForce.GTC,
+                        buyingQty,takeProfitPrice,null,null, takeProfitPrice, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+                String stopLossPrice = getStopLossPriceAsString(realTimeData, symbol);
+                Order stopLossOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP, TimeInForce.GTC,
+                        buyingQty,stopLossPrice,null,null, stopLossPrice, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+                return new PositionHandler(buyOrder,Config.LEVERAGE, exitStrategies);
+            }
         }
         return null;
     }

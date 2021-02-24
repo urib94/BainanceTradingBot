@@ -9,16 +9,15 @@ import Utils.TimeConstants;
 import com.binance.client.api.SubscriptionClient;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.CandlestickInterval;
-import com.binance.client.api.model.market.ExchangeInfoEntry;
-import com.binance.client.api.model.market.ExchangeInformation;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -33,7 +32,9 @@ public class Main {
         String listenKey = syncRequestClient.startUserDataStream();
         ArrayList<EntryStrategy> entryStrategies = new ArrayList<>();
         ArrayList<PositionHandler> positionHandlers = new ArrayList<>();
-        ReadWriteLock lock = new ReentrantReadWriteLock();
+        ArrayList<Future<?>> futures = new ArrayList<>();
+        ExecutorService executorService = Executors.newFixedThreadPool(Config.THREAD_NUM);
+        ReadWriteLock positionHandlersLock = new ReentrantReadWriteLock();
         entryStrategies.add(new RSIEntryStrategy());
         TimerTask timerTask = new TimerTask() {
             @Override
@@ -44,30 +45,45 @@ public class Main {
         };
         Timer timer = new Timer();
         timer.schedule(timerTask, TimeConstants.THIRTY_MINUTES_IN_MILLISECONDS, TimeConstants.THIRTY_MINUTES_IN_MILLISECONDS);
-        subscriptionClient.subscribeUserDataEvent(listenKey, (accountBalance::updateBalance),null);
-
+        subscriptionClient.subscribeUserDataEvent(listenKey, (accountBalance::updateBalance), null);
         subscriptionClient.subscribeCandlestickEvent("btcusdt", Config.INTERVAL, ((event) -> {
+            waitUntilFinished(futures);
             realTimeData.updateData(event);
-            lock.readLock().lock();
+            positionHandlersLock.readLock().lock();
             for (PositionHandler positionHandler :positionHandlers){
-                    positionHandler.update(Config.INTERVAL);
-                    if (positionHandler.isSoldOut()) positionHandlers.remove(positionHandler);
-                    else{
+                positionHandler.update(Config.INTERVAL);
+                if (positionHandler.isSoldOut()) positionHandlers.remove(positionHandler);
+                else{
+                    Future<?> future = executorService.submit(()->{
                         positionHandler.run(realTimeData);
-                    }
+                    });
+                    futures.add(future);
+                }
             }
-            lock.readLock().unlock();
+            positionHandlersLock.readLock().unlock();
             for (EntryStrategy entryStrategy: entryStrategies){
+                Future<?> future = executorService.submit(()-> {
                     PositionHandler positionHandler = entryStrategy.run(realTimeData, "btcusdt");
                     if (positionHandler != null){
-                        lock.writeLock().lock();
+                        positionHandlersLock.writeLock().lock();
                         positionHandlers.add(positionHandler);
-                        lock.writeLock().unlock();
+                        positionHandlersLock.writeLock().unlock();
                     }
+                });
+                futures.add(future);
             }
-        }), System.out::print);
+        }), null);
         //subscriptionClient.unsubscribeAll();
         //TODO: code termination;
+    }
+
+    private static void waitUntilFinished(ArrayList<Future<?>> futures){
+        for (Future<?> future: futures){
+            try{
+                future.get();
+            }catch (Exception ignored){}
+            futures.remove(future);
+        }
     }
 }
 

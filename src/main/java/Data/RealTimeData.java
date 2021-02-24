@@ -23,14 +23,12 @@ public class RealTimeData{
     private Long lastCandleOpenTime = 0L;
     //* For us, in realTimeData, the last candle is always open. The previous ones are closed.
     private BaseBarSeries realTimeData;
-    private final ReentrantReadWriteLock lock;
     private BigDecimal currentPrice;
     private RSIIndicator rsiOpenIndicator;
     private RSIIndicator rsiCloseIndicator;
 
     public RealTimeData(String symbol, CandlestickInterval interval, int amount){
         realTimeData = new BaseBarSeries();
-        lock = new ReentrantReadWriteLock();
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         List<Candlestick> candlestickBars = syncRequestClient.getCandlestick(symbol, interval, null, null, amount);
         lastCandleOpenTime = candlestickBars.get(candlestickBars.size() - 1).getOpenTime();
@@ -62,7 +60,6 @@ public class RealTimeData{
         double close = event.getClose().doubleValue();
         double volume = event.getVolume().doubleValue();
         lastCandleOpenTime = event.getStartTime();
-        lock.writeLock().lock();
         if (isNewCandle){
             realTimeData = realTimeData.getSubSeries(1, realTimeData.getEndIndex() + 1);
         }
@@ -72,40 +69,21 @@ public class RealTimeData{
         realTimeData.addBar(candleDuration, closeTime, open, high, low, close, volume);
         rsiOpenIndicator = calculateRSI(RSIType.OPEN);
         rsiCloseIndicator = calculateRSI(RSIType.CLOSE);
-        lock.writeLock().unlock();
     }
 
     public RSIIndicator getRsiCloseIndicator() {
-        try{
-            lock.readLock().lock();
-            return rsiCloseIndicator;
-        }
-        finally {
-            lock.readLock().unlock();
-        }
+        return rsiCloseIndicator;
     }
 
     public RSIIndicator getRsiOpenIndicator() {
-        try{
-            lock.readLock().lock();
-            return rsiOpenIndicator;
-        }
-        finally {
-            lock.readLock().unlock();
-        }
+        return rsiOpenIndicator;
     }
 
     public BaseBarSeries getRealTimeData(){
-        try{
-            lock.readLock().lock();
-            return realTimeData;
-        }finally {
-            lock.readLock().unlock();
-        }
+        return realTimeData;
     }
 
     public boolean crossed(CrossType crossType, RSIType rsiType, int threshold) {
-        lock.readLock().lock();
         double rsiValueNow,rsiValuePrev;
         int lastBarIndex;
         if (rsiType == RSIType.OPEN) {
@@ -118,26 +96,15 @@ public class RealTimeData{
             rsiValueNow = rsiCloseIndicator.getValue(lastBarIndex).doubleValue();
             rsiValuePrev = rsiCloseIndicator.getValue(lastBarIndex-1).doubleValue();
         }
-        lock.readLock().unlock();
         if (crossType == CrossType.UP) return rsiValueNow > threshold && rsiValuePrev <= threshold;
         return rsiValuePrev >= threshold && rsiValueNow < threshold;
     }
 
     public BaseBarSeries getAllClosedCandles() {
-        try {
-            lock.readLock().lock();
-            return realTimeData.getSubSeries(0, realTimeData.getEndIndex());
-        } finally {
-            lock.readLock().unlock();
-        }
+        return realTimeData.getSubSeries(0, realTimeData.getEndIndex());
     }
     public BaseBarSeries getLastAmountOfCandles(int amount) {
-        try {
-            lock.readLock().lock();
-            return realTimeData.getSubSeries(realTimeData.getBarCount() - amount, realTimeData.getBarCount());
-        } finally {
-            lock.readLock().unlock();
-        }
+        return realTimeData.getSubSeries(realTimeData.getBarCount() - amount, realTimeData.getBarCount());
     }
 
     private RSIIndicator calculateRSI(RSIType type) {

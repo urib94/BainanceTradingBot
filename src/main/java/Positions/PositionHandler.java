@@ -50,12 +50,12 @@ public class PositionHandler {
     public synchronized void run(RealTimeData realTimeData){
         for (ExitStrategy exitStrategy: exitStrategies){
             BigDecimal sellingQtyPercentage  = exitStrategy.run(realTimeData);
-//            if (sellingQtyPercentage != null){
-//                String sellingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingQtyPercentage), symbol);
-//                SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-//                syncRequestClient.postOrder(symbol,OrderSide.SELL, PositionSide.LONG, OrderType.LIMIT, TimeInForce.GTC,
-//                      sellingQty,realTimeData.getCurrentPrice().toString(),"true",null, null,null,NewOrderRespType.RESULT);
-//            }
+            if (sellingQtyPercentage != null){
+                String sellingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingQtyPercentage), symbol);
+                SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+                syncRequestClient.postOrder(symbol,OrderSide.SELL, PositionSide.LONG, OrderType.LIMIT, TimeInForce.GTC,
+                      sellingQty,realTimeData.getCurrentPrice().toString(),"true",null, null, null, NewOrderRespType.RESULT);
+            }
         }
     }
 
