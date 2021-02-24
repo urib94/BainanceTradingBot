@@ -8,8 +8,8 @@ public class RSIExitStrategy1 implements ExitStrategy {
 
 	public BigDecimal run(RealTimeData realTimeData) {
 		if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
-			if (realTimeData.crossed(RealTimeData.CrossType.UP, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_EXIT_OPTION_1_OVER_THRESHOLD1)
-					&& !(realTimeData.crossed(RealTimeData.CrossType.UP, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_EXIT_OPTION_2_OVER_THRESHOLD1))) {
+			if (realTimeData.above(RealTimeData.RSIType.CLOSE, RSIConstants.RSI_EXIT_OPTION_1_OVER_THRESHOLD1)
+					&& !(realTimeData.above(RealTimeData.RSIType.CLOSE, RSIConstants.RSI_EXIT_OPTION_2_OVER_THRESHOLD1))) {
 				positionInStrategy = PositionInStrategy.POSITION_TWO;
 			}
 			return null;

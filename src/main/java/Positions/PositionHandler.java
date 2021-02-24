@@ -13,33 +13,27 @@ import java.util.ArrayList;
 public class PositionHandler {
     private final String clientOrderId;
     private final Long orderID;
+    private final String stopLossClientOrderId;
+    private final Long stopLossOrderID;
+    private final String takeProfitClientOrderId;
+    private final Long takeProfitOrderID;
     private BigDecimal qty;
     private final String symbol;
-    private String side;
-    private BigDecimal purchasePrice;
     private boolean isActive;
     private String status;
-    private BigDecimal pNLPercentage;
-    private BigDecimal pNL;
-    private BigDecimal liquidationPrice;
-    private BigDecimal distanceToLiquidation;
-    private BigDecimal leverage;
     private ArrayList<ExitStrategy> exitStrategies;
     private Long baseTime;
 
-    public PositionHandler(Order order, Integer leverage, ArrayList<ExitStrategy> exitStrategies){
+    public PositionHandler(Order order,String stopLossClientOrderId, Long stopLossOrderID, String takeProfitClientOrderId, Long takeProfitOrderID, Integer leverage, ArrayList<ExitStrategy> exitStrategies){
         clientOrderId = order.getClientOrderId();
+        this.stopLossClientOrderId = stopLossClientOrderId;
+        this.stopLossOrderID = stopLossOrderID;
+        this.takeProfitClientOrderId = takeProfitClientOrderId;
+        this.takeProfitOrderID = takeProfitOrderID;
         orderID = order.getOrderId();
         qty = BigDecimal.ZERO;
         symbol = order.getSymbol();
-        side = order.getSide();
-        purchasePrice = order.getPrice();
         isActive = false;
-        pNL = BigDecimal.ZERO;
-        pNLPercentage = BigDecimal.ZERO;
-        liquidationPrice = BigDecimal.ZERO;
-        distanceToLiquidation = BigDecimal.ZERO;
-        this.leverage = new BigDecimal(leverage);
         this.exitStrategies = exitStrategies;
         status = Config.NEW;
         this.baseTime = 0L;
@@ -64,7 +58,6 @@ public class PositionHandler {
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         Order order = syncRequestClient.getOrder(symbol, orderID , clientOrderId);
         status = order.getStatus();
-        pNL = position.getUnrealizedProfit();
         qty = position.getPositionAmt();
         if (!status.equals(Config.NEW)) isActive(order,interval);
     }
@@ -111,5 +104,11 @@ public class PositionHandler {
             default:
                 return -1L;
         }
+    }
+
+    public void terminate() {
+        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+        syncRequestClient.cancelOrder(symbol, stopLossOrderID, stopLossClientOrderId);
+        syncRequestClient.cancelOrder(symbol, takeProfitOrderID, takeProfitClientOrderId);
     }
 }

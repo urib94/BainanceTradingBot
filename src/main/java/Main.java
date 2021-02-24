@@ -26,6 +26,7 @@ public class Main {
         RealTimeData realTimeData = new RealTimeData(Config.SYMBOL, CandlestickInterval.ONE_MINUTE, Config.CANDLE_NUM);
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         syncRequestClient.changeInitialLeverage(Config.SYMBOL,Config.LEVERAGE);
+        syncRequestClient.cancelAllOpenOrder(Config.SYMBOL);
         SubscriptionClient subscriptionClient = SubscriptionClient.create(Config.API_KEY, Config.SECRET_KEY);
         String listenKey = syncRequestClient.startUserDataStream();
         ArrayList<EntryStrategy> entryStrategies = new ArrayList<>();
@@ -51,7 +52,10 @@ public class Main {
             for (PositionHandler positionHandler :positionHandlers){
                 System.out.println("Checking if need to sell");
                 positionHandler.update(Config.INTERVAL);
-                if (positionHandler.isSoldOut()) positionHandlers.remove(positionHandler);
+                if (positionHandler.isSoldOut()){
+                    positionHandler.terminate();
+                    positionHandlers.remove(positionHandler);
+                }
                 else{
                     Future<?> future = executorService.submit(()->{
                         positionHandler.run(realTimeData);

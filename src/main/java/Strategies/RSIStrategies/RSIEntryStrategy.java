@@ -56,15 +56,12 @@ public class RSIEntryStrategy implements EntryStrategy {
                 return null;
             }
             if(! realTimeData.currentRSIValueEquals(RealTimeData.RSIType.CLOSE, rsiValueToCheckForPosition3)) {
-                System.out.println("rsi value changed");
                 time_passed_from_position_2 ++;
             }
             if (realTimeData.above(RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_3)) {
                 time_passed_from_position_2 = 0;
                 positionInStrategy = PositionInStrategy.POSITION_ONE;
-                System.out.println("Inside the if!");
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-                System.out.println("Buying in a second!");
                 String buyingQty = getBuyingQtyAsString(realTimeData, symbol);
                 System.out.println(buyingQty);
                 Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
@@ -75,7 +72,7 @@ public class RSIEntryStrategy implements EntryStrategy {
                 String stopLossPrice = getStopLossPriceAsString(realTimeData, symbol);
                 Order stopLossOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP, TimeInForce.GTC,
                         buyingQty,stopLossPrice,null,null, stopLossPrice, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-                return new PositionHandler(buyOrder,Config.LEVERAGE, exitStrategies);
+                return new PositionHandler(buyOrder, stopLossOrder.getClientOrderId(), stopLossOrder.getOrderId(), takeProfitOrder.getClientOrderId(),takeProfitOrder.getOrderId(), Config.LEVERAGE, exitStrategies);
             }
         }
         return null;
