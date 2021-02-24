@@ -18,10 +18,12 @@ public class RSIExitStrategy3 implements ExitStrategy {
 		double rsiDoubleValue = rsiNumValue.doubleValue();
 		if (rsiValueBefore != Double.MAX_VALUE) {
 			if (lostValueOf15(rsiValueBefore,rsiDoubleValue)) {
+				System.out.println("Exiting with RSI exit strategy 3");
 				return Config.RSI_EXIT_OPTION_3_SELLING_PERCENTAGE;
 			}
 			if (rsiValueTwoBefore != Double.MAX_VALUE) {
 				if (lostValueOf15(rsiValueTwoBefore,rsiDoubleValue)) {
+					System.out.println("Exiting with RSI exit strategy 3");
 					return Config.RSI_EXIT_OPTION_3_SELLING_PERCENTAGE;
 				}
 			}

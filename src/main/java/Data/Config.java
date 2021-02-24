@@ -29,9 +29,10 @@ public class Config {
 	public static final int RSI_EXIT_OPTION_2_UNDER_THRESHOLD1 = 70;
 	public static final int RSI_EXIT_OPTION_2_UNDER_THRESHOLD2 = 60;
 	public static final int RSI_EXIT_OPTION_4_UNDER_THRESHOLD = 30;
-	public static final BigDecimal RSI_EXIT_OPTION_1_SELLING_PERCENTAGE = new BigDecimal(50);
+	public static final BigDecimal RSI_EXIT_OPTION_1_SELLING_PERCENTAGE1 = new BigDecimal(50);
+	public static final BigDecimal RSI_EXIT_OPTION_1_SELLING_PERCENTAGE2 = new BigDecimal(100);
 	public static final BigDecimal RSI_EXIT_OPTION_2_SELLING_PERCENTAGE1 = new BigDecimal(40);
-	public static final BigDecimal RSI_EXIT_OPTION_2_SELLING_PERCENTAGE2 = new BigDecimal(60);
+	public static final BigDecimal RSI_EXIT_OPTION_2_SELLING_PERCENTAGE2 = new BigDecimal(100);
 	public static final BigDecimal RSI_EXIT_OPTION_3_SELLING_PERCENTAGE = new BigDecimal(100);
 	public static final BigDecimal RSI_EXIT_OPTION_4_SELLING_PERCENTAGE = new BigDecimal(100);
 	public static final BigDecimal BUYING_AMOUNT_REQUESTED = new BigDecimal(1/10);
