@@ -15,7 +15,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 public class RealTimeData{
@@ -49,6 +48,14 @@ public class RealTimeData{
 
     }
 
+    /**
+     * Receives the current candlestick - usually an open one.
+     * The function updateData updates realTimeData in the following way: if the candle received is closed => push to the end
+     * of realTimeData and erase the first. If the candle is open - delete the last one from realtimedata and push the new one.
+     * Calculates the RSIIndicators in either case - to get the most accurate data.
+     * to realTimeData
+     * @param event - the new Candlestick received from the subscribeCandleStickEvent.
+     */
     public void updateData(CandlestickEvent event){
         currentPrice = event.getClose();
         boolean isNewCandle = !(event.getStartTime().doubleValue() == lastCandleOpenTime);
@@ -84,6 +91,13 @@ public class RealTimeData{
         return realTimeData;
     }
 
+    /**
+     * Checks if the previous RSIIndicator of the same
+     * @param crossType up or down. Checks if the @param rsiType RSIIndicator is up (above) or down (below) the threshold.
+     * @param rsiType close or open
+     * @param threshold - the threshold to check crossing.
+     * @return
+     */
     public boolean crossed(CrossType crossType, RSIType rsiType, int threshold) {
         double rsiValueNow,rsiValuePrev;
         int lastBarIndex;
@@ -104,9 +118,6 @@ public class RealTimeData{
     public BaseBarSeries getAllClosedCandles() {
         return realTimeData.getSubSeries(0, realTimeData.getEndIndex());
     }
-    public BaseBarSeries getLastAmountOfCandles(int amount) {
-        return realTimeData.getSubSeries(realTimeData.getBarCount() - amount, realTimeData.getBarCount());
-    }
 
     private RSIIndicator calculateRSI(RSIType type) {
         ClosePriceIndicator closePriceIndicator;
@@ -119,8 +130,6 @@ public class RealTimeData{
 
     }
 
-
-
     private ZonedDateTime getZonedDateTime(Long timestamp) {
         return ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
                 ZoneId.systemDefault());
@@ -130,21 +139,39 @@ public class RealTimeData{
         return currentPrice;
     }
 
-    public boolean above(RSIType close, int rsiEntryThreshold3) {
+
+    public boolean above(RSIType type, int threshold) {
         double rsiValue;
-        int lastBarIndex;
-        if (close == RSIType.CLOSE){
-            lastBarIndex = getAllClosedCandles().getEndIndex();
-            rsiValue = rsiOpenIndicator.getValue(lastBarIndex).doubleValue();
+        if (type == RSIType.CLOSE){
+            rsiValue = calculateCurrentClosedRSIValue();
             System.out.println("here");
         }
         else{
-            lastBarIndex = realTimeData.getEndIndex();
-            rsiValue = rsiCloseIndicator.getValue(lastBarIndex).doubleValue();
+            rsiValue = calculateCurrentOpenRSIValue();
         }
-        return rsiValue >= rsiEntryThreshold3;
+        return rsiValue > threshold;
     }
 
+    public boolean currentRSIValueEquals(RSIType type, double valueToCheck) {
+        double rsiValue;
+        if (type == RSIType.CLOSE){
+            rsiValue = calculateCurrentClosedRSIValue();
+        }
+        else{
+            rsiValue = calculateCurrentOpenRSIValue();
+        }
+        return valueToCheck == rsiValue;
+    }
+
+    public double calculateCurrentClosedRSIValue() {
+        int lastBarIndex = getAllClosedCandles().getEndIndex();
+        return rsiCloseIndicator.getValue(lastBarIndex).doubleValue();
+    }
+
+    public double calculateCurrentOpenRSIValue() {
+        int lastBarIndex = realTimeData.getEndIndex();
+        return rsiOpenIndicator.getValue(lastBarIndex).doubleValue();
+    }
 
     public enum RSIType {
         OPEN,CLOSE

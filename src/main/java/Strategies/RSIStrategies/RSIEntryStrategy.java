@@ -8,8 +8,6 @@ import Strategies.EntryStrategy;
 import Positions.PositionHandler;
 import Strategies.ExitStrategy;
 import com.binance.client.api.SyncRequestClient;
-import com.binance.client.api.model.enums.*;
-import com.binance.client.api.model.trade.Order;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -19,7 +17,7 @@ public class RSIEntryStrategy implements EntryStrategy {
     private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_ONE;
     private int time_passed_from_position_2 = 0;
     private ArrayList<ExitStrategy> exitStrategies;
-    private boolean once = true;
+    double rsiValueToCheckForPosition3 = -1;
 
 
     public RSIEntryStrategy(){
@@ -43,16 +41,20 @@ public class RSIEntryStrategy implements EntryStrategy {
             return null;
         } else if (positionInStrategy == PositionInStrategy.POSITION_TWO) {
             if (realTimeData.crossed(RealTimeData.CrossType.UP, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_2)) {
+                rsiValueToCheckForPosition3 = realTimeData.calculateCurrentClosedRSIValue();
                 positionInStrategy = PositionInStrategy.POSITION_THREE;
             }
             return null;
         } else if (positionInStrategy == PositionInStrategy.POSITION_THREE) {
             if (time_passed_from_position_2 >= 2) {
                 time_passed_from_position_2 = 0;
+                rsiValueToCheckForPosition3 = -1;
                 positionInStrategy = PositionInStrategy.POSITION_TWO;
                 return null;
             }
-            time_passed_from_position_2++;
+            if(! realTimeData.currentRSIValueEquals(RealTimeData.RSIType.CLOSE, rsiValueToCheckForPosition3)) {
+                time_passed_from_position_2 ++;
+            }
             if (realTimeData.above(RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_3)) {
                 time_passed_from_position_2 = 0;
                 positionInStrategy = PositionInStrategy.POSITION_ONE;
