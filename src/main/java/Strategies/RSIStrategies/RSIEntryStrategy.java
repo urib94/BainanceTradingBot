@@ -36,15 +36,6 @@ public class RSIEntryStrategy implements EntryStrategy {
      * @return PositionEntry if purchased else return null.
      */
     public PositionHandler run(RealTimeData realTimeData,String symbol) {
-        if (realTimeData.above(RealTimeData.RSIType.CLOSE, 0)) {
-            time_passed_from_position_2 = 0;
-            positionInStrategy = PositionInStrategy.POSITION_ONE;
-            System.out.println("Inside the if!");
-            SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-            System.out.println("Buying in a second!");
-            String buyingQty = getBuyingQtyAsString(realTimeData, symbol);
-            System.out.println("returning buying quantity:"+buyingQty);
-        }
         System.out.println("position in strategy: " + positionInStrategy);
         if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
             if (realTimeData.crossed(RealTimeData.CrossType.DOWN, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_1)) {

@@ -49,6 +49,7 @@ public class Main {
             realTimeData.updateData(event);
             positionHandlersLock.readLock().lock();
             for (PositionHandler positionHandler :positionHandlers){
+                System.out.println("Checking if need to sell");
                 positionHandler.update(Config.INTERVAL);
                 if (positionHandler.isSoldOut()) positionHandlers.remove(positionHandler);
                 else{

@@ -23,7 +23,6 @@ public class BinanceInfo {
         exchangeInformation = syncRequestClient.getExchangeInformation();
         for (ExchangeInfoEntry exchangeInfoEntry: exchangeInformation.getSymbols()){
             symbolInformation.put(exchangeInfoEntry.getSymbol().toLowerCase(), exchangeInfoEntry);
-            System.out.println(exchangeInfoEntry.getSymbol());
         }
     }
 
