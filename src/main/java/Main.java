@@ -25,7 +25,6 @@ public class Main {
         BinanceInfo binanceInfo = BinanceInfo.getBinanceInfo();
         RealTimeData realTimeData = new RealTimeData(Config.SYMBOL, CandlestickInterval.ONE_MINUTE, Config.CANDLE_NUM);
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-        syncRequestClient.changeInitialLeverage(Config.SYMBOL,Config.LEVERAGE);
         syncRequestClient.cancelAllOpenOrder(Config.SYMBOL);
         SubscriptionClient subscriptionClient = SubscriptionClient.create(Config.API_KEY, Config.SECRET_KEY);
         String listenKey = syncRequestClient.startUserDataStream();
@@ -50,7 +49,6 @@ public class Main {
             realTimeData.updateData(event);
             positionHandlersLock.readLock().lock();
             for (PositionHandler positionHandler :positionHandlers){
-                System.out.println("Checking if need to sell");
                 positionHandler.update(Config.INTERVAL);
                 if (positionHandler.isSoldOut()){
                     positionHandler.terminate();
@@ -66,7 +64,7 @@ public class Main {
             positionHandlersLock.readLock().unlock();
             for (EntryStrategy entryStrategy: entryStrategies){
                 Future<?> future = executorService.submit(()-> {
-                    PositionHandler positionHandler = entryStrategy.run(realTimeData, "btcusdt");
+                    PositionHandler positionHandler = entryStrategy.run(realTimeData, Config.SYMBOL);
                     if (positionHandler != null){
                         positionHandlersLock.writeLock().lock();
                         positionHandlers.add(positionHandler);

@@ -9,6 +9,7 @@ import com.binance.client.api.model.trade.Position;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class PositionHandler {
     private final String clientOrderId;
@@ -31,32 +32,38 @@ public class PositionHandler {
         this.takeProfitClientOrderId = takeProfitClientOrderId;
         this.takeProfitOrderID = takeProfitOrderID;
         orderID = order.getOrderId();
-        qty = BigDecimal.ZERO;
-        symbol = order.getSymbol();
+        qty = null;
+        symbol = order.getSymbol().toLowerCase();
         isActive = false;
         this.exitStrategies = exitStrategies;
         status = Config.NEW;
         this.baseTime = 0L;
+
     }
 
-    public boolean isSoldOut(){ return isActive && (qty.compareTo(BigDecimal.ZERO) <= 0);}
+    public boolean isSoldOut(){ return false;}//isActive && (qty.compareTo(BigDecimal.ZERO) <= 0);}//TODO: fix
 
     public void run(RealTimeData realTimeData){
         for (ExitStrategy exitStrategy: exitStrategies){
-            BigDecimal sellingQtyPercentage  = exitStrategy.run(realTimeData);
-            if (sellingQtyPercentage != null){
+            //BigDecimal sellingQtyPercentage  = exitStrategy.run(realTimeData);
+            BigDecimal sellingQtyPercentage = BigDecimal.valueOf(100.0);//TODO: change test
+            if (sellingQtyPercentage != null && status.equals(Config.FILLED) && qty != null){
                 System.out.println("selling order: " + clientOrderId);
                 String sellingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingQtyPercentage), symbol);
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-                System.out.println(syncRequestClient.postOrder(symbol,OrderSide.SELL, PositionSide.LONG, OrderType.LIMIT, TimeInForce.GTC,
-                        sellingQty,realTimeData.getCurrentPrice().toString(),"true",null, null, null, NewOrderRespType.RESULT));
+                System.out.println("here");
+                Order sellingOrder = syncRequestClient.postOrder(symbol,OrderSide.SELL, PositionSide.SHORT, OrderType.LIMIT, TimeInForce.GTC,
+                        sellingQty,realTimeData.getCurrentPrice().toString(),null,null, null, null, NewOrderRespType.RESULT);
+                System.out.println("sold order");
+                System.out.println(sellingOrder);
             }
         }
     }
 
     public void update(CandlestickInterval interval) {
+        AccountBalance.getAccountBalance().aggresiveUpdateBalance();
         Position position = AccountBalance.getAccountBalance().getPosition(symbol);
-        System.out.println("position in update: " + position);
+        System.out.println(position);
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         Order order = syncRequestClient.getOrder(symbol, orderID , clientOrderId);
         status = order.getStatus();
@@ -82,7 +89,6 @@ public class PositionHandler {
         else {
             isActive = true;
         }
-        System.out.println("isActive: " + isActive);
     }
 
     private BigDecimal percentageOfQuantity(BigDecimal percentage) {
