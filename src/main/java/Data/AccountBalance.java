@@ -78,6 +78,8 @@ public class AccountBalance {
             positions.get(positionUpdate.getSymbol()).setPositionAmt(positionUpdate.getAmount()); //update assets
             positions.get(positionUpdate.getSymbol()).setUnrealizedProfit(positionUpdate.getUnrealizedPnl()); //update assets
         }
+        System.out.println("Account balance update, coin Balance:" + getCoinBalance("btcusdt"));
+        System.out.println("Account balance update, coin Balance:" + getCoinBalance("BTCUSDT"));
         positionsLock.writeLock().unlock();
     }
 }
