@@ -1,7 +1,7 @@
 package Positions;
 import Data.*;
 import Strategies.ExitStrategy;
-import Utils.TimeConstants;
+import Utils.Utils;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.*;
 import com.binance.client.api.model.trade.Order;
@@ -71,7 +71,7 @@ public class PositionHandler {
                 baseTime = updateTime;
             } else {
                long difference = updateTime - baseTime;
-               Long intervalInMilliSeconds = candleStickIntervalToMilliseconds(interval);
+               Long intervalInMilliSeconds = Utils.candleStickIntervalToMilliseconds(interval);
                if  (difference >= (intervalInMilliSeconds/2.0)) {
                    SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
                    syncRequestClient.cancelOrder(symbol,orderID,clientOrderId);
@@ -87,26 +87,6 @@ public class PositionHandler {
 
     private BigDecimal percentageOfQuantity(BigDecimal percentage) {
         return qty.multiply(percentage);
-    }
-
-    private Long candleStickIntervalToMilliseconds(CandlestickInterval interval) {
-        String intervalCode = interval.toString();
-        int value = Integer.parseInt(intervalCode.substring(0,intervalCode.length()-1));
-        char typeOfTime = intervalCode.charAt(intervalCode.length()-1);
-        switch (typeOfTime) {
-            case 'm':
-                return (long) value * TimeConstants.MINUTES_TO_MILLISECONDS_CONVERTER;
-            case 'h':
-                return (long) value * TimeConstants.HOURS_TO_MILLISECONDS_CONVERTER;
-            case 'd':
-                return (long) value * TimeConstants.DAYS_TO_MILLISECONDS_CONVERTER;
-            case 'w':
-                return (long) value * TimeConstants.WEEKS_TO_MILLISECONDS_CONVERTER;
-            case 'M':
-                return (long) value * TimeConstants.MONTHS_TO_MILLISECONDS_CONVERTER;
-            default:
-                return -1L;
-        }
     }
 
     public void terminate() {

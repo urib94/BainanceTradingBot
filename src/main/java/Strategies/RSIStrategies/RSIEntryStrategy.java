@@ -28,7 +28,6 @@ public class RSIEntryStrategy implements EntryStrategy {
         exitStrategies.add(new RSIExitStrategy2());
         exitStrategies.add(new RSIExitStrategy3());
         exitStrategies.add(new RSIExitStrategy4());
-
     }
     /**
      *

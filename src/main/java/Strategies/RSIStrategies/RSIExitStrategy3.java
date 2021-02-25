@@ -11,10 +11,7 @@ public class RSIExitStrategy3 implements ExitStrategy {
 	private double rsiValueBefore = Double.MAX_VALUE;
 
 	public BigDecimal run(RealTimeData realTimeData) {
-		RSIIndicator rsiIndicator = realTimeData.getRsiOpenIndicator();
-		int lastBarIndex = realTimeData.getRealTimeData().getEndIndex();
-		Num rsiNumValue = rsiIndicator.getValue(lastBarIndex);
-		double rsiDoubleValue = rsiNumValue.doubleValue();
+		double rsiDoubleValue = realTimeData.calculateCurrentOpenRSIValue();
 		if (rsiValueBefore != Double.MAX_VALUE) {
 			if (lostValueOf15(rsiValueBefore,rsiDoubleValue)) {
 				System.out.println("Exiting with RSI exit strategy 3");
@@ -31,9 +28,7 @@ public class RSIExitStrategy3 implements ExitStrategy {
 		return null;
 	}
 
-	private boolean lostValueOf15(double oldVal, double newVal) {
-		return oldVal - newVal >= 15;
-	}
+	private boolean lostValueOf15(double oldVal, double newVal) {return oldVal - newVal >= 15;}
 
 	private void updateValues(double newValue) {
 		double temp = rsiValueBefore;
