@@ -11,17 +11,20 @@ public class RSIExitStrategy2 implements ExitStrategy {
 	public BigDecimal run(RealTimeData realTimeData) {
 		if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
 			if (realTimeData.crossed(RealTimeData.CrossType.UP, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_EXIT_OPTION_2_OVER_THRESHOLD1)) {
+				System.out.println(this.getClass().getSimpleName() + "Switching to Position 2 ");
 				positionInStrategy = PositionInStrategy.POSITION_TWO;
 			}
 			return null;
 		} else if (positionInStrategy == PositionInStrategy.POSITION_TWO) {
 			if (realTimeData.crossed(RealTimeData.CrossType.DOWN, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_EXIT_OPTION_2_UNDER_THRESHOLD1)) {
+				System.out.println(this.getClass().getSimpleName() + "Switching to Position 3. Returning 40% ");
 				positionInStrategy = PositionInStrategy.POSITION_THREE;
 				return RSIConstants.RSI_EXIT_OPTION_2_SELLING_PERCENTAGE1;
 			}
 		} else if(positionInStrategy == PositionInStrategy.POSITION_THREE) {
 			if (realTimeData.crossed(RealTimeData.CrossType.DOWN, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_EXIT_OPTION_2_UNDER_THRESHOLD2)) {
 				positionInStrategy = PositionInStrategy.POSITION_ONE;
+				System.out.println(this.getClass().getSimpleName() + "Switching to Position 1. Returning 100% ");
 				System.out.println("Exiting with RSI exit strategy 2 ");
 				return RSIConstants.RSI_EXIT_OPTION_2_SELLING_PERCENTAGE2;
 			}
