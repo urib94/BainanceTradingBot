@@ -12,7 +12,7 @@ public class Config {
 	public static final String SYMBOL = "btcusdt";
 	public static final int CANDLE_NUM = 500;
 	public static final CandlestickInterval INTERVAL =  CandlestickInterval.ONE_MINUTE;
-	public static final Integer LEVERAGE = 103;
+	public static final Integer LEVERAGE = 6;
 	public static final BigDecimal BUYING_AMOUNT_REQUESTED = BigDecimal.valueOf(6.0 / 10);
 	public static final String NEW = "NEW";
 	public static final String PARTIALLY_FILLED = "PARTIALLY_FILLED";
