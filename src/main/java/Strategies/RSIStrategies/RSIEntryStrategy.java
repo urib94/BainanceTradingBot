@@ -109,7 +109,4 @@ public class RSIEntryStrategy implements EntryStrategy {
         return BinanceInfo.formatPrice(stopLossPrice, symbol);
     }
 
-
-
-
 }

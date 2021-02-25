@@ -91,7 +91,7 @@ public class RealTimeData{
     }
 
     /**
-     * Checks if the previous RSIIndicator of the same
+     * Checks if the previous RSIIndicator is above or below the threshold and the current is the opposite.
      * @param crossType up or down. Checks if the @param rsiType RSIIndicator is up (above) or down (below) the threshold.
      * @param rsiType close or open
      * @param threshold - the threshold to check crossing.
