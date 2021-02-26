@@ -48,7 +48,6 @@ public class PositionHandler {
 
     public void update(CandlestickInterval interval) {
         Position position = AccountBalance.getAccountBalance().getPosition(symbol);
-        System.out.println(position);
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         Order order = syncRequestClient.getOrder(symbol, orderID , clientOrderId);
         status = order.getStatus();
