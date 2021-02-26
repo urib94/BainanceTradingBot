@@ -24,7 +24,7 @@ public class RSIExitStrategy3 implements ExitStrategy {
 			firstTime = false;
 		} // not the first time. already ran.
 		double rsiValue = realTimeData.getRsiOpenValue();
-		if (rsiValueBefore == realTimeData.getRsiCloseValue()) {
+		if (rsiValueBefore != realTimeData.getRsiCloseValue()) {
 			updateValues(rsiValue);
 		}
 		if (lostValueOf15(rsiValueBefore,rsiValue)) {
