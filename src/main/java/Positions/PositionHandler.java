@@ -71,19 +71,12 @@ public class PositionHandler {
                 if (unrealizedProfit != null && unrealizedProfit.compareTo(BigDecimal.ZERO) <= 0){
                     //TODO: exit with stop loss;
                 }
-                else{
+                else if (unrealizedProfit != null){
                     //TODO: exit with take profit;
                 }
                 System.out.println("selling order: " + clientOrderId);
                 String sellingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingQtyPercentage), symbol);
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-                try{
-                    Order sellingOrder = syncRequestClient.postOrder(symbol,OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
-                            sellingQty,realTimeData.getCurrentPrice().toString(),null,null, null, null, NewOrderRespType.RESULT);
-                    System.out.println(sellingOrder);
-                }
-                catch (Exception e) {System.out.println("selling exception: " + e);}
-
             }
         }
     }
