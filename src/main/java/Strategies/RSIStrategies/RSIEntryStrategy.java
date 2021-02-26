@@ -7,7 +7,6 @@ import Strategies.ExitStrategy;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.*;
 import com.binance.client.api.model.trade.Order;
-import com.binance.client.api.model.trade.Position;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -63,18 +62,17 @@ public class RSIEntryStrategy implements EntryStrategy {
                 syncRequestClient.changeInitialLeverage(Config.SYMBOL,Config.LEVERAGE);
                 String buyingQty = getBuyingQtyAsString(realTimeData, symbol);
                 try{
-                    Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
-                            buyingQty,realTimeData.getCurrentPrice().toString(),null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+                    Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.MARKET, TimeInForce.GTC,
+                            buyingQty,null,null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);//TODO: check if buying with market price is ok.
                     String takeProfitPrice = getTakeProfitPriceAsString(realTimeData, symbol);
                     Order takeProfitOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.TAKE_PROFIT, TimeInForce.GTC,
                             buyingQty,takeProfitPrice,null,null, takeProfitPrice,null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-                    System.out.println("take profit");
                     String stopLossPrice = getStopLossPriceAsString(realTimeData, symbol);
                     Order stopLossOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP, TimeInForce.GTC,
                             buyingQty,stopLossPrice,null,null, stopLossPrice,null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-                    System.out.println("stop loss");
+                    System.out.println("++++++++++++++++++++Buying+++++++++++++++++++");
                     System.out.println(buyOrder);
-                    return new PositionHandler(buyOrder, takeProfitOrder.getClientOrderId(), takeProfitOrder.getOrderId(), stopLossOrder.getClientOrderId(), stopLossOrder.getOrderId(), Config.LEVERAGE, exitStrategies);
+                    return new PositionHandler(buyOrder, exitStrategies);
                 }catch (Exception e){System.out.println("exception in RSI: " + e);}
             }
         }

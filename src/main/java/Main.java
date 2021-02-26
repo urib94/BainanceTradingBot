@@ -55,7 +55,6 @@ public class Main {
                     positionHandlers.remove(positionHandler);
                 }
                 else{
-                    //Todo: check if order status is NEW
                     Future<?> future = executorService.submit(()->{
                         positionHandler.run(realTimeData);
                     });

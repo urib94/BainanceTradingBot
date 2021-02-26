@@ -20,4 +20,5 @@ public class Config {
 	public static final String CANCELED = "CANCELED";
 	public static final String EXPIRED = "EXPIRED";
 	public static final int ZERO = 0;
+	public static final String REDUCE_ONLY = "true";
 }
