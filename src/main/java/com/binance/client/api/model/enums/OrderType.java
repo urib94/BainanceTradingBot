@@ -12,7 +12,7 @@ public enum OrderType {
     STOP("STOP"),
     STOP_MARKET("STOP_MARKET"),
     TAKE_PROFIT("TAKE_PROFIT"),
-    TAKE_RPOFIT_MARKET("TAKE_RPOFIT_MARKET"),
+    TAKE_PROFIT_MARKET("TAKE_PROFIT_MARKET"),
     INVALID(null);
 
   private final String code;

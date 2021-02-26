@@ -9,7 +9,6 @@ import com.binance.client.api.model.trade.Position;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Locale;
 
 public class PositionHandler {
     private final String clientOrderId;
@@ -63,20 +62,24 @@ public class PositionHandler {
     public boolean isSoldOut(){ return false;}//isActive && (qty.compareTo(BigDecimal.ZERO) <= 0);}//TODO: fix
 
     public void run(RealTimeData realTimeData){
+        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         for (ExitStrategy exitStrategy: exitStrategies){
             //BigDecimal sellingQtyPercentage  = exitStrategy.run(realTimeData);
             BigDecimal sellingQtyPercentage = BigDecimal.valueOf(100.0);//TODO: change test
             if (sellingQtyPercentage != null && status.equals(Config.FILLED) && qty != null && !isSelling){
+                String sellingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingQtyPercentage), symbol);
                 isSelling = true;
                 if (unrealizedProfit != null && unrealizedProfit.compareTo(BigDecimal.ZERO) <= 0){
-                    //TODO: exit with stop loss;
+                   //TODO: exit with stop loss
+                    Order stopLossOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP_MARKET, TimeInForce.GTC,
+                            sellingQty,null,null,null, realTimeData.getCurrentPrice().toString(), WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                 }
                 else if (unrealizedProfit != null){
                     //TODO: exit with take profit;
+                    Order takeProfitOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.TAKE_PROFIT_MARKET, TimeInForce.GTC,
+                            sellingQty,null,null,null, realTimeData.getCurrentPrice().toString(), WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                 }
                 System.out.println("selling order: " + clientOrderId);
-                String sellingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingQtyPercentage), symbol);
-                SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             }
         }
     }
