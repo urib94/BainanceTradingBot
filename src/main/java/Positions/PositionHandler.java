@@ -38,9 +38,10 @@ public class PositionHandler {
                 if (sellingQty.equals("0.000")){
                     sellingQty = "0.001";
                 }
-                try {
+                try { //TODO: in case don't succeed selling.
                     Order sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
+                    System.out.println("Sold order: " + sellingOrder);
                 } catch (Exception e) { System.out.println(e);}
             }
         }

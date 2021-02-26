@@ -24,8 +24,7 @@ public class RealTimeData{
     //* For us, in realTimeData, the last candle is always open. The previous ones are closed.
     private BaseBarSeries realTimeData;
     private BigDecimal currentPrice;
-    private RSIIndicator rsiOpenIndicator;
-    private RSIIndicator rsiCloseIndicator;
+    private RSIIndicator rsiIndicator;
     private double rsiOpenValue;
     private double rsiCloseValue;
 
@@ -46,8 +45,7 @@ public class RealTimeData{
             double volume = candlestickBar.getVolume().doubleValue();
             realTimeData.addBar(candleDuration, closeTime, open, high, low, close, volume);
         }
-        rsiOpenIndicator = calculateRSI(RSIType.OPEN);
-        rsiCloseIndicator = calculateRSI(RSIType.CLOSE);
+        rsiIndicator = calculateRSI();
         rsiOpenValue = calculateCurrentOpenRSIValue();
         rsiCloseValue = calculateCurrentClosedRSIValue();
     }
@@ -78,18 +76,9 @@ public class RealTimeData{
             realTimeData = realTimeData.getSubSeries(0, realTimeData.getEndIndex());
         }
         realTimeData.addBar(candleDuration, closeTime, open, high, low, close, volume);
-        executorService.execute(()->{
-            rsiOpenIndicator = calculateRSI(RSIType.OPEN);
-            rsiOpenValue = calculateCurrentOpenRSIValue();
-        });
-        executorService.execute(()->{
-            rsiCloseIndicator = calculateRSI(RSIType.CLOSE);
-            rsiCloseValue = calculateCurrentClosedRSIValue();
-        });
-    }
-
-    public RSIIndicator getRsiCloseIndicator() {
-        return rsiCloseIndicator;
+        rsiIndicator = calculateRSI();
+        rsiOpenValue = calculateCurrentOpenRSIValue();
+        rsiCloseValue = calculateCurrentClosedRSIValue();
     }
 
     public double getRsiOpenValue() {
@@ -100,6 +89,7 @@ public class RealTimeData{
         return rsiCloseValue;
     }
 
+    public RSIIndicator getRsiIndicator() {return rsiIndicator;}
     /**
      * Checks if the previous RSIIndicator is above or below the threshold and the current is the opposite.
      * @param crossType up or down. Checks if the @param rsiType RSIIndicator is up (above) or down (below) the threshold.
@@ -109,32 +99,20 @@ public class RealTimeData{
      */
     public boolean crossed(CrossType crossType, RSIType rsiType, int threshold) {
         double rsiValueNow,rsiValuePrev;
-        int lastBarIndex;
         if (rsiType == RSIType.OPEN) {
-            lastBarIndex = realTimeData.getEndIndex();
-            rsiValueNow = rsiOpenIndicator.getValue(lastBarIndex).doubleValue();
-            rsiValuePrev = rsiOpenIndicator.getValue(lastBarIndex-1).doubleValue();
+            rsiValueNow = rsiOpenValue;
+            rsiValuePrev = rsiCloseValue;
         }
-        else { // type == close
-            lastBarIndex = getAllClosedCandles().getEndIndex();
-            rsiValueNow = rsiCloseIndicator.getValue(lastBarIndex).doubleValue();
-            rsiValuePrev = rsiCloseIndicator.getValue(lastBarIndex-1).doubleValue();
+        else {
+            rsiValueNow = rsiCloseValue;
+            rsiValuePrev = rsiIndicator.getValue(realTimeData.getEndIndex()-2).doubleValue();
         }
         if (crossType == CrossType.UP) return rsiValueNow > threshold && rsiValuePrev <= threshold;
         return rsiValuePrev >= threshold && rsiValueNow < threshold;
     }
 
-    public BaseBarSeries getAllClosedCandles() {
-        return realTimeData.getSubSeries(0, realTimeData.getEndIndex());
-    }
-
-    private RSIIndicator calculateRSI(RSIType type) {
-        ClosePriceIndicator closePriceIndicator;
-        if (type == RSIType.OPEN) {
-            closePriceIndicator = new ClosePriceIndicator(realTimeData);
-        } else {
-            closePriceIndicator = new ClosePriceIndicator(getAllClosedCandles());
-        }
+    private RSIIndicator calculateRSI() {
+        ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(realTimeData);
         return new RSIIndicator(closePriceIndicator, RSIConstants.RSI_CANDLE_NUM);
 
     }
@@ -150,35 +128,21 @@ public class RealTimeData{
 
 
     public boolean above(RSIType type, int threshold) {
-        double rsiValue;
-        if (type == RSIType.CLOSE){
-            rsiValue = getRsiCloseValue();
+        if (type == RSIType.OPEN){
+            return rsiOpenValue > threshold;
         }
         else{
-            rsiValue = getRsiOpenValue();
+            return rsiCloseValue > threshold;
         }
-        return rsiValue > threshold;
     }
 
-    public boolean currentRSIValueEquals(RSIType type, double valueToCheck) {
-        double rsiValue;
-        if (type == RSIType.CLOSE){
-            rsiValue = getRsiCloseValue();
-        }
-        else{
-            rsiValue = getRsiOpenValue();
-        }
-        return valueToCheck == rsiValue;
-    }
 
     private double calculateCurrentClosedRSIValue() {
-        int lastBarIndex = getAllClosedCandles().getEndIndex();
-        return rsiCloseIndicator.getValue(lastBarIndex).doubleValue();
+       return rsiIndicator.getValue(realTimeData.getEndIndex()-1).doubleValue();
     }
 
     private double calculateCurrentOpenRSIValue() {
-        int lastBarIndex = realTimeData.getEndIndex();
-        return rsiOpenIndicator.getValue(lastBarIndex).doubleValue();
+        return rsiIndicator.getValue(realTimeData.getEndIndex()).doubleValue();
     }
 
     public enum RSIType {

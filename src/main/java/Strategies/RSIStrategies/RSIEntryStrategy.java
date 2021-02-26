@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import static java.lang.Thread.sleep;
 
 public class RSIEntryStrategy implements EntryStrategy {
-    private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_ONE;
+    private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_THREE; //TODO: FIX !
     private int time_passed_from_position_2 = 0;
     private ArrayList<ExitStrategy> exitStrategies;
     double rsiValueToCheckForPosition3 = -1;
@@ -37,9 +37,6 @@ public class RSIEntryStrategy implements EntryStrategy {
         //TODO: test
         System.out.println("open: " + realTimeData.getRsiOpenValue());
         System.out.println("close: " + realTimeData.getRsiCloseValue());
-        for (ExitStrategy exitStrategy : exitStrategies) {
-            exitStrategy.run(realTimeData);
-        }
         if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
             if (realTimeData.crossed(RealTimeData.CrossType.DOWN, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_1)) {
                 positionInStrategy = PositionInStrategy.POSITION_TWO;
@@ -58,11 +55,10 @@ public class RSIEntryStrategy implements EntryStrategy {
                 positionInStrategy = PositionInStrategy.POSITION_TWO;
                 return null;
             }
-            if(! realTimeData.currentRSIValueEquals(RealTimeData.RSIType.CLOSE, rsiValueToCheckForPosition3)) {
+            if(rsiValueToCheckForPosition3 != realTimeData.getRsiCloseValue()) {
                 time_passed_from_position_2 ++;
             }
             if (realTimeData.above(RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_3)) { //TODO:fix
-
                 time_passed_from_position_2 = 0;
                 positionInStrategy = PositionInStrategy.POSITION_ONE;
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
