@@ -6,18 +6,25 @@ import org.ta4j.core.num.Num;
 
 import java.math.BigDecimal;
 
+
 public class RSIExitStrategy3 implements ExitStrategy {
 	private double rsiValueTwoBefore;
 	private double rsiValueBefore;
 	private boolean firstTime = true;
+
+	/**
+	 * Checks if the current open RSI Indicator value is below 15 than the previous closed one or the previous previous closed one.
+	 * @param realTimeData
+	 * @return the percentage of quantity to sell, null otherwise.
+	 */
 	public BigDecimal run(RealTimeData realTimeData) {
 		if (firstTime) {
-			rsiValueBefore = realTimeData.calculateCurrentClosedRSIValue(); // last closed candle
+			rsiValueBefore = realTimeData.getRsiCloseValue(); // last closed candle
 			rsiValueTwoBefore = -1; // second to last closed candle
 			firstTime = false;
 		} // not the first time. already ran.
-		double rsiValue = realTimeData.calculateCurrentOpenRSIValue();
-		if (rsiValueBefore == realTimeData.calculateCurrentClosedRSIValue()) {
+		double rsiValue = realTimeData.getRsiOpenValue();
+		if (rsiValueBefore == realTimeData.getRsiCloseValue()) {
 			updateValues(rsiValue);
 		}
 		if (lostValueOf15(rsiValueBefore,rsiValue)) {

@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import static java.lang.Thread.sleep;
 
 public class RSIEntryStrategy implements EntryStrategy {
-    private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_ONE;
+    private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_THREE; //TODO: Change to POSITION ONE
     private int time_passed_from_position_2 = 0;
     private ArrayList<ExitStrategy> exitStrategies;
     double rsiValueToCheckForPosition3 = -1;
@@ -41,7 +41,7 @@ public class RSIEntryStrategy implements EntryStrategy {
             return null;
         } else if (positionInStrategy == PositionInStrategy.POSITION_TWO) {
             if (realTimeData.crossed(RealTimeData.CrossType.UP, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_2)) {
-                rsiValueToCheckForPosition3 = realTimeData.calculateCurrentClosedRSIValue();
+                rsiValueToCheckForPosition3 = realTimeData.getRsiCloseValue();
                 positionInStrategy = PositionInStrategy.POSITION_THREE;
             }
             return null;
@@ -62,7 +62,7 @@ public class RSIEntryStrategy implements EntryStrategy {
                 syncRequestClient.changeInitialLeverage(Config.SYMBOL,Config.LEVERAGE);
                 String buyingQty = getBuyingQtyAsString(realTimeData, symbol);
                 try{
-                    Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.MARKET, TimeInForce.GTC,
+                    Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.MARKET, null,
                             buyingQty,null,null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);//TODO: check if buying with market price is ok.
                     String takeProfitPrice = getTakeProfitPriceAsString(realTimeData, symbol);
                     Order takeProfitOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.TAKE_PROFIT, TimeInForce.GTC,
@@ -70,8 +70,7 @@ public class RSIEntryStrategy implements EntryStrategy {
                     String stopLossPrice = getStopLossPriceAsString(realTimeData, symbol);
                     Order stopLossOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP, TimeInForce.GTC,
                             buyingQty,stopLossPrice,null,null, stopLossPrice,null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-                    System.out.println("++++++++++++++++++++Buying+++++++++++++++++++");
-                    System.out.println(buyOrder);
+                    System.out.println("\n\n++++++++++++++++++++Buying+++++++++++++++++++");
                     return new PositionHandler(buyOrder, exitStrategies);
                 }catch (Exception e){System.out.println("exception in RSI: " + e);}
             }

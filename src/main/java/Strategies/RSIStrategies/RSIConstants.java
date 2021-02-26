@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 public class RSIConstants {
 
 	public static final int RSI_EXIT_OPTION_1_OVER_THRESHOLD1 = 65;
-	public static final int RSI_EXIT_OPTION_1_UNDER_THRESHOLD1 = 65;
+	public static final int RSI_EXIT_OPTION_1_UNDER_THRESHOLD1 = 60;
 	public static final int RSI_EXIT_OPTION_1_UNDER_THRESHOLD2 = 50;
 	public static final int RSI_EXIT_OPTION_2_OVER_THRESHOLD1 = 73;
 	public static final int RSI_EXIT_OPTION_2_UNDER_THRESHOLD1 = 70;

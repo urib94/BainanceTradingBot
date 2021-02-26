@@ -8,6 +8,11 @@ import java.math.BigDecimal;
 public class RSIExitStrategy2 implements ExitStrategy {
 	private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_ONE;
 
+	/**
+	 * Checks if the current close of RSIIndicator value is above 73, and then below 70 and then below 60.
+	 * @param realTimeData
+	 * @return the percentage of quantity to sell, null otherwise.
+	 */
 	public BigDecimal run(RealTimeData realTimeData) {
 		if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
 			if (realTimeData.above(RealTimeData.RSIType.CLOSE, RSIConstants.RSI_EXIT_OPTION_2_OVER_THRESHOLD1)) {

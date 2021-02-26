@@ -71,7 +71,7 @@ public class PositionHandler {
                }
             }
         }
-        else {
+        else { // FULL. since in NEW we don't go in the function.
             isActive = true;
         }
     }

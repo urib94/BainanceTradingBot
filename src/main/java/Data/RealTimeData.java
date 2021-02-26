@@ -25,6 +25,8 @@ public class RealTimeData{
     private BigDecimal currentPrice;
     private RSIIndicator rsiOpenIndicator;
     private RSIIndicator rsiCloseIndicator;
+    private double rsiOpenValue;
+    private double rsiCloseValue;
 
     public RealTimeData(String symbol, CandlestickInterval interval, int amount){
         realTimeData = new BaseBarSeries();
@@ -45,7 +47,8 @@ public class RealTimeData{
         }
         rsiOpenIndicator = calculateRSI(RSIType.OPEN);
         rsiCloseIndicator = calculateRSI(RSIType.CLOSE);
-
+        rsiOpenValue = calculateCurrentOpenRSIValue();
+        rsiCloseValue = calculateCurrentClosedRSIValue();
     }
 
     /**
@@ -76,18 +79,20 @@ public class RealTimeData{
         realTimeData.addBar(candleDuration, closeTime, open, high, low, close, volume);
         rsiOpenIndicator = calculateRSI(RSIType.OPEN);
         rsiCloseIndicator = calculateRSI(RSIType.CLOSE);
+        rsiOpenValue = calculateCurrentOpenRSIValue();
+        rsiCloseValue = calculateCurrentClosedRSIValue();
     }
 
     public RSIIndicator getRsiCloseIndicator() {
         return rsiCloseIndicator;
     }
 
-    public RSIIndicator getRsiOpenIndicator() {
-        return rsiOpenIndicator;
+    public double getRsiOpenValue() {
+        return rsiOpenValue;
     }
 
-    public BaseBarSeries getRealTimeData(){
-        return realTimeData;
+    public double getRsiCloseValue() {
+        return rsiCloseValue;
     }
 
     /**
@@ -142,10 +147,10 @@ public class RealTimeData{
     public boolean above(RSIType type, int threshold) {
         double rsiValue;
         if (type == RSIType.CLOSE){
-            rsiValue = calculateCurrentClosedRSIValue();
+            rsiValue = getRsiCloseValue();
         }
         else{
-            rsiValue = calculateCurrentOpenRSIValue();
+            rsiValue = getRsiOpenValue();
         }
         return rsiValue > threshold;
     }
@@ -153,20 +158,20 @@ public class RealTimeData{
     public boolean currentRSIValueEquals(RSIType type, double valueToCheck) {
         double rsiValue;
         if (type == RSIType.CLOSE){
-            rsiValue = calculateCurrentClosedRSIValue();
+            rsiValue = getRsiCloseValue();
         }
         else{
-            rsiValue = calculateCurrentOpenRSIValue();
+            rsiValue = getRsiOpenValue();
         }
         return valueToCheck == rsiValue;
     }
 
-    public double calculateCurrentClosedRSIValue() {
+    private double calculateCurrentClosedRSIValue() {
         int lastBarIndex = getAllClosedCandles().getEndIndex();
         return rsiCloseIndicator.getValue(lastBarIndex).doubleValue();
     }
 
-    public double calculateCurrentOpenRSIValue() {
+    private double calculateCurrentOpenRSIValue() {
         int lastBarIndex = realTimeData.getEndIndex();
         return rsiOpenIndicator.getValue(lastBarIndex).doubleValue();
     }
