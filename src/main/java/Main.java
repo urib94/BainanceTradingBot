@@ -47,6 +47,7 @@ public class Main {
         subscriptionClient.subscribeCandlestickEvent(Config.SYMBOL, Config.INTERVAL, ((event) -> {
             waitUntilFinished(futures);
             realTimeData.updateData(event);
+            AccountBalance.getAccountBalance().aggresiveUpdateBalance();
             positionHandlersLock.readLock().lock();
             for (PositionHandler positionHandler :positionHandlers){
                 positionHandler.update(Config.INTERVAL);

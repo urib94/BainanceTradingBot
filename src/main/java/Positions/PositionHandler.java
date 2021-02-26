@@ -24,8 +24,12 @@ public class PositionHandler {
     private String status;
     private ArrayList<ExitStrategy> exitStrategies;
     private Long baseTime;
+    private boolean isSelling = false;
+    private BigDecimal unrealizedProfit = null;
 
-    public PositionHandler(Order order,String stopLossClientOrderId, Long stopLossOrderID, String takeProfitClientOrderId, Long takeProfitOrderID, Integer leverage, ArrayList<ExitStrategy> exitStrategies){
+
+
+    public PositionHandler(Order order, Integer leverage, ArrayList<ExitStrategy> exitStrategies){
         clientOrderId = order.getClientOrderId();
         this.stopLossClientOrderId = stopLossClientOrderId;
         this.stopLossOrderID = stopLossOrderID;
@@ -41,21 +45,45 @@ public class PositionHandler {
 
     }
 
+    public PositionHandler(BigDecimal qty, String clientOrderId, ArrayList<ExitStrategy> exitStrategies){
+        symbol = Config.SYMBOL;
+        this.qty = qty;
+        this.clientOrderId = clientOrderId;
+        this.stopLossClientOrderId = null;
+        this.stopLossOrderID = null;
+        this.takeProfitClientOrderId = null;
+        this.takeProfitOrderID = null;
+        orderID = null;
+        isActive = false;
+        this.exitStrategies = exitStrategies;
+        status = Config.NEW;
+        this.baseTime = 0L;
+    }
+
     public boolean isSoldOut(){ return false;}//isActive && (qty.compareTo(BigDecimal.ZERO) <= 0);}//TODO: fix
 
     public void run(RealTimeData realTimeData){
         for (ExitStrategy exitStrategy: exitStrategies){
             //BigDecimal sellingQtyPercentage  = exitStrategy.run(realTimeData);
             BigDecimal sellingQtyPercentage = BigDecimal.valueOf(100.0);//TODO: change test
-            if (sellingQtyPercentage != null && status.equals(Config.FILLED) && qty != null){
+            if (sellingQtyPercentage != null && status.equals(Config.FILLED) && qty != null && !isSelling){
+                isSelling = true;
+                if (unrealizedProfit != null && unrealizedProfit.compareTo(BigDecimal.ZERO) <= 0){
+                    //TODO: exit with stop loss;
+                }
+                else{
+                    //TODO: exit with take profit;
+                }
                 System.out.println("selling order: " + clientOrderId);
                 String sellingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingQtyPercentage), symbol);
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-                System.out.println("here");
-                Order sellingOrder = syncRequestClient.postOrder(symbol,OrderSide.SELL, PositionSide.SHORT, OrderType.LIMIT, TimeInForce.GTC,
-                        sellingQty,realTimeData.getCurrentPrice().toString(),null,null, null, null, NewOrderRespType.RESULT);
-                System.out.println("sold order");
-                System.out.println(sellingOrder);
+                try{
+                    Order sellingOrder = syncRequestClient.postOrder(symbol,OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
+                            sellingQty,realTimeData.getCurrentPrice().toString(),null,null, null, null, NewOrderRespType.RESULT);
+                    System.out.println(sellingOrder);
+                }
+                catch (Exception e) {System.out.println("selling exception: " + e);}
+
             }
         }
     }
@@ -68,6 +96,7 @@ public class PositionHandler {
         Order order = syncRequestClient.getOrder(symbol, orderID , clientOrderId);
         status = order.getStatus();
         qty = position.getPositionAmt();
+        unrealizedProfit = position.getUnrealizedProfit();
         if (!status.equals(Config.NEW)) isActive(order,interval);
     }
 
@@ -93,12 +122,5 @@ public class PositionHandler {
 
     private BigDecimal percentageOfQuantity(BigDecimal percentage) {
         return qty.multiply(percentage);
-    }
-
-    public void terminate() {
-        System.out.println("terminating: stopLoss: " + stopLossClientOrderId + "takeProfit: " + takeProfitClientOrderId);
-        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-        syncRequestClient.cancelOrder(symbol, stopLossOrderID, stopLossClientOrderId);
-        syncRequestClient.cancelOrder(symbol, takeProfitOrderID, takeProfitClientOrderId);
     }
 }
