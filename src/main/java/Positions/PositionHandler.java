@@ -65,36 +65,41 @@ public class PositionHandler {
         for (ExitStrategy exitStrategy: exitStrategies){
             //BigDecimal sellingQtyPercentage  = exitStrategy.run(realTimeData);
             BigDecimal sellingQtyPercentage = BigDecimal.valueOf(100.0);//TODO: change test
-            if (sellingQtyPercentage != null && status.equals(Config.FILLED) && qty != null && qty.compareTo(BigDecimal.valueOf(0.0)) <= 0){
+            //if (sellingQtyPercentage != null && status.equals(Config.FILLED) && qty != null && qty.compareTo(BigDecimal.valueOf(0.0)) <= 0){
                 String sellingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingQtyPercentage), symbol);
 
                 try{
                     if (unrealizedProfit != null && unrealizedProfit.compareTo(BigDecimal.valueOf(0.0)) < 0){
-                        System.out.println("here1");
-                        Order stopLossOrder1 = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP_MARKET, TimeInForce.GTC,
-                                null,null,null,null, realTimeData.getCurrentPrice().subtract(BigDecimal.valueOf(100.0)).toString(),"true", null, NewOrderRespType.RESULT);
-                        Order stopLossOrder2 = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP_MARKET, TimeInForce.GTC,
-                                null,null,null,null, realTimeData.getCurrentPrice().subtract(BigDecimal.valueOf(10.0)).toString(),"true", null, NewOrderRespType.RESULT);
-                        Order stopLossOrder3 = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP_MARKET, TimeInForce.GTC,
-                                null,null,null,null, realTimeData.getCurrentPrice().subtract(BigDecimal.valueOf(1.0)).toString(),"true", null, NewOrderRespType.RESULT);
-                        Order stopLossOrder4 = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP_MARKET, TimeInForce.GTC,
-                                null,null,null,null, realTimeData.getCurrentPrice().toString(),"true", null, NewOrderRespType.RESULT);
+//                        System.out.println("here1");
+                        Order stopLossOrder1 = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
+                                sellingQty,realTimeData.getCurrentPrice().toString(),"true",null, null,null, null, NewOrderRespType.RESULT);
+
+//                        Order stopLossOrder1 = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP_MARKET, TimeInForce.GTC,
+//                                null,null,null,null, realTimeData.getCurrentPrice().subtract(BigDecimal.valueOf(100.0)).toString(),"true", null, NewOrderRespType.RESULT);
+//                        Order stopLossOrder2 = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP_MARKET, TimeInForce.GTC,
+//                                null,null,null,null, realTimeData.getCurrentPrice().subtract(BigDecimal.valueOf(10.0)).toString(),"true", null, NewOrderRespType.RESULT);
+//                        Order stopLossOrder3 = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP_MARKET, TimeInForce.GTC,
+//                                null,null,null,null, realTimeData.getCurrentPrice().subtract(BigDecimal.valueOf(1.0)).toString(),"true", null, NewOrderRespType.RESULT);
+//                        Order stopLossOrder4 = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP_MARKET, TimeInForce.GTC,
+//                                null,null,null,null, realTimeData.getCurrentPrice().toString(),"true", null, NewOrderRespType.RESULT);
                     }
                     else if (unrealizedProfit != null && unrealizedProfit.compareTo(BigDecimal.valueOf(0.0)) > 0){
                         System.out.println("here2");
-                        Order takeProfitOrder1 = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.TAKE_PROFIT_MARKET, TimeInForce.GTC,
-                                null,null,null,null, realTimeData.getCurrentPrice().add(BigDecimal.valueOf(100.0)).toString() ,"true", null, NewOrderRespType.RESULT);
-                        Order takeProfitOrder2 = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.TAKE_PROFIT_MARKET, TimeInForce.GTC,
-                                null,null,null,null, realTimeData.getCurrentPrice().add(BigDecimal.valueOf(10.0)).toString() ,"true", null, NewOrderRespType.RESULT);
-                        Order takeProfitOrder3 = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.TAKE_PROFIT_MARKET, TimeInForce.GTC,
-                                null,null,null,null, realTimeData.getCurrentPrice().add(BigDecimal.valueOf(1.0)).toString() ,"true", null, NewOrderRespType.RESULT);
-                        Order takeProfitOrder4 = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.TAKE_PROFIT_MARKET, TimeInForce.GTC,
-                                null,null,null,null, realTimeData.getCurrentPrice().toString() ,"true", null, NewOrderRespType.RESULT);
+                        Order stopLossOrder1 = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
+                                sellingQty,realTimeData.getCurrentPrice().toString(),"true",null, null,null, null, NewOrderRespType.RESULT);
+//                        Order takeProfitOrder1 = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.TAKE_PROFIT_MARKET, TimeInForce.GTC,
+//                                null,null,null,null, realTimeData.getCurrentPrice().add(BigDecimal.valueOf(100.0)).toString() ,"true", null, NewOrderRespType.RESULT);
+//                        Order takeProfitOrder2 = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.TAKE_PROFIT_MARKET, TimeInForce.GTC,
+//                                null,null,null,null, realTimeData.getCurrentPrice().add(BigDecimal.valueOf(10.0)).toString() ,"true", null, NewOrderRespType.RESULT);
+//                        Order takeProfitOrder3 = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.TAKE_PROFIT_MARKET, TimeInForce.GTC,
+//                                null,null,null,null, realTimeData.getCurrentPrice().add(BigDecimal.valueOf(1.0)).toString() ,"true", null, NewOrderRespType.RESULT);
+//                        Order takeProfitOrder4 = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.TAKE_PROFIT_MARKET, TimeInForce.GTC,
+//                                null,null,null,null, realTimeData.getCurrentPrice().toString() ,"true", null, NewOrderRespType.RESULT);
                     }
                 }catch (Exception e){
                     System.out.println(e);
                 }
-            }
+           // }
         }
     }
 
