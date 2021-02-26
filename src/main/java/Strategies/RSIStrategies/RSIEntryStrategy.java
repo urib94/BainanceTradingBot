@@ -13,6 +13,8 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
 
+import static java.lang.Thread.sleep;
+
 public class RSIEntryStrategy implements EntryStrategy {
     private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_ONE;
     private int time_passed_from_position_2 = 0;
@@ -41,21 +43,21 @@ public class RSIEntryStrategy implements EntryStrategy {
             syncRequestClient.cancelAllOpenOrder(Config.SYMBOL);
             System.out.println("canceled orders ");
             once = false;
-
             String buyingQty = getBuyingQtyAsString(realTimeData, symbol);
             try{
                 Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
-                    buyingQty,realTimeData.getCurrentPrice().toString(),null,null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+                    buyingQty,realTimeData.getCurrentPrice().toString(),null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                 String takeProfitPrice = getTakeProfitPriceAsString(realTimeData, symbol);
                 Order takeProfitOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.TAKE_PROFIT, TimeInForce.GTC,
-                        buyingQty,takeProfitPrice,null,null, takeProfitPrice, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+                        buyingQty,takeProfitPrice,null,null, takeProfitPrice,null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                 System.out.println("take profit");
                 String stopLossPrice = getStopLossPriceAsString(realTimeData, symbol);
                 Order stopLossOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP, TimeInForce.GTC,
-                        buyingQty,stopLossPrice,null,null, stopLossPrice, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+                        buyingQty,stopLossPrice,null,null, stopLossPrice,null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                 System.out.println("stop loss");
                 System.out.println(buyOrder);
-                return new PositionHandler(buyOrder, Config.LEVERAGE, exitStrategies);
+                return new PositionHandler(buyOrder, null, null, null, null, Config.LEVERAGE, exitStrategies);
+                //return new PositionHandler(buyOrder, takeProfitOrder.getClientOrderId(), takeProfitOrder.getOrderId(), stopLossOrder.getClientOrderId(), stopLossOrder.getOrderId(), Config.LEVERAGE, exitStrategies);
             }catch (Exception e){
                 System.out.println("exception in RSI: " + e);
             }

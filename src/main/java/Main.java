@@ -43,7 +43,6 @@ public class Main {
         };
         Timer timer = new Timer();
         timer.schedule(timerTask, TimeConstants.THIRTY_MINUTES_IN_MILLISECONDS, TimeConstants.THIRTY_MINUTES_IN_MILLISECONDS);
-        subscriptionClient.subscribeUserDataEvent(listenKey, (accountBalance::updateBalance), null);
         subscriptionClient.subscribeCandlestickEvent(Config.SYMBOL, Config.INTERVAL, ((event) -> {
             waitUntilFinished(futures);
             realTimeData.updateData(event);

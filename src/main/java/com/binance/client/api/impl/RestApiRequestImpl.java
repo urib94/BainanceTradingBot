@@ -607,7 +607,7 @@ class RestApiRequestImpl {
 
     RestApiRequest<Order> postOrder(String symbol, OrderSide side, PositionSide positionSide, OrderType orderType,
             TimeInForce timeInForce, String quantity, String price, String reduceOnly,
-            String newClientOrderId, String stopPrice, WorkingType workingType, NewOrderRespType newOrderRespType) {
+            String newClientOrderId, String stopPrice, String closePosition, WorkingType workingType, NewOrderRespType newOrderRespType) {
         RestApiRequest<Order> request = new RestApiRequest<>();
         UrlParamsBuilder builder = UrlParamsBuilder.build()
                 .putToUrl("symbol", symbol)
@@ -621,6 +621,7 @@ class RestApiRequestImpl {
                 .putToUrl("newClientOrderId", newClientOrderId)
                 .putToUrl("stopPrice", stopPrice)
                 .putToUrl("workingType", workingType)
+                .putToUrl("closePosition", closePosition)
                 .putToUrl("newOrderRespType", newOrderRespType);
 
         request.request = createRequestByPostWithSignature("/fapi/v1/order", builder);
