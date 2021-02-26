@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 
 public class RealTimeData{
@@ -59,7 +60,7 @@ public class RealTimeData{
      * to realTimeData
      * @param event - the new Candlestick received from the subscribeCandleStickEvent.
      */
-    public void updateData(CandlestickEvent event){
+    public void updateData(CandlestickEvent event, ExecutorService executorService){
         currentPrice = event.getClose();
         boolean isNewCandle = !(event.getStartTime().doubleValue() == lastCandleOpenTime);
         ZonedDateTime closeTime = getZonedDateTime(event.getCloseTime());
@@ -77,10 +78,14 @@ public class RealTimeData{
             realTimeData = realTimeData.getSubSeries(0, realTimeData.getEndIndex());
         }
         realTimeData.addBar(candleDuration, closeTime, open, high, low, close, volume);
-        rsiOpenIndicator = calculateRSI(RSIType.OPEN);
-        rsiCloseIndicator = calculateRSI(RSIType.CLOSE);
-        rsiOpenValue = calculateCurrentOpenRSIValue();
-        rsiCloseValue = calculateCurrentClosedRSIValue();
+        executorService.execute(()->{
+            rsiOpenIndicator = calculateRSI(RSIType.OPEN);
+            rsiOpenValue = calculateCurrentOpenRSIValue();
+        });
+        executorService.execute(()->{
+            rsiCloseIndicator = calculateRSI(RSIType.CLOSE);
+            rsiCloseValue = calculateCurrentClosedRSIValue();
+        });
     }
 
     public RSIIndicator getRsiCloseIndicator() {

@@ -45,7 +45,7 @@ public class Main {
         timer.schedule(timerTask, TimeConstants.THIRTY_MINUTES_IN_MILLISECONDS, TimeConstants.THIRTY_MINUTES_IN_MILLISECONDS);
         subscriptionClient.subscribeCandlestickEvent(Config.SYMBOL, Config.INTERVAL, ((event) -> {
             waitUntilFinished(futures);
-            realTimeData.updateData(event);
+            realTimeData.updateData(event, executorService);
             AccountBalance.getAccountBalance().aggresiveUpdateBalance();
             positionHandlersLock.readLock().lock();
             for (PositionHandler positionHandler :positionHandlers){
