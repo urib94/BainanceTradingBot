@@ -24,8 +24,9 @@ public class RSIExitStrategy3 implements ExitStrategy {
 			firstTime = false;
 		} // not the first time. already ran.
 		double rsiValue = realTimeData.getRsiOpenValue();
+		System.out.println("two before: " + rsiValueTwoBefore + "before: " + rsiValueBefore + "||| now: " + rsiValue);
 		if (rsiValueBefore != realTimeData.getRsiCloseValue()) {
-			updateValues(rsiValue);
+			updateValues(realTimeData.getRsiCloseValue());
 		}
 		if (lostValueOf15(rsiValueBefore,rsiValue)) {
 			System.out.println("Exiting with RSI exit strategy 3. Returning 100");
@@ -35,7 +36,6 @@ public class RSIExitStrategy3 implements ExitStrategy {
 			System.out.println("Exiting with RSI exit strategy 3. Returning 100");
 			return RSIConstants.RSI_EXIT_OPTION_3_SELLING_PERCENTAGE;
 		}
-		updateValues(rsiValue);
 		return null;
 	}
 

@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import static java.lang.Thread.sleep;
 
 public class RSIEntryStrategy implements EntryStrategy {
-    private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_THREE; //TODO: Change to POSITION ONE
+    private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_ONE;
     private int time_passed_from_position_2 = 0;
     private ArrayList<ExitStrategy> exitStrategies;
     double rsiValueToCheckForPosition3 = -1;
@@ -61,7 +61,7 @@ public class RSIEntryStrategy implements EntryStrategy {
             if(! realTimeData.currentRSIValueEquals(RealTimeData.RSIType.CLOSE, rsiValueToCheckForPosition3)) {
                 time_passed_from_position_2 ++;
             }
-            if (realTimeData.above(RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_3) && false) { //TODO:fix
+            if (realTimeData.above(RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_3)) { //TODO:fix
 
                 time_passed_from_position_2 = 0;
                 positionInStrategy = PositionInStrategy.POSITION_ONE;
