@@ -1,6 +1,10 @@
 package Positions;
 import Data.*;
 import Strategies.ExitStrategy;
+import Strategies.RSIStrategies.RSIExitStrategy1;
+import Strategies.RSIStrategies.RSIExitStrategy2;
+import Strategies.RSIStrategies.RSIExitStrategy3;
+import Strategies.RSIStrategies.RSIExitStrategy4;
 import Utils.Utils;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.*;
@@ -20,11 +24,16 @@ public class PositionHandler {
     private final ArrayList<ExitStrategy> exitStrategies;
     private Long baseTime = 0L;
 
-    public PositionHandler(Order order, ArrayList<ExitStrategy> exitStrategies){
+    public PositionHandler(Order order, ArrayList<ExitStrategy> _exitStrategies){//TODO: trying something
         clientOrderId = order.getClientOrderId();
         orderID = order.getOrderId();
         symbol = order.getSymbol().toLowerCase();
-        this.exitStrategies = exitStrategies;
+        exitStrategies = new ArrayList<>();
+        exitStrategies.add(new RSIExitStrategy1());
+        exitStrategies.add(new RSIExitStrategy2());
+        exitStrategies.add(new RSIExitStrategy3());
+        exitStrategies.add(new RSIExitStrategy4());
+        System.out.println("Entered Position");
     }
 
     public boolean isSoldOut(){ return isActive && (qty.compareTo(BigDecimal.valueOf(0.0)) <= 0);}
