@@ -1,36 +1,46 @@
-import Data.*;
-import Strategies.EntryStrategy;
-import Positions.PositionHandler;
-import Strategies.RSIStrategies.RSIEntryStrategy;
-import Utils.RealTimeCommandOperator;
-import com.binance.client.api.SubscriptionClient;
-import com.binance.client.api.SyncRequestClient;
-import com.binance.client.api.model.enums.CandlestickInterval;
-
+import java.math.BigDecimal;
 import java.util.ArrayList;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import Data.*;
+import Positions.PositionHandler;
+import Strategies.EntryStrategy;
+import Strategies.RSIStrategies.RSIEntryStrategy;
+import Utils.RealTimeCommandOperator;
+import com.binance.client.api.SubscriptionClient;
+import com.binance.client.api.SyncRequestClient;
+import com.binance.client.api.model.enums.CandlestickInterval;
 
-public class Main {
-    public static void main(String[] args){ //TODO: allow to orders to run parallel
-        AccountBalance accountBalance = AccountBalance.getAccountBalance(); //!Don't touch
-        BinanceInfo binanceInfo = BinanceInfo.getBinanceInfo(); //!Don't touch
-        RealTimeData realTimeData = new RealTimeData(Config.SYMBOL, CandlestickInterval.ONE_MINUTE, Config.CANDLE_NUM);
+public class InvestmentManager implements Runnable{
+    private double takeProfitPercentage;
+    private final double stopLossPercentage;
+    private final int rsiCandleNum;
+    private final CandlestickInterval interval;
+    private final int leverage;
+    private final String symbol;
+    private final BigDecimal requestedBuyingAmount;
+
+
+    public InvestmentManager(double takeProfitPercentage, double stopLossPercentage, int rsiCandleNum, CandlestickInterval interval, int leverage, String symbol, BigDecimal requestedBuyingAmount) {
+        this.takeProfitPercentage = takeProfitPercentage;
+        this.stopLossPercentage = stopLossPercentage;
+        this.rsiCandleNum = rsiCandleNum;
+        this.leverage = leverage;
+        this.interval = interval;
+        this.symbol = symbol;
+        this.requestedBuyingAmount = requestedBuyingAmount;
+    }
+
+    public void run(ArrayList<EntryStrategy> entryStrategies, ArrayList<PositionHandler> positionHandlers){
+        RealTimeData realTimeData = new RealTimeData(symbol, interval, Config.CANDLE_NUM);
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-        SubscriptionClient subscriptionClient = SubscriptionClient.create(Config.API_KEY, Config.SECRET_KEY);
-        ArrayList<EntryStrategy> entryStrategies = new ArrayList<>();//TODO: change to map of symbol and strategies so each strategy will have its own subscribe candlestick event
-        ArrayList<PositionHandler> positionHandlers = new ArrayList<>();
+        com.binance.client.api.SubscriptionClient subscriptionClient = SubscriptionClient.getSubscriptionClient().getSubscriptionClient();
         ArrayList<Future<?>> futures = new ArrayList<>();
-        ExecutorService executorService = Executors.newFixedThreadPool(Config.THREAD_NUM);//TODO: declared in main and passed to RealTimeCommandOperator or created there.
-        Thread realTimeCommandOperatorThread = new Thread(new RealTimeCommandOperator());
-        realTimeCommandOperatorThread.start();
         ReadWriteLock positionHandlersLock = new ReentrantReadWriteLock();
-        entryStrategies.add(new RSIEntryStrategy());
         PositionHandler oldPosition = accountBalance.manageOldPositions();
         if (oldPosition != null){
             positionHandlers.add(oldPosition);
@@ -70,7 +80,7 @@ public class Main {
         //TODO: code termination;
     }
 
-    private static void waitUntilFinished(ArrayList<Future<?>> futures){
+    private void waitUntilFinished(ArrayList<Future<?>> futures){
         for (Future<?> future: futures){
             try{
                 future.get();
@@ -79,5 +89,3 @@ public class Main {
         }
     }
 }
-
-
