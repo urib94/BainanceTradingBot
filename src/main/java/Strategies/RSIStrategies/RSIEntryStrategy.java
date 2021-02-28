@@ -21,12 +21,12 @@ public class RSIEntryStrategy implements EntryStrategy {
     double rsiValueToCheckForPosition3 = -1;
 
 
-    public RSIEntryStrategy(){
-        exitStrategies = new ArrayList<>();
-        exitStrategies.add(new RSIExitStrategy1());
-        exitStrategies.add(new RSIExitStrategy2());
-        exitStrategies.add(new RSIExitStrategy3());
-        exitStrategies.add(new RSIExitStrategy4());
+    public RSIEntryStrategy(){//TODO:trying something
+//        exitStrategies = new ArrayList<>();
+//        exitStrategies.add(new RSIExitStrategy1());
+//        exitStrategies.add(new RSIExitStrategy2());
+//        exitStrategies.add(new RSIExitStrategy3());
+//        exitStrategies.add(new RSIExitStrategy4());
     }
     /**
      *
@@ -58,6 +58,7 @@ public class RSIEntryStrategy implements EntryStrategy {
             if (realTimeData.above(RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_3)) { //TODO:fix
                 time_passed_from_position_2 = 0;
                 positionInStrategy = PositionInStrategy.POSITION_ONE;
+                rsiValueToCheckForPosition3 = -1;
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
                 syncRequestClient.changeInitialLeverage(Config.SYMBOL,Config.LEVERAGE);
                 String buyingQty = getBuyingQtyAsString(realTimeData, symbol);
