@@ -28,11 +28,11 @@ public class RSIExitStrategy3 implements ExitStrategy {
 			updateValues(realTimeData.getRsiCloseValue());
 		}
 		if (lostValueOf15(rsiValueBefore,rsiValue)) {
-			System.out.println("Exiting with RSI exit strategy 3. Returning 100");
+			System.out.println("Exiting with RSI exit strategy 3. Returning 100(1)");
 			return RSIConstants.RSI_EXIT_OPTION_3_SELLING_PERCENTAGE;
 		}
 		if (lostValueOf15(rsiValueTwoBefore,rsiValue)) {
-			System.out.println("Exiting with RSI exit strategy 3. Returning 100");
+			System.out.println("Exiting with RSI exit strategy 3. Returning 100(2)");
 			return RSIConstants.RSI_EXIT_OPTION_3_SELLING_PERCENTAGE;
 		}
 		return null;
