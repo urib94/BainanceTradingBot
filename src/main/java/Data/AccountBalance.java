@@ -59,30 +59,7 @@ public class AccountBalance {
         }
     }
 
-    public void updateBalance(UserDataUpdateEvent event) {
-        AccountUpdate accountUpdate = event.getAccountUpdate();
-        List<BalanceUpdate> balances = accountUpdate.getBalances();
-        assetsLock.writeLock().lock();
-        for (BalanceUpdate balanceUpdate : balances){
-            if (assets.containsKey(balanceUpdate.getAsset())) assets.get(balanceUpdate.getAsset()).setWalletBalance(balanceUpdate.getWalletBalance());
-            else{
-                Asset asset = new Asset();
-                asset.setAsset(balanceUpdate.getAsset());
-                asset.setWalletBalance(balanceUpdate.getWalletBalance());
-                assets.put(balanceUpdate.getAsset(), asset);
-            }
-        }
-        assetsLock.writeLock().unlock();
-        List<PositionUpdate> positionUpdates = accountUpdate.getPositions();
-        positionsLock.writeLock().lock();
-        for (PositionUpdate positionUpdate : positionUpdates){
-            positions.get(positionUpdate.getSymbol()).setPositionAmt(positionUpdate.getAmount()); //update assets
-            positions.get(positionUpdate.getSymbol()).setUnrealizedProfit(positionUpdate.getUnrealizedPnl()); //update assets
-        }
-        positionsLock.writeLock().unlock();
-    }
-
-    public void aggressiveUpdateBalance(){
+    public void updateBalance(){
         assets = new HashMap<>();
         positions = new HashMap<>();
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
@@ -91,10 +68,10 @@ public class AccountBalance {
         for (Asset asset: accountInformation.getAssets())assets.put(asset.getAsset().toLowerCase(), asset);
     }
 
-    public PositionHandler manageOldPositions() {
-        BigDecimal positionAmt = getPosition(Config.SYMBOL).getPositionAmt();
+    public PositionHandler manageOldPositions(String symbol) {
+        BigDecimal positionAmt = getPosition(symbol).getPositionAmt();
         if (positionAmt.compareTo(BigDecimal.valueOf(0.0)) > Config.ZERO){
-            return new PositionHandler(positionAmt);
+            return new PositionHandler(positionAmt);//TODO: add default exit strategy
         }
         return null;
     }

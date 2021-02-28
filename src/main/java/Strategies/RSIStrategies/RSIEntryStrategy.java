@@ -13,19 +13,26 @@ import java.math.MathContext;
 import java.util.ArrayList;
 
 public class RSIEntryStrategy implements EntryStrategy {
-    private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_ONE;//TODO: change
+    double takeProfitPercentage;
+    private final double stopLossPercentage;
+    private final int rsiCandleNum;
+    private final int leverage;
+    private final String symbol;
+    private final  BigDecimal requestedBuyingAmount;
+
+    private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_ONE;
     private int time_passed_from_position_2 = 0;
     private ArrayList<ExitStrategy> exitStrategies;
     double rsiValueToCheckForPosition3 = -1;
 
-
-    public RSIEntryStrategy(){//TODO:trying something
-//        exitStrategies = new ArrayList<>();
-//        exitStrategies.add(new RSIExitStrategy1());
-//        exitStrategies.add(new RSIExitStrategy2());
-//        exitStrategies.add(new RSIExitStrategy3());
-//        exitStrategies.add(new RSIExitStrategy4());
+    public RSIEntryStrategy(double stopLossPercentage, int rsiCandleNum, int leverage, String symbol, BigDecimal requestedBuyingAmount) {
+        this.stopLossPercentage = stopLossPercentage;
+        this.rsiCandleNum = rsiCandleNum;
+        this.leverage = leverage;
+        this.symbol = symbol;
+        this.requestedBuyingAmount = requestedBuyingAmount;
     }
+
     /**
      *
      * @param realTimeData - also singleton - the real time data from the binance api. list of candles basically.

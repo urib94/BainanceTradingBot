@@ -1,7 +1,8 @@
+package CodeExecution;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -9,9 +10,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import Data.*;
 import Positions.PositionHandler;
 import Strategies.EntryStrategy;
-import Strategies.RSIStrategies.RSIEntryStrategy;
-import Utils.RealTimeCommandOperator;
-import com.binance.client.api.SubscriptionClient;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.CandlestickInterval;
 
@@ -23,9 +21,11 @@ public class InvestmentManager implements Runnable{
     private final int leverage;
     private final String symbol;
     private final BigDecimal requestedBuyingAmount;
+    ArrayList<EntryStrategy> entryStrategies;
+    ReadWriteLock entryStrategiesLock = new ReentrantReadWriteLock();
 
 
-    public InvestmentManager(double takeProfitPercentage, double stopLossPercentage, int rsiCandleNum, CandlestickInterval interval, int leverage, String symbol, BigDecimal requestedBuyingAmount) {
+    public InvestmentManager(double takeProfitPercentage, double stopLossPercentage, int rsiCandleNum, CandlestickInterval interval, int leverage, String symbol, BigDecimal requestedBuyingAmount, EntryStrategy entryStrategy) {
         this.takeProfitPercentage = takeProfitPercentage;
         this.stopLossPercentage = stopLossPercentage;
         this.rsiCandleNum = rsiCandleNum;
@@ -33,25 +33,28 @@ public class InvestmentManager implements Runnable{
         this.interval = interval;
         this.symbol = symbol;
         this.requestedBuyingAmount = requestedBuyingAmount;
+        entryStrategies = new ArrayList<>();
+        entryStrategies.add(entryStrategy);
     }
 
-    public void run(ArrayList<EntryStrategy> entryStrategies, ArrayList<PositionHandler> positionHandlers){
-        RealTimeData realTimeData = new RealTimeData(symbol, interval, Config.CANDLE_NUM);
-        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-        com.binance.client.api.SubscriptionClient subscriptionClient = SubscriptionClient.getSubscriptionClient().getSubscriptionClient();
+    public void run(){
+        RealTimeData realTimeData = new RealTimeData(symbol, interval);
+        com.binance.client.api.SubscriptionClient subscriptionClient = SubClient.getSubClient().getSubscriptionClient();
+        ExecutorService executorService = ExecService.getExecService().getExecutorService();
+        ArrayList<PositionHandler> positionHandlers = new ArrayList<>();
         ArrayList<Future<?>> futures = new ArrayList<>();
         ReadWriteLock positionHandlersLock = new ReentrantReadWriteLock();
-        PositionHandler oldPosition = accountBalance.manageOldPositions();
+        PositionHandler oldPosition = AccountBalance.getAccountBalance().manageOldPositions(symbol);
         if (oldPosition != null){
             positionHandlers.add(oldPosition);
         }
-        subscriptionClient.subscribeCandlestickEvent(Config.SYMBOL, Config.INTERVAL, ((event) -> {
+        subscriptionClient.subscribeCandlestickEvent(symbol, interval, ((event) -> {
             waitUntilFinished(futures);
-            realTimeData.updateData(event, executorService);
-            AccountBalance.getAccountBalance().aggressiveUpdateBalance();
+            realTimeData.updateData(event);
+            AccountBalance.getAccountBalance().updateBalance();
             positionHandlersLock.readLock().lock();
             for (PositionHandler positionHandler :positionHandlers){
-                positionHandler.update(Config.INTERVAL);
+                positionHandler.update(interval);
                 if (positionHandler.isSoldOut()){
                     positionHandler.terminate();
                     positionHandlers.remove(positionHandler);
@@ -64,9 +67,10 @@ public class InvestmentManager implements Runnable{
                 }
             }
             positionHandlersLock.readLock().unlock();
+            entryStrategiesLock.readLock().lock();
             for (EntryStrategy entryStrategy: entryStrategies){
                 Future<?> future = executorService.submit(()-> {
-                    PositionHandler positionHandler = entryStrategy.run(realTimeData, Config.SYMBOL);
+                    PositionHandler positionHandler = entryStrategy.run(realTimeData, symbol);
                     if (positionHandler != null){
                         positionHandlersLock.writeLock().lock();
                         positionHandlers.add(positionHandler);
@@ -75,9 +79,8 @@ public class InvestmentManager implements Runnable{
                 });
                 futures.add(future);
             }
+            entryStrategiesLock.readLock().unlock();
         }), null);
-        //subscriptionClient.unsubscribeAll();
-        //TODO: code termination;
     }
 
     private void waitUntilFinished(ArrayList<Future<?>> futures){
@@ -87,5 +90,11 @@ public class InvestmentManager implements Runnable{
             }catch (Exception ignored){}
             futures.remove(future);
         }
+    }
+
+    public void addEntryStrategy(EntryStrategy entryStrategy){
+        entryStrategiesLock.writeLock().lock();
+        entryStrategies.add(entryStrategy);
+        entryStrategiesLock.writeLock().unlock();
     }
 }

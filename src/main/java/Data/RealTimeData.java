@@ -28,10 +28,10 @@ public class RealTimeData{
     private double rsiOpenValue;
     private double rsiCloseValue;
 
-    public RealTimeData(String symbol, CandlestickInterval interval, int amount){
+    public RealTimeData(String symbol, CandlestickInterval interval){
         realTimeData = new BaseBarSeries();
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-        List<Candlestick> candlestickBars = syncRequestClient.getCandlestick(symbol, interval, null, null, amount);
+        List<Candlestick> candlestickBars = syncRequestClient.getCandlestick(symbol, interval, null, null, Config.CANDLE_NUM);
         lastCandleOpenTime = candlestickBars.get(candlestickBars.size() - 1).getOpenTime();
         currentPrice = candlestickBars.get(candlestickBars.size() -1).getClose();
         for (Candlestick candlestickBar : candlestickBars) {
@@ -58,7 +58,7 @@ public class RealTimeData{
      * to realTimeData
      * @param event - the new Candlestick received from the subscribeCandleStickEvent.
      */
-    public void updateData(CandlestickEvent event, ExecutorService executorService){
+    public void updateData(CandlestickEvent event){
         currentPrice = event.getClose();
         boolean isNewCandle = !(event.getStartTime().doubleValue() == lastCandleOpenTime);
         ZonedDateTime closeTime = getZonedDateTime(event.getCloseTime());
