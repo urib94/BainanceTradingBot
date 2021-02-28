@@ -12,7 +12,8 @@ public class RSIExitStrategy4 implements ExitStrategy {
 	 * @return the percentage of quantity to sell, null otherwise.
 	 */
 	public BigDecimal run(RealTimeData realTimeData) {
-		if (!realTimeData.above(RealTimeData.RSIType.OPEN, RSIConstants.RSI_EXIT_OPTION_4_UNDER_THRESHOLD)) {
+		System.out.println("rsi open value: " + realTimeData.getRsiOpenValue());
+		if (!(realTimeData.above(RealTimeData.RSIType.OPEN, RSIConstants.RSI_EXIT_OPTION_4_UNDER_THRESHOLD))) {
 			System.out.println("Exiting with RSI exit strategy 4!");
 			return RSIConstants.RSI_EXIT_OPTION_4_SELLING_PERCENTAGE;
 		}

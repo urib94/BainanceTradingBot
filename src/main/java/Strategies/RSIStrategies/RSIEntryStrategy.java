@@ -12,8 +12,6 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
 
-import static java.lang.Thread.sleep;
-
 public class RSIEntryStrategy implements EntryStrategy {
     private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_ONE;//TODO: change
     private int time_passed_from_position_2 = 0;
@@ -72,6 +70,7 @@ public class RSIEntryStrategy implements EntryStrategy {
                     Order stopLossOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP, TimeInForce.GTC,
                             buyingQty,stopLossPrice,null,null, stopLossPrice,null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                     System.out.println("\n\n++++++++++++++++++++Buying+++++++++++++++++++");
+                    System.out.println("Buy order: " + buyOrder);
                     return new PositionHandler(buyOrder, exitStrategies);
                 }catch (Exception e){System.out.println("exception in RSI: " + e);}
             }

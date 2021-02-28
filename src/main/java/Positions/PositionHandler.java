@@ -11,10 +11,11 @@ import com.binance.client.api.model.enums.*;
 import com.binance.client.api.model.trade.Order;
 import com.binance.client.api.model.trade.Position;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
-public class PositionHandler {
+public class PositionHandler implements Serializable {
     private final String clientOrderId;
     private final Long orderID;
     private BigDecimal qty = BigDecimal.valueOf(0.0);
@@ -36,7 +37,22 @@ public class PositionHandler {
         System.out.println("Entered Position");
     }
 
-    public boolean isSoldOut(){ return isActive && (qty.compareTo(BigDecimal.valueOf(0.0)) <= 0);}
+    public PositionHandler(BigDecimal qty){//TODO: trying something
+        clientOrderId = null;
+        orderID = null;
+        symbol = Config.SYMBOL;
+        status = Config.FILLED;
+        isActive = true;
+        this.qty = qty;
+        exitStrategies = new ArrayList<>();
+        exitStrategies.add(new RSIExitStrategy1());
+        exitStrategies.add(new RSIExitStrategy2());
+        exitStrategies.add(new RSIExitStrategy3());
+        exitStrategies.add(new RSIExitStrategy4());
+        System.out.println("Entered Position");
+    }
+
+    public boolean isSoldOut(){ return isActive && !status.equals(Config.NEW) && (qty.compareTo(BigDecimal.valueOf(0.0)) <= 0);}
 
     public void run(RealTimeData realTimeData) {
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
@@ -58,11 +74,13 @@ public class PositionHandler {
 
     public void update(CandlestickInterval interval) {
         Position position = AccountBalance.getAccountBalance().getPosition(symbol);
-        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-        Order order = syncRequestClient.getOrder(symbol, orderID , clientOrderId);
-        status = order.getStatus();
+        if (orderID != null) {
+            SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+            Order order = syncRequestClient.getOrder(symbol, orderID, clientOrderId);
+            status = order.getStatus();
+            isActive(order,interval);
+        }
         qty = position.getPositionAmt();
-        isActive(order,interval);
     }
 
     private void isActive(Order order,CandlestickInterval interval) {
@@ -92,7 +110,6 @@ public class PositionHandler {
     public void terminate(){
         System.out.println("Terminating");
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-        syncRequestClient.changeInitialLeverage(Config.SYMBOL,Config.LEVERAGE);
         syncRequestClient.cancelAllOpenOrder(Config.SYMBOL);
     }
 }

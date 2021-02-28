@@ -1,14 +1,12 @@
 package Strategies.RSIStrategies;
 import Data.RealTimeData;
 import Strategies.ExitStrategy;
-import org.ta4j.core.indicators.RSIIndicator;
-import org.ta4j.core.num.Num;
 
 import java.math.BigDecimal;
 
 
 public class RSIExitStrategy3 implements ExitStrategy {
-	private double rsiValueTwoBefore;
+	private double rsiValueTwoBefore = -1.0;
 	private double rsiValueBefore;
 	private boolean firstTime = true;
 
@@ -19,8 +17,7 @@ public class RSIExitStrategy3 implements ExitStrategy {
 	 */
 	public BigDecimal run(RealTimeData realTimeData) {
 		if (firstTime) {
-			rsiValueBefore = realTimeData.getRsiCloseValue(); // last closed candle
-			rsiValueTwoBefore = -1; // second to last closed candle
+			rsiValueBefore = realTimeData.getRsiCloseValue(); // last closed candle rsi value
 			firstTime = false;
 		} // not the first time. already ran.
 		double rsiValue = realTimeData.getRsiOpenValue();
@@ -31,14 +28,15 @@ public class RSIExitStrategy3 implements ExitStrategy {
 			System.out.println("Exiting with RSI exit strategy 3. Returning 100(1)");
 			return RSIConstants.RSI_EXIT_OPTION_3_SELLING_PERCENTAGE;
 		}
-		if (lostValueOf15(rsiValueTwoBefore,rsiValue)) {
+		if (rsiValueTwoBefore != -1.0 && lostValueOf15(rsiValueTwoBefore,rsiValue)) {
 			System.out.println("Exiting with RSI exit strategy 3. Returning 100(2)");
 			return RSIConstants.RSI_EXIT_OPTION_3_SELLING_PERCENTAGE;
 		}
 		return null;
 	}
 
-	private boolean lostValueOf15(double oldVal, double newVal) {return oldVal - newVal >= 15;}
+	private boolean lostValueOf15(double oldVal, double newVal) {
+		return oldVal - newVal >= 15;}
 
 	private void updateValues(double newValue) {
 		double temp = rsiValueBefore;

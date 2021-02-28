@@ -1,6 +1,6 @@
 package Data;
 
-import com.binance.client.api.RequestOptions;
+import Positions.PositionHandler;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.trade.AccountInformation;
 import com.binance.client.api.model.trade.Asset;
@@ -13,7 +13,6 @@ import com.binance.client.api.model.user.UserDataUpdateEvent;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -35,6 +34,7 @@ public class AccountBalance {
         for (Position position: accountInformation.getPositions())positions.put(position.getSymbol().toLowerCase(), position);
         for (Asset asset: accountInformation.getAssets())assets.put(asset.getAsset().toLowerCase(), asset);
     }
+
     public static AccountBalance getAccountBalance() {
         return AccountBalanceHolder.accountBalance;
     }
@@ -79,18 +79,24 @@ public class AccountBalance {
             positions.get(positionUpdate.getSymbol()).setPositionAmt(positionUpdate.getAmount()); //update assets
             positions.get(positionUpdate.getSymbol()).setUnrealizedProfit(positionUpdate.getUnrealizedPnl()); //update assets
         }
-        System.out.println("Account balance update, coin Balance:" + getCoinBalance("btcusdt"));
-        System.out.println("Account balance update, coin Balance:" + getCoinBalance("BTCUSDT"));
         positionsLock.writeLock().unlock();
     }
 
-    public void aggresiveUpdateBalance(){
+    public void aggressiveUpdateBalance(){
         assets = new HashMap<>();
         positions = new HashMap<>();
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         AccountInformation accountInformation = syncRequestClient.getAccountInformation();
         for (Position position: accountInformation.getPositions())positions.put(position.getSymbol().toLowerCase(), position);
         for (Asset asset: accountInformation.getAssets())assets.put(asset.getAsset().toLowerCase(), asset);
+    }
+
+    public PositionHandler manageOldPositions() {
+        BigDecimal positionAmt = getPosition(Config.SYMBOL).getPositionAmt();
+        if (positionAmt.compareTo(BigDecimal.valueOf(0.0)) > Config.ZERO){
+            return new PositionHandler(positionAmt);
+        }
+        return null;
     }
 }
 
