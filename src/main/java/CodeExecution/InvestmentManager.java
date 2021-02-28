@@ -10,35 +10,26 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import Data.*;
 import Positions.PositionHandler;
 import Strategies.EntryStrategy;
-import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.CandlestickInterval;
 
 public class InvestmentManager implements Runnable{
-    private double takeProfitPercentage;
-    private final double stopLossPercentage;
     private final int rsiCandleNum;
     private final CandlestickInterval interval;
-    private final int leverage;
     private final String symbol;
-    private final BigDecimal requestedBuyingAmount;
     ArrayList<EntryStrategy> entryStrategies;
     ReadWriteLock entryStrategiesLock = new ReentrantReadWriteLock();
 
 
-    public InvestmentManager(double takeProfitPercentage, double stopLossPercentage, int rsiCandleNum, CandlestickInterval interval, int leverage, String symbol, BigDecimal requestedBuyingAmount, EntryStrategy entryStrategy) {
-        this.takeProfitPercentage = takeProfitPercentage;
-        this.stopLossPercentage = stopLossPercentage;
+    public InvestmentManager(int rsiCandleNum, CandlestickInterval interval, String symbol, EntryStrategy entryStrategy) {
         this.rsiCandleNum = rsiCandleNum;
-        this.leverage = leverage;
         this.interval = interval;
         this.symbol = symbol;
-        this.requestedBuyingAmount = requestedBuyingAmount;
         entryStrategies = new ArrayList<>();
         entryStrategies.add(entryStrategy);
     }
 
     public void run(){
-        RealTimeData realTimeData = new RealTimeData(symbol, interval);
+        RealTimeData realTimeData = new RealTimeData(symbol, interval, rsiCandleNum);
         com.binance.client.api.SubscriptionClient subscriptionClient = SubClient.getSubClient().getSubscriptionClient();
         ExecutorService executorService = ExecService.getExecService().getExecutorService();
         ArrayList<PositionHandler> positionHandlers = new ArrayList<>();

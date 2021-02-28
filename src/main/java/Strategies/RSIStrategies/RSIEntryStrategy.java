@@ -15,29 +15,19 @@ import java.util.ArrayList;
 public class RSIEntryStrategy implements EntryStrategy {
     double takeProfitPercentage;
     private final double stopLossPercentage;
-    private final int rsiCandleNum;
     private final int leverage;
-    private final String symbol;
     private final  BigDecimal requestedBuyingAmount;
 
     private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_ONE;
     private int time_passed_from_position_2 = 0;
-    private ArrayList<ExitStrategy> exitStrategies;
     double rsiValueToCheckForPosition3 = -1;
 
-    public RSIEntryStrategy(double stopLossPercentage, int rsiCandleNum, int leverage, String symbol, BigDecimal requestedBuyingAmount) {
+    public RSIEntryStrategy(double stopLossPercentage, int leverage, BigDecimal requestedBuyingAmount) {
         this.stopLossPercentage = stopLossPercentage;
-        this.rsiCandleNum = rsiCandleNum;
         this.leverage = leverage;
-        this.symbol = symbol;
         this.requestedBuyingAmount = requestedBuyingAmount;
     }
 
-    /**
-     *
-     * @param realTimeData - also singleton - the real time data from the binance api. list of candles basically.
-     * @return PositionEntry if purchased else return null.
-     */
     public PositionHandler run(RealTimeData realTimeData,String symbol) {
         if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
             if (realTimeData.crossed(RealTimeData.CrossType.DOWN, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_1)) {
@@ -65,7 +55,7 @@ public class RSIEntryStrategy implements EntryStrategy {
                 positionInStrategy = PositionInStrategy.POSITION_ONE;
                 rsiValueToCheckForPosition3 = -1;
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-                syncRequestClient.changeInitialLeverage(Config.SYMBOL,Config.LEVERAGE);
+                syncRequestClient.changeInitialLeverage(symbol,leverage);
                 String buyingQty = getBuyingQtyAsString(realTimeData, symbol);
                 try{
                     Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.MARKET, null,
@@ -78,6 +68,11 @@ public class RSIEntryStrategy implements EntryStrategy {
                             buyingQty,stopLossPrice,null,null, stopLossPrice,null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                     System.out.println("\n\n++++++++++++++++++++Buying+++++++++++++++++++");
                     System.out.println("Buy order: " + buyOrder);
+                    ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
+                    exitStrategies.add(new RSIExitStrategy1());
+                    exitStrategies.add(new RSIExitStrategy2());
+                    exitStrategies.add(new RSIExitStrategy3());
+                    exitStrategies.add(new RSIExitStrategy4());
                     return new PositionHandler(buyOrder, exitStrategies);
                 }catch (Exception e){System.out.println("exception in RSI: " + e);}
             }
@@ -85,17 +80,17 @@ public class RSIEntryStrategy implements EntryStrategy {
         return null;
     }
     private String getBuyingQtyAsString(RealTimeData realTimeData, String symbol) {
-        BigDecimal buyingQty = Config.BUYING_AMOUNT_REQUESTED.multiply(BigDecimal.valueOf(Config.LEVERAGE.doubleValue())).divide(realTimeData.getCurrentPrice(), MathContext.DECIMAL32);
+        BigDecimal buyingQty = requestedBuyingAmount.multiply(BigDecimal.valueOf(leverage)).divide(realTimeData.getCurrentPrice(), MathContext.DECIMAL32);
         return BinanceInfo.formatQty(buyingQty, symbol);
     }
 
     private String getTakeProfitPriceAsString(RealTimeData realTimeData, String symbol) {
-        BigDecimal takeProfitPrice = realTimeData.getCurrentPrice().add((realTimeData.getCurrentPrice().multiply(BigDecimal.valueOf(RSIConstants.TAKE_PROFIT_PERCENTAGE))));
+        BigDecimal takeProfitPrice = realTimeData.getCurrentPrice().add((realTimeData.getCurrentPrice().multiply(BigDecimal.valueOf(takeProfitPercentage))));
         return BinanceInfo.formatPrice(takeProfitPrice, symbol);
     }
 
     private String getStopLossPriceAsString(RealTimeData realTimeData, String symbol) {
-        BigDecimal stopLossPrice = realTimeData.getCurrentPrice().subtract(realTimeData.getCurrentPrice().multiply(BigDecimal.valueOf(RSIConstants.STOP_LOSS_PERCENTAGE)));
+        BigDecimal stopLossPrice = realTimeData.getCurrentPrice().subtract(realTimeData.getCurrentPrice().multiply(BigDecimal.valueOf(stopLossPercentage)));
         return BinanceInfo.formatPrice(stopLossPrice, symbol);
     }
 

@@ -27,9 +27,12 @@ public class RealTimeData{
     private RSIIndicator rsiIndicator;
     private double rsiOpenValue;
     private double rsiCloseValue;
+    private final int rsiCandleNum;
 
-    public RealTimeData(String symbol, CandlestickInterval interval){
+
+    public RealTimeData(String symbol, CandlestickInterval interval, int rsiCandleNum){
         realTimeData = new BaseBarSeries();
+        this.rsiCandleNum = rsiCandleNum;
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         List<Candlestick> candlestickBars = syncRequestClient.getCandlestick(symbol, interval, null, null, Config.CANDLE_NUM);
         lastCandleOpenTime = candlestickBars.get(candlestickBars.size() - 1).getOpenTime();
@@ -113,7 +116,7 @@ public class RealTimeData{
 
     private RSIIndicator calculateRSI() {
         ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(realTimeData);
-        return new RSIIndicator(closePriceIndicator, RSIConstants.RSI_CANDLE_NUM);
+        return new RSIIndicator(closePriceIndicator, rsiCandleNum);
 
     }
 

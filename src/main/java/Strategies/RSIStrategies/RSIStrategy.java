@@ -6,7 +6,6 @@ import Strategies.EntryStrategy;
 import java.math.BigDecimal;
 
 public class RSIStrategy {
-    private final EntryStrategy entryStrategy = new RSIEntryStrategy();
     double takeProfitPercentage;
     private final double stopLossPercentage;
     private final int rsiCandleNum;

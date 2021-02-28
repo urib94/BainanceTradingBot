@@ -29,12 +29,7 @@ public class PositionHandler implements Serializable {
         clientOrderId = order.getClientOrderId();
         orderID = order.getOrderId();
         symbol = order.getSymbol().toLowerCase();
-        exitStrategies = new ArrayList<>();
-        exitStrategies.add(new RSIExitStrategy1());
-        exitStrategies.add(new RSIExitStrategy2());
-        exitStrategies.add(new RSIExitStrategy3());
-        exitStrategies.add(new RSIExitStrategy4());
-        System.out.println("Entered Position");
+        exitStrategies = _exitStrategies;
     }
 
     public PositionHandler(BigDecimal qty){//TODO: trying something
@@ -49,7 +44,6 @@ public class PositionHandler implements Serializable {
         exitStrategies.add(new RSIExitStrategy2());
         exitStrategies.add(new RSIExitStrategy3());
         exitStrategies.add(new RSIExitStrategy4());
-        System.out.println("Entered Position");
     }
 
     public boolean isSoldOut(){ return isActive && !status.equals(Config.NEW) && (qty.compareTo(BigDecimal.valueOf(0.0)) <= 0);}
