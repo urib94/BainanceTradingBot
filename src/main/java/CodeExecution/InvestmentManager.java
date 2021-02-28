@@ -13,15 +13,13 @@ import Strategies.EntryStrategy;
 import com.binance.client.api.model.enums.CandlestickInterval;
 
 public class InvestmentManager implements Runnable{
-    private final int rsiCandleNum;
     private final CandlestickInterval interval;
     private final String symbol;
     ArrayList<EntryStrategy> entryStrategies;
     ReadWriteLock entryStrategiesLock = new ReentrantReadWriteLock();
 
 
-    public InvestmentManager(int rsiCandleNum, CandlestickInterval interval, String symbol, EntryStrategy entryStrategy) {
-        this.rsiCandleNum = rsiCandleNum;
+    public InvestmentManager(CandlestickInterval interval, String symbol, EntryStrategy entryStrategy) {
         this.interval = interval;
         this.symbol = symbol;
         entryStrategies = new ArrayList<>();
@@ -29,7 +27,7 @@ public class InvestmentManager implements Runnable{
     }
 
     public void run(){
-        RealTimeData realTimeData = new RealTimeData(symbol, interval, rsiCandleNum);
+        RealTimeData realTimeData = new RealTimeData(symbol, interval);
         com.binance.client.api.SubscriptionClient subscriptionClient = SubClient.getSubClient().getSubscriptionClient();
         ExecutorService executorService = ExecService.getExecService().getExecutorService();
         ArrayList<PositionHandler> positionHandlers = new ArrayList<>();

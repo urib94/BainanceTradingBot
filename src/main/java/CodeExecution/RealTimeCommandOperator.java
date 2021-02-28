@@ -22,17 +22,19 @@ public class RealTimeCommandOperator implements Runnable {
     public RealTimeCommandOperator() {
         investmentManagerHashMap = new HashMap<>();
         commandsAndOps = new HashMap<>();
-        commandsAndOps.put("cancel all orders",()->{
+        commandsAndOps.put("cancel all orders (symbol)",()->{
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             syncRequestClient.cancelAllOpenOrder(Config.SYMBOL);});
         /*TODO:
-        -get open positions
-        -get open orders
-        -buy immediately
-        -sell immediately
-        -get current balance
-        -switch from long to short in delta rsi strategy
-        -Login
+        - Cancel all orders
+        - Close all positions
+        - Activate strategy (symbol, interval, stopLossPercentage, takeProfitPercentage)
+        - Deactivate strategy (symbol, interval)
+        - Get all trades made (time)
+        - Get open positions
+        - Get open orders
+        - Get current balance
+        - Login
          */
     }
 

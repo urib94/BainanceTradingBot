@@ -1,3 +1,4 @@
+import CodeExecution.InvestmentManager;
 import Data.*;
 import Strategies.EntryStrategy;
 import Positions.PositionHandler;
@@ -17,17 +18,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Main {
     public static void main(String[] args){ //TODO: allow to orders to run parallel
-        System.out.println(BigDecimal.valueOf(1));
         AccountBalance accountBalance = AccountBalance.getAccountBalance(); //!Don't touch
         BinanceInfo binanceInfo = BinanceInfo.getBinanceInfo(); //!Don't touch
-        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-        SubscriptionClient subscriptionClient = SubscriptionClient.create(Config.API_KEY, Config.SECRET_KEY);
-        ArrayList<EntryStrategy> entryStrategies = new ArrayList<>();//TODO: change to map of symbol and strategies so each strategy will have its own subscribe candlestick event
-        ArrayList<PositionHandler> positionHandlers = new ArrayList<>();
-        ArrayList<Future<?>> futures = new ArrayList<>();
         Thread realTimeCommandOperatorThread = new Thread(new RealTimeCommandOperator());
-        realTimeCommandOperatorThread.start();
-        ReadWriteLock positionHandlersLock = new ReentrantReadWriteLock();
+        InvestmentManager investmentManager = new InvestmentManager(CandlestickInterval.ONE_MINUTE, "btcusdt", new RSIEntryStrategy(0.05,6,BigDecimal.valueOf(10.0)));
+        investmentManager.run();
     }
 }
 
