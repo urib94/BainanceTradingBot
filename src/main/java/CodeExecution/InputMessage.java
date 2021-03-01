@@ -40,10 +40,10 @@ public class InputMessage {
         switch (operation) {
             case RealTImeOperations.CANCEL_ALL_ORDERS:
                 symbol = messageParts[1];
-
+                break;
             case RealTImeOperations.CLOSE_ALL_POSITIONS:
 
-
+                break;
             case RealTImeOperations.ACTIVATE_STRATEGY:
             symbol = messageParts[1];
             for (CandlestickInterval candlestickInterval: CandlestickInterval.values()){
@@ -56,19 +56,20 @@ public class InputMessage {
                 entryStrategy.setLeverage(Integer.parseInt(messageParts[6]));
                 entryStrategy.setRequestedBuyingAmount(BigDecimal.valueOf(Double.parseDouble(messageParts[7])));
             }
-
+                break;
             case RealTImeOperations.ACTIVATE_STRATEGY_D:
             symbol = messageParts[1];
             for (CandlestickInterval candlestickInterval: CandlestickInterval.values()){
                 if (candlestickInterval.toString().equals(messageParts[2])) interval = candlestickInterval;
             }
             entryStrategy = Utils.stringToEntryStrategy(messageParts[3]);
-
+                break;
             case RealTImeOperations.DEACTIVATE_STRATEGY:
                 symbol = messageParts[1];
                 for (CandlestickInterval candlestickInterval: CandlestickInterval.values()){
                     if (candlestickInterval.toString().equals(messageParts[2])) interval = candlestickInterval;
                 }
+                break;
 
             case RealTImeOperations.GET_LAST_TRADES:
                 symbol = messageParts[1];
@@ -76,24 +77,25 @@ public class InputMessage {
                 endTime = Long.parseLong(messageParts[3]);
                 endTime = Long.parseLong(messageParts[4]);
                 tradesLimit = Integer.parseInt(messageParts[5]);
+                break;
 
             case RealTImeOperations.GET_OPEN_POSITIONS:
-
+                break;
 
             case RealTImeOperations.GET_OPEN_ORDERS:
                 symbol = messageParts[1];
-
+                break;
 
             case RealTImeOperations.GET_CURRENT_BALANCE:
                 symbol = messageParts[1];
-
+                break;
             case RealTImeOperations.LOGIN:
                 apiKey = messageParts[1];
                 secretKey = messageParts[2];
-
+                break;
             case "help":
                 //TODO: complete help
-
+                break;
             default:
                 System.out.println("Wrong message");
         }

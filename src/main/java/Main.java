@@ -21,9 +21,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Main {
     public static void main(String[] args) {
+        System.out.println("Let's Dance!!!\n");
         AccountBalance accountBalance = AccountBalance.getAccountBalance(); //!Don't touch
         BinanceInfo binanceInfo = BinanceInfo.getBinanceInfo(); //!Don't touch
         Thread realTimeCommandOperatorThread = new Thread(new RealTimeCommandOperator());
+        realTimeCommandOperatorThread.start();
     }
 }
 
