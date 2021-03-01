@@ -65,7 +65,8 @@ public class InputMessage {
             case RealTImeOperations.GET_OPEN_POSITIONS:
 
 
-            case RealTImeOperations.GET_OPEN_ORDERS://TODO: complete
+            case RealTImeOperations.GET_OPEN_ORDERS:
+                symbol = messageParts[1];
 
 
             case RealTImeOperations.GET_CURRENT_BALANCE:
@@ -74,6 +75,9 @@ public class InputMessage {
             case RealTImeOperations.LOGIN:
                 apiKey = messageParts[1];
                 secretKey = messageParts[2];
+
+            case "help":
+                //TODO: complete help
 
             default:
                 System.out.println("Wrong message");

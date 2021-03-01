@@ -5,6 +5,7 @@ import Data.Config;
 import Data.RequestClient;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.CandlestickInterval;
+import com.binance.client.api.model.trade.Order;
 import com.binance.client.api.model.trade.Position;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -66,37 +67,38 @@ public class RealTimeCommandOperator implements Runnable {
             }
             });
 
-        commandsAndOps.put(RealTImeOperations.ACTIVATE_STRATEGY_D,(message)->{
-            Pair<String, CandlestickInterval> pair = new MutablePair<String, CandlestickInterval>(message.getSymbol(), message.getInterval());
-            investmentManagerHashMapLock.readLock().lock();
-            if (investmentManagerHashMap.containsKey(pair)){
-                investmentManagerHashMap.get(pair).addEntryStrategy(message.getEntryStrategy());
-                investmentManagerHashMapLock.readLock().unlock();
-            }
-            else{
-                investmentManagerHashMapLock.readLock().unlock();
-                investmentManagerHashMapLock.writeLock().lock();
-                InvestmentManager investmentManager = new InvestmentManager(message.getInterval(), message.getSymbol(), message.getEntryStrategy());
-                investmentManagerHashMap.put(pair, investmentManager);
-                investmentManagerHashMapLock.writeLock().unlock();
-                investmentManager.run();
-            }
-        });
 
-        commandsAndOps.put(RealTImeOperations.DEACTIVATE_STRATEGY,(message)->{
-            Pair<String, CandlestickInterval> pair = new MutablePair<String, CandlestickInterval>(message.getSymbol(), message.getInterval());
-            investmentManagerHashMapLock.readLock().lock();
-            if (investmentManagerHashMap.containsKey(pair)){
-                investmentManagerHashMap.get(pair).removeEntryStrategy(message.getEntryStrategy());
-                investmentManagerHashMapLock.readLock().unlock();
-            }
+
+
+            commandsAndOps.put(RealTImeOperations.ACTIVATE_STRATEGY_D,(message)->{
+                Pair<String, CandlestickInterval> pair = new MutablePair<String, CandlestickInterval>(message.getSymbol(), message.getInterval());
+                investmentManagerHashMapLock.readLock().lock();
+                if (investmentManagerHashMap.containsKey(pair)){
+                    investmentManagerHashMap.get(pair).addEntryStrategy(message.getEntryStrategy());
+                    investmentManagerHashMapLock.readLock().unlock();
+                }
+                else{
+                    investmentManagerHashMapLock.readLock().unlock();
+                    investmentManagerHashMapLock.writeLock().lock();
+                    InvestmentManager investmentManager = new InvestmentManager(message.getInterval(), message.getSymbol(), message.getEntryStrategy());
+                    investmentManagerHashMap.put(pair, investmentManager);
+                    investmentManagerHashMapLock.writeLock().unlock();
+                    investmentManager.run();
+                }
             });
 
-        commandsAndOps.put(RealTImeOperations.GET_LAST_TRADES,(message)->{//TODO: complete
+            commandsAndOps.put(RealTImeOperations.DEACTIVATE_STRATEGY,(message)->{
+                Pair<String, CandlestickInterval> pair = new MutablePair<String, CandlestickInterval>(message.getSymbol(), message.getInterval());
+                investmentManagerHashMapLock.readLock().lock();
+                if (investmentManagerHashMap.containsKey(pair)){
+                    investmentManagerHashMap.get(pair).removeEntryStrategy(message.getEntryStrategy());
+                    investmentManagerHashMapLock.readLock().unlock();
+                }
+            });
 
-
-
-
+            commandsAndOps.put(RealTImeOperations.GET_LAST_TRADES,(message)->{//TODO: complete
+                SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+                syncRequestClient.getAccountTrades(message.getSymbol(), message.getStartTime(), message.getEndTime(), message.getTradesLimit());
 
 
             });
@@ -110,14 +112,14 @@ public class RealTimeCommandOperator implements Runnable {
             }
             });
 
-        commandsAndOps.put(RealTImeOperations.GET_OPEN_ORDERS,(message)->{//TODO: complete
-
-
-
-
-
-
-
+        commandsAndOps.put(RealTImeOperations.GET_OPEN_ORDERS,(message)->{
+            SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+            List<Order> openOrders = syncRequestClient.getOpenOrders(message.getSymbol());
+            int index = 1;
+            for (Order openOrder: openOrders){
+                System.out.println("Open position "+ index + ": " + openOrder);
+                index++;
+            }
             });
 
         commandsAndOps.put(RealTImeOperations.GET_CURRENT_BALANCE,(message)->{
