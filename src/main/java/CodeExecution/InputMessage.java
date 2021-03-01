@@ -42,7 +42,6 @@ public class InputMessage {
                 symbol = messageParts[1];
                 break;
             case RealTImeOperations.CLOSE_ALL_POSITIONS:
-
                 break;
             case RealTImeOperations.ACTIVATE_STRATEGY:
             symbol = messageParts[1];
@@ -90,7 +89,18 @@ public class InputMessage {
                 secretKey = messageParts[2];
                 break;
             case "help":
-                //TODO: complete help
+                System.out.println("Optional commands:\n" +
+                        "cancel all orders, [symbol]\n" +
+                        "close all positions\n" +
+                        "activate strategy, [symbol], [interval], [entrystrategy], [takeprofit], [stoploss], [leverage], [request buying ammount]\n" +
+                        "activate strategy default, [symbol], [interval], [entrystrategy]\n" +
+                        "deactivate strategy, [symbol], [interval]\n" +
+                        "get last trades, [symbol]\n" +
+                        "get open positions\n" +
+                        "get open orders, [symbol]\n" +
+                        "get current balance, [symbol]\n" +
+                        "login, [apikey], [secretkey]\n"
+                );
                 break;
             default:
                 System.out.println("Wrong message");

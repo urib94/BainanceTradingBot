@@ -116,12 +116,12 @@ public class RealTimeCommandOperator implements Runnable {
             List<Order> openOrders = syncRequestClient.getOpenOrders(message.getSymbol());
             int index = 1;
             for (Order openOrder: openOrders){
-                System.out.println("Open position "+ index + ": " + openOrder);
+                System.out.println("Open order: "+ index + ": " + openOrder);
                 index++;
             }
         });
 
-        commandsAndOps.put(RealTImeOperations.GET_CURRENT_BALANCE,(message)->{
+        commandsAndOps.put(RealTImeOperations.GET_CURRENT_BALANCE,(message)-> {
             System.out.println("Your current balance is: " + AccountBalance.getAccountBalance().getCoinBalance(message.getSymbol()));
         });
 
