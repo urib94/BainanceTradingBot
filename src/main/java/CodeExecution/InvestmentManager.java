@@ -7,7 +7,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import Data.*;
 import Positions.PositionHandler;
 import Strategies.EntryStrategy;
