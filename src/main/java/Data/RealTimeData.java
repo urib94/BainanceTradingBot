@@ -1,12 +1,15 @@
 package Data;
 
+import Strategies.OSMAStrategies.OSMAConstants;
 import Strategies.RSIStrategies.RSIConstants;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.CandlestickInterval;
 import com.binance.client.api.model.event.CandlestickEvent;
 import com.binance.client.api.model.market.Candlestick;
 import org.ta4j.core.BaseBarSeries;
+import org.ta4j.core.indicators.MACDIndicator;
 import org.ta4j.core.indicators.RSIIndicator;
+import org.ta4j.core.indicators.SMAIndicator;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 
 import java.math.BigDecimal;
@@ -14,6 +17,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -27,6 +31,7 @@ public class RealTimeData{
     private RSIIndicator rsiIndicator;
     private double rsiOpenValue;
     private double rsiCloseValue;
+    private double osmaValue;
 
 
     public RealTimeData(String symbol, CandlestickInterval interval){
@@ -49,6 +54,7 @@ public class RealTimeData{
         rsiIndicator = calculateRSI();
         rsiOpenValue = calculateCurrentOpenRSIValue();
         rsiCloseValue = calculateCurrentClosedRSIValue();
+        osmaValue = calculateOSMAValue();
     }
 
     /**
@@ -80,6 +86,10 @@ public class RealTimeData{
         rsiIndicator = calculateRSI();
         rsiOpenValue = calculateCurrentOpenRSIValue();
         rsiCloseValue = calculateCurrentClosedRSIValue();
+        osmaValue = calculateOSMAValue();
+        System.out.println("RSI OPEN: " + rsiOpenValue);
+        System.out.println("RSI CLOSE: " + rsiCloseValue);
+        System.out.println("OSMA VALUE: " + osmaValue);
     }
 
     public double getRsiOpenValue() {
@@ -89,6 +99,8 @@ public class RealTimeData{
     public double getRsiCloseValue() {
         return rsiCloseValue;
     }
+
+    public double getOsmaValue() { return osmaValue; }
 
     public RSIIndicator getRsiIndicator() {return rsiIndicator;}
     /**
@@ -136,7 +148,14 @@ public class RealTimeData{
         }
     }
 
+    private double calculateOSMAValue() {
+        MACDIndicator macd = new MACDIndicator(new ClosePriceIndicator(realTimeData), OSMAConstants.SHORT_BAR_COUNT,OSMAConstants.LONG_BAR_COUNT);
+        SMAIndicator signal = new SMAIndicator(macd,OSMAConstants.BAR_COUNT);
+        ClosePriceIndicator osma = Utils.Utils.diffByElementBetweenIndicators(macd,signal,Config.CANDLE_NUM);
+        SMAIndicator signal2 = new SMAIndicator(osma,OSMAConstants.BAR_COUNT);
+        return (osma.getValue(Config.CANDLE_NUM-1).minus(signal2.getValue(Config.CANDLE_NUM-1))).doubleValue();
 
+    }
     private double calculateCurrentClosedRSIValue() {
        return rsiIndicator.getValue(realTimeData.getEndIndex()-1).doubleValue();
     }

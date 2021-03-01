@@ -23,6 +23,7 @@ public class InvestmentManager implements Runnable{
 
 
     public InvestmentManager(CandlestickInterval interval, String symbol, EntryStrategy entryStrategy) {
+        System.out.println("Managing Investment!");
         this.interval = interval;
         this.symbol = symbol;
         entryStrategies = new ArrayList<>();
@@ -72,7 +73,7 @@ public class InvestmentManager implements Runnable{
                 futures.add(future);
             }
             entryStrategiesLock.readLock().unlock();
-        }), null);
+        }), System.out::println);
     }
 
     private void waitUntilFinished(ArrayList<Future<?>> futures){
