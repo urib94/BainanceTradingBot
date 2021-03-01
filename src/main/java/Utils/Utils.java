@@ -1,5 +1,7 @@
 package Utils;
 
+import Strategies.EntryStrategy;
+import Strategies.RSIStrategies.RSIEntryStrategy;
 import com.binance.client.api.model.enums.CandlestickInterval;
 
 public class Utils {
@@ -20,6 +22,16 @@ public class Utils {
 				return (long) value * TimeConstants.MONTHS_TO_MILLISECONDS_CONVERTER;
 			default:
 				return -1L;
+		}
+	}
+
+	public static EntryStrategy stringToEntryStrategy(String strategyName) {
+		switch (strategyName) {
+			case "rsiStrategy":
+				return new RSIEntryStrategy();
+
+			default:
+				return null;
 		}
 	}
 }

@@ -10,7 +10,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import Data.*;
 import Positions.PositionHandler;
 import Strategies.EntryStrategy;
-import com.binance.client.api.model.enums.CandlestickInterval;
+import com.binance.client.api.SyncRequestClient;
+import com.binance.client.api.model.enums.*;
+import com.binance.client.api.model.trade.Order;
 
 public class InvestmentManager implements Runnable{
     private final CandlestickInterval interval;
@@ -85,5 +87,13 @@ public class InvestmentManager implements Runnable{
         entryStrategiesLock.writeLock().lock();
         entryStrategies.add(entryStrategy);
         entryStrategiesLock.writeLock().unlock();
+    }
+
+    public void removeEntryStrategy(EntryStrategy entryStrategy) {
+        if (entryStrategies.contains(entryStrategy)){
+            entryStrategiesLock.writeLock().lock();
+            entryStrategies.remove(entryStrategy);
+            entryStrategiesLock.writeLock().unlock();
+        }
     }
 }

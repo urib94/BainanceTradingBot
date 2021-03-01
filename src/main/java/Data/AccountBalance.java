@@ -11,8 +11,10 @@ import com.binance.client.api.model.user.PositionUpdate;
 import com.binance.client.api.model.user.UserDataUpdateEvent;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -74,6 +76,20 @@ public class AccountBalance {
             return new PositionHandler(positionAmt);//TODO: add default exit strategy
         }
         return null;
+    }
+
+    public List<Position> getOpenPositions() {
+        List<Position> openPositions = new ArrayList<>();
+        positionsLock.readLock().lock();
+        Set<String> keys = positions.keySet();
+        for (String key: keys){
+            Position position = positions.get(key);
+            if (position.getPositionAmt().compareTo(BigDecimal.valueOf(0.0)) > 0){
+                openPositions.add(position);
+            }
+        }
+        positionsLock.readLock().unlock();
+        return openPositions;
     }
 }
 

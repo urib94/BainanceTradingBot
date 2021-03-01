@@ -1,55 +1,147 @@
 package CodeExecution;
 
+import Data.AccountBalance;
 import Data.Config;
 import Data.RequestClient;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.CandlestickInterval;
+import com.binance.client.api.model.trade.Position;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 public class RealTimeCommandOperator implements Runnable {
     private final HashMap<String, RealTimeOperation> commandsAndOps;
     private final HashMap<Pair<String,CandlestickInterval>, InvestmentManager> investmentManagerHashMap;
+    private final ReadWriteLock investmentManagerHashMapLock = new ReentrantReadWriteLock();
 
 
     public RealTimeCommandOperator() {
         investmentManagerHashMap = new HashMap<>();
         commandsAndOps = new HashMap<>();
-        commandsAndOps.put("cancel all orders (symbol)",()->{
+
+        commandsAndOps.put(RealTImeOperations.CANCEL_ALL_ORDERS,(message)->{
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-            syncRequestClient.cancelAllOpenOrder(Config.SYMBOL);});
-        /*TODO:
-        - Cancel all orders
-        - Close all positions
-        - Activate strategy (symbol, interval, stopLossPercentage, takeProfitPercentage)
-        - Deactivate strategy (symbol, interval)
-        - Get all trades made (time)
-        - Get open positions
-        - Get open orders
-        - Get current balance
-        - Login
-         */
+            syncRequestClient.cancelAllOpenOrder(message.getSymbol());
+            });
+
+        commandsAndOps.put(RealTImeOperations.CLOSE_ALL_POSITIONS,(message)->{//TODO: complete
+            List<Position> openPositions = AccountBalance.getAccountBalance().getOpenPositions();
+            for (Position openPosition: openPositions){
+                //TODO:add a selling order according to uri's desires.
+
+
+
+
+
+
+            }
+            ;});
+
+        commandsAndOps.put(RealTImeOperations.ACTIVATE_STRATEGY,(message)->{
+            Pair<String, CandlestickInterval> pair = new MutablePair<String, CandlestickInterval>(message.getSymbol(), message.getInterval());
+            investmentManagerHashMapLock.readLock().lock();
+            if (investmentManagerHashMap.containsKey(pair)){
+                investmentManagerHashMap.get(pair).addEntryStrategy(message.getEntryStrategy());
+                investmentManagerHashMapLock.readLock().unlock();
+            }
+            else{
+                investmentManagerHashMapLock.readLock().unlock();
+                investmentManagerHashMapLock.writeLock().lock();
+                InvestmentManager investmentManager = new InvestmentManager(message.getInterval(), message.getSymbol(), message.getEntryStrategy());
+                investmentManagerHashMap.put(pair, investmentManager);
+                investmentManagerHashMapLock.writeLock().unlock();
+                investmentManager.run();
+            }
+            });
+
+        commandsAndOps.put(RealTImeOperations.ACTIVATE_STRATEGY_D,(message)->{
+            Pair<String, CandlestickInterval> pair = new MutablePair<String, CandlestickInterval>(message.getSymbol(), message.getInterval());
+            investmentManagerHashMapLock.readLock().lock();
+            if (investmentManagerHashMap.containsKey(pair)){
+                investmentManagerHashMap.get(pair).addEntryStrategy(message.getEntryStrategy());
+                investmentManagerHashMapLock.readLock().unlock();
+            }
+            else{
+                investmentManagerHashMapLock.readLock().unlock();
+                investmentManagerHashMapLock.writeLock().lock();
+                InvestmentManager investmentManager = new InvestmentManager(message.getInterval(), message.getSymbol(), message.getEntryStrategy());
+                investmentManagerHashMap.put(pair, investmentManager);
+                investmentManagerHashMapLock.writeLock().unlock();
+                investmentManager.run();
+            }
+        });
+
+        commandsAndOps.put(RealTImeOperations.DEACTIVATE_STRATEGY,(message)->{
+            Pair<String, CandlestickInterval> pair = new MutablePair<String, CandlestickInterval>(message.getSymbol(), message.getInterval());
+            investmentManagerHashMapLock.readLock().lock();
+            if (investmentManagerHashMap.containsKey(pair)){
+                investmentManagerHashMap.get(pair).removeEntryStrategy(message.getEntryStrategy());
+                investmentManagerHashMapLock.readLock().unlock();
+            }
+            });
+
+        commandsAndOps.put(RealTImeOperations.GET_LAST_TRADES,(message)->{//TODO: complete
+
+
+
+
+
+
+            });
+
+        commandsAndOps.put(RealTImeOperations.GET_OPEN_POSITIONS,(message)->{
+            List<Position> openPositions = AccountBalance.getAccountBalance().getOpenPositions();
+            int index = 1;
+            for (Position openPosition: openPositions){
+                System.out.println("Open position "+ index + ": " + openPosition);
+                index++;
+            }
+            });
+
+        commandsAndOps.put(RealTImeOperations.GET_OPEN_ORDERS,(message)->{//TODO: complete
+
+
+
+
+
+
+
+            });
+
+        commandsAndOps.put(RealTImeOperations.GET_CURRENT_BALANCE,(message)->{
+            System.out.println("Your current balance is: " + AccountBalance.getAccountBalance().getCoinBalance(message.getSymbol()));
+            });
+
+        commandsAndOps.put(RealTImeOperations.LOGIN,(message)->{
+            Config.setApiKey(message.getApiKey());
+            Config.setSecretKey(message.getSecretKey());
+            });
     }
 
     @Override
     public void run() {
         while(true){
-            String input = "";
+            InputMessage message = new InputMessage();
             try {
-                input = readFromKeyboard();
+                String input = readFromKeyboard();
+                message.initialize(input);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            System.out.println(input);
-            if (commandsAndOps.containsKey(input)){
-                commandsAndOps.get(input).run();
+            if (commandsAndOps.containsKey(message.getOperation())){
+                commandsAndOps.get(message.getOperation()).run(message);
             }
         }
     }

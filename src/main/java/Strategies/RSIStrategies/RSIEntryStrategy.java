@@ -13,11 +13,10 @@ import java.math.MathContext;
 import java.util.ArrayList;
 
 public class RSIEntryStrategy implements EntryStrategy {
-    double takeProfitPercentage;
-    private final double stopLossPercentage;
-    private final int leverage;
-    private final  BigDecimal requestedBuyingAmount;
-
+    double takeProfitPercentage = RSIConstants.DEFAULT_TAKE_PROFIT_PERCENTAGE;
+    private double stopLossPercentage = RSIConstants.DEFAULT_STOP_LOSS_PERCENTAGE;
+    private int leverage = RSIConstants.DEFAULT_LEVERAGE;
+    private  BigDecimal requestedBuyingAmount = RSIConstants.DEFAULT_BUYING_AMOUNT;
     private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_ONE;
     private int time_passed_from_position_2 = 0;
     double rsiValueToCheckForPosition3 = -1;
@@ -26,6 +25,10 @@ public class RSIEntryStrategy implements EntryStrategy {
         this.stopLossPercentage = stopLossPercentage;
         this.leverage = leverage;
         this.requestedBuyingAmount = requestedBuyingAmount;
+    }
+
+    public RSIEntryStrategy(){//TODO:complete default values constructor
+
     }
 
     public PositionHandler run(RealTimeData realTimeData,String symbol) {
@@ -78,6 +81,22 @@ public class RSIEntryStrategy implements EntryStrategy {
             }
         }
         return null;
+    }
+
+    public void setTakeProfitPercentage(double takeProfitPercentage) {
+        this.takeProfitPercentage = takeProfitPercentage;
+    }
+
+    public void setStopLossPercentage(double stopLossPercentage) {
+        this.stopLossPercentage = stopLossPercentage;
+    }
+
+    public void setLeverage(int leverage) {
+        this.leverage = leverage;
+    }
+
+    public void setRequestedBuyingAmount(BigDecimal requestedBuyingAmount) {
+        this.requestedBuyingAmount = requestedBuyingAmount;
     }
     private String getBuyingQtyAsString(RealTimeData realTimeData, String symbol) {
         BigDecimal buyingQty = requestedBuyingAmount.multiply(BigDecimal.valueOf(leverage)).divide(realTimeData.getCurrentPrice(), MathContext.DECIMAL32);
