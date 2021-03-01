@@ -97,7 +97,7 @@ public class RealTimeCommandOperator implements Runnable {
 
         commandsAndOps.put(RealTImeOperations.GET_LAST_TRADES,(message)->{//TODO: complete
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-            syncRequestClient.getAccountTrades(message.getSymbol(), message.getStartTime(), message.getEndTime(), message.getTradesLimit());
+            syncRequestClient.getAccountTrades(message.getSymbol());
 
 
         });

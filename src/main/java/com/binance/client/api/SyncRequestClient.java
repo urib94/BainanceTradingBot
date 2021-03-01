@@ -274,7 +274,7 @@ public interface SyncRequestClient {
      *
      * @return Trades.
      */
-    List<MyTrade> getAccountTrades(String symbol, Long startTime, Long endTime, Integer limit);
+    List<MyTrade> getAccountTrades(String symbol);
 
     /**
      * Get income history.

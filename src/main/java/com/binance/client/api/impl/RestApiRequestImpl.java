@@ -1073,14 +1073,10 @@ class RestApiRequestImpl {
         return request;
     }
 
-    RestApiRequest<List<MyTrade>> getAccountTrades(String symbol, Long startTime, Long endTime, 
-             Integer limit) {
+    RestApiRequest<List<MyTrade>> getAccountTrades(String symbol) {
         RestApiRequest<List<MyTrade>> request = new RestApiRequest<>();
         UrlParamsBuilder builder = UrlParamsBuilder.build()
-                .putToUrl("symbol", symbol)
-                .putToUrl("startTime", startTime)
-                .putToUrl("endTime", endTime)
-                .putToUrl("limit", limit);
+                .putToUrl("symbol", symbol);
         request.request = createRequestByGetWithSignature("/fapi/v1/userTrades", builder);
 
         request.jsonParser = (jsonWrapper -> {
