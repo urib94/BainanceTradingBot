@@ -12,10 +12,6 @@ public class InputMessage {
     public String operation;
     private String symbol;
     private CandlestickInterval interval;
-    double takeProfitPercentage;
-    private double stopLossPercentage;
-    private int leverage;
-    private BigDecimal requestedBuyingAmount;
     private EntryStrategy entryStrategy;
     private String apiKey;
     private String secretKey;

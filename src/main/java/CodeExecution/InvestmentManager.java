@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -77,7 +78,7 @@ public class InvestmentManager implements Runnable{
     private void waitUntilFinished(ArrayList<Future<?>> futures){
         for (Future<?> future: futures){
             try{
-                future.get();
+                future.get(2, TimeUnit.SECONDS);//TODO: check if this change is slowing the machine
             }catch (Exception ignored){}
             futures.remove(future);
         }
