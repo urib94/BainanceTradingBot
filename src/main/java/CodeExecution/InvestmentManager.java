@@ -10,6 +10,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import Data.*;
 import Positions.PositionHandler;
 import Strategies.EntryStrategy;
+import com.binance.client.api.SubscriptionClient;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.*;
 import com.binance.client.api.model.trade.Order;
@@ -30,7 +31,7 @@ public class InvestmentManager implements Runnable{
 
     public void run(){
         RealTimeData realTimeData = new RealTimeData(symbol, interval);
-        com.binance.client.api.SubscriptionClient subscriptionClient = SubClient.getSubClient().getSubscriptionClient();
+        SubscriptionClient subscriptionClient = SubClient.getSubClient().getSubscriptionClient();
         ExecutorService executorService = ExecService.getExecService().getExecutorService();
         ArrayList<PositionHandler> positionHandlers = new ArrayList<>();
         ArrayList<Future<?>> futures = new ArrayList<>();

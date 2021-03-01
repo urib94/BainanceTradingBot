@@ -51,7 +51,7 @@ public class WebSocketConnection extends WebSocketListener {
         this.okhttpRequest = request.authHandler == null ? new Request.Builder().url(subscriptionUrl).build()
                 : new Request.Builder().url(subscriptionUrl).build();
         this.watchDog = watchDog;
-        log.info("[Sub] Connection [id: " + this.connectionId + "] created for " + request.name);
+//        log.info("[Sub] Connection [id: " + this.connectionId + "] created for " + request.name);
     }
 
     int getConnectionId() {
@@ -60,15 +60,15 @@ public class WebSocketConnection extends WebSocketListener {
 
     void connect() {
         if (state == ConnectionState.CONNECTED) {
-            log.info("[Sub][" + this.connectionId + "] Already connected");
+//            log.info("[Sub][" + this.connectionId + "] Already connected");
             return;
         }
-        log.info("[Sub][" + this.connectionId + "] Connecting...");
+//        log.info("[Sub][" + this.connectionId + "] Connecting...");
         webSocket = RestApiInvoker.createWebSocket(okhttpRequest, this);
     }
 
     void reConnect(int delayInSecond) {
-        log.warn("[Sub][" + this.connectionId + "] Reconnecting after " + delayInSecond + " seconds later");
+//        log.warn("[Sub][" + this.connectionId + "] Reconnecting after " + delayInSecond + " seconds later");
         if (webSocket != null) {
             webSocket.cancel();
             webSocket = null;
@@ -91,12 +91,12 @@ public class WebSocketConnection extends WebSocketListener {
 
     void send(String str) {
         boolean result = false;
-        log.debug("[Send]{}", str);
+//        log.debug("[Send]{}", str);
         if (webSocket != null) {
             result = webSocket.send(str);
         }
         if (!result) {
-            log.error("[Sub][" + this.connectionId + "] Failed to send message");
+//            log.error("[Sub][" + this.connectionId + "] Failed to send message");
             closeOnError();
         }
     }
@@ -106,7 +106,7 @@ public class WebSocketConnection extends WebSocketListener {
         super.onMessage(webSocket, text);
         lastReceivedTime = System.currentTimeMillis();
 
-        log.debug("[On Message]:{}", text);
+//        log.debug("[On Message]:{}", text);
         try {
             JsonWrapper jsonWrapper = JsonWrapper.parseFromString(text);
 
@@ -117,7 +117,7 @@ public class WebSocketConnection extends WebSocketListener {
             }
 
         } catch (Exception e) {
-            log.error("[On Message][{}]: catch exception:", connectionId, e);
+//            log.error("[On Message][{}]: catch exception:", connectionId, e);
             closeOnError();
         }
     }
@@ -127,7 +127,7 @@ public class WebSocketConnection extends WebSocketListener {
             BinanceApiException exception = new BinanceApiException(BinanceApiException.SUBSCRIPTION_ERROR, errorMessage, e);
             request.errorHandler.onError(exception);
         }
-        log.error("[Sub][" + this.connectionId + "] " + errorMessage);
+//        log.error("[Sub][" + this.connectionId + "] " + errorMessage);
     }
 
     private void onReceiveAndClose(JsonWrapper jsonWrapper) {
@@ -148,7 +148,7 @@ public class WebSocketConnection extends WebSocketListener {
         try {
             request.updateCallback.onReceive(obj);
         } catch (Exception e) {
-            onError("Process error: " + e.getMessage() + " You should capture the exception in your error handler", e);
+//            onError("Process error: " + e.getMessage() + " You should capture the exception in your error handler", e);
         }
     }
 
@@ -157,7 +157,7 @@ public class WebSocketConnection extends WebSocketListener {
     }
 
     public void close() {
-        log.error("[Sub][" + this.connectionId + "] Closing normally");
+//        log.error("[Sub][" + this.connectionId + "] Closing normally");
         webSocket.cancel();
         webSocket = null;
         watchDog.onClosedNormally(this);
@@ -176,7 +176,7 @@ public class WebSocketConnection extends WebSocketListener {
     public void onOpen(WebSocket webSocket, Response response) {
         super.onOpen(webSocket, response);
         this.webSocket = webSocket;
-        log.info("[Sub][" + this.connectionId + "] Connected to server");
+//        log.info("[Sub][" + this.connectionId + "] Connected to server");
         watchDog.onConnectionCreated(this);
         if (request.connectionHandler != null) {
             request.connectionHandler.handle(this);
