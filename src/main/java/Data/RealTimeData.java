@@ -117,10 +117,6 @@ public class RealTimeData{
         return new RSIIndicator(closePriceIndicator, RSIConstants.RSI_CANDLE_NUM);
     }
 
-    public double calculateDeltaRSI() {
-
-    }
-
     private ZonedDateTime getZonedDateTime(Long timestamp) {
         return ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
                 ZoneId.systemDefault());

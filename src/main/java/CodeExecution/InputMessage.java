@@ -15,6 +15,17 @@ public class InputMessage {
     private EntryStrategy entryStrategy;
     private String apiKey;
     private String secretKey;
+    private Long startTime;
+    private Long endTime;
+    private Long clientId;
+
+    public Long getClientId() {
+        return clientId;
+    }
+
+    private Integer tradesLimit;
+
+
 
 
 
@@ -59,8 +70,12 @@ public class InputMessage {
                     if (candlestickInterval.toString().equals(messageParts[2])) interval = candlestickInterval;
                 }
 
-            case RealTImeOperations.GET_LAST_TRADES://TODO: complete
-
+            case RealTImeOperations.GET_LAST_TRADES:
+                symbol = messageParts[1];
+                startTime = Long.parseLong(messageParts[2]);
+                endTime = Long.parseLong(messageParts[3]);
+                endTime = Long.parseLong(messageParts[4]);
+                tradesLimit = Integer.parseInt(messageParts[5]);
 
             case RealTImeOperations.GET_OPEN_POSITIONS:
 
@@ -82,6 +97,18 @@ public class InputMessage {
             default:
                 System.out.println("Wrong message");
         }
+    }
+
+    public Long getStartTime() {
+        return startTime;
+    }
+
+    public Long getEndTime() {
+        return endTime;
+    }
+
+    public Integer getTradesLimit() {
+        return tradesLimit;
     }
 
     public String getOperation() {
