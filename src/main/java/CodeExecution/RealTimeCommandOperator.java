@@ -4,7 +4,7 @@ import Data.AccountBalance;
 import Data.Config;
 import Data.RequestClient;
 import com.binance.client.api.SyncRequestClient;
-import com.binance.client.api.model.enums.CandlestickInterval;
+import com.binance.client.api.model.enums.*;
 import com.binance.client.api.model.trade.Order;
 import com.binance.client.api.model.trade.Position;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -35,20 +35,22 @@ public class RealTimeCommandOperator implements Runnable {
         commandsAndOps.put(RealTImeOperations.CANCEL_ALL_ORDERS,(message)->{
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             syncRequestClient.cancelAllOpenOrder(message.getSymbol());
-            });
+        });
 
-        commandsAndOps.put(RealTImeOperations.CLOSE_ALL_POSITIONS,(message)->{//TODO: complete
+        commandsAndOps.put(RealTImeOperations.CLOSE_ALL_POSITIONS,(message)->{
             List<Position> openPositions = AccountBalance.getAccountBalance().getOpenPositions();
             for (Position openPosition: openPositions){
-                //TODO:add a selling order according to uri's desires.
-
-
-
-
-
-
+                SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+                if (openPosition.getPositionSide().equals("LONG")){
+                    Order sellingOrder = syncRequestClient.postOrder(message.getSymbol(), OrderSide.SELL, null, OrderType.MARKET, TimeInForce.GTC,
+                            openPosition.getPositionAmt().toString(), null, Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
+                }
+                else{
+                    Order sellingOrder = syncRequestClient.postOrder(message.getSymbol(), OrderSide.BUY, null, OrderType.MARKET, TimeInForce.GTC,
+                            openPosition.getPositionAmt().toString(), null, Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
+                }
             }
-            ;});
+        });
 
         commandsAndOps.put(RealTImeOperations.ACTIVATE_STRATEGY,(message)->{
             Pair<String, CandlestickInterval> pair = new MutablePair<String, CandlestickInterval>(message.getSymbol(), message.getInterval());
@@ -65,7 +67,7 @@ public class RealTimeCommandOperator implements Runnable {
                 investmentManagerHashMapLock.writeLock().unlock();
                 investmentManager.run();
             }
-            });
+        });
 
         commandsAndOps.put(RealTImeOperations.ACTIVATE_STRATEGY_D,(message)->{
             Pair<String, CandlestickInterval> pair = new MutablePair<String, CandlestickInterval>(message.getSymbol(), message.getInterval());
@@ -107,7 +109,7 @@ public class RealTimeCommandOperator implements Runnable {
                 System.out.println("Open position "+ index + ": " + openPosition);
                 index++;
             }
-            });
+        });
 
         commandsAndOps.put(RealTImeOperations.GET_OPEN_ORDERS,(message)->{
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
@@ -117,16 +119,16 @@ public class RealTimeCommandOperator implements Runnable {
                 System.out.println("Open position "+ index + ": " + openOrder);
                 index++;
             }
-            });
+        });
 
         commandsAndOps.put(RealTImeOperations.GET_CURRENT_BALANCE,(message)->{
             System.out.println("Your current balance is: " + AccountBalance.getAccountBalance().getCoinBalance(message.getSymbol()));
-            });
+        });
 
         commandsAndOps.put(RealTImeOperations.LOGIN,(message)->{
             Config.setApiKey(message.getApiKey());
             Config.setSecretKey(message.getSecretKey());
-            });
+        });
     }
 
     @Override
@@ -146,8 +148,8 @@ public class RealTimeCommandOperator implements Runnable {
     }
 
     private String readFromKeyboard() throws IOException {
-        InputStreamReader r=new InputStreamReader(System.in);
-        BufferedReader br=new BufferedReader(r);
+        InputStreamReader r = new InputStreamReader(System.in);
+        BufferedReader br = new BufferedReader(r);
         return br.readLine();
     }
 }

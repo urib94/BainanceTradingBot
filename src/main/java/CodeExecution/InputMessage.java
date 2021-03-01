@@ -35,7 +35,7 @@ public class InputMessage {
     }
 
     public void initialize(String input) {//TODO: complete
-        String [] messageParts = input.split(",");
+        String [] messageParts = input.split(", ");
         operation = messageParts[0];
         switch (operation) {
             case RealTImeOperations.CANCEL_ALL_ORDERS:

@@ -19,13 +19,11 @@
             <artifactId>ta4j-core</artifactId>
             <version>0.13</version>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.8.0-beta0</version>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
@@ -37,8 +35,6 @@
             <version>1.3.0-alpha4</version>
             <scope>test</scope>
         </dependency>
-
-
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
@@ -60,8 +56,5 @@
             <version>1.11</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
-
-
-
     </dependencies>
 </project>
