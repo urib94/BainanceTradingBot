@@ -5,6 +5,7 @@ import Data.Config;
 import Data.RequestClient;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.*;
+import com.binance.client.api.model.trade.MyTrade;
 import com.binance.client.api.model.trade.Order;
 import com.binance.client.api.model.trade.Position;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -97,9 +98,8 @@ public class RealTimeCommandOperator implements Runnable {
 
         commandsAndOps.put(RealTImeOperations.GET_LAST_TRADES,(message)->{//TODO: complete
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-            syncRequestClient.getAccountTrades(message.getSymbol());
-
-
+            List<MyTrade> myTrades = syncRequestClient.getAccountTrades(message.getSymbol());
+            System.out.println(myTrades);
         });
 
         commandsAndOps.put(RealTImeOperations.GET_OPEN_POSITIONS,(message)->{

@@ -73,10 +73,6 @@ public class InputMessage {
 
             case RealTImeOperations.GET_LAST_TRADES:
                 symbol = messageParts[1];
-                startTime = Long.parseLong(messageParts[2]);
-                endTime = Long.parseLong(messageParts[3]);
-                endTime = Long.parseLong(messageParts[4]);
-                tradesLimit = Integer.parseInt(messageParts[5]);
                 break;
 
             case RealTImeOperations.GET_OPEN_POSITIONS:
