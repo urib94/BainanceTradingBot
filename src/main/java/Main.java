@@ -22,7 +22,6 @@ public class Main {
         AccountBalance accountBalance = AccountBalance.getAccountBalance(); //!Don't touch
         BinanceInfo binanceInfo = BinanceInfo.getBinanceInfo(); //!Don't touch
         Thread realTimeCommandOperatorThread = new Thread(new RealTimeCommandOperator());
-
     }
 }
 

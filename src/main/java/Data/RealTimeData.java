@@ -115,6 +115,9 @@ public class RealTimeData{
     private RSIIndicator calculateRSI() {
         ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(realTimeData);
         return new RSIIndicator(closePriceIndicator, RSIConstants.RSI_CANDLE_NUM);
+    }
+
+    public double calculateDeltaRSI() {
 
     }
 
