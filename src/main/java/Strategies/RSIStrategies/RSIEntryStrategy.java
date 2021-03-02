@@ -55,7 +55,7 @@ public class RSIEntryStrategy implements EntryStrategy {
             if(rsiValueToCheckForPosition3 != realTimeData.getRsiCloseValue()) {
                 time_passed_from_position_2 ++;
             }
-            if (realTimeData.above(RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_3)) { //TODO:fix
+            if (realTimeData.rsiAbove(RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_3)) { //TODO:fix
                 time_passed_from_position_2 = 0;
                 positionInStrategy = PositionInStrategy.POSITION_ONE;
                 rsiValueToCheckForPosition3 = -1;
