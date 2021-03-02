@@ -10,4 +10,5 @@ public class MACDOverRSIConstants {
     public static final int DEFAULT_LEVERAGE = 0;//TODO: change to real values
     public static final BigDecimal DEFAULT_BUYING_AMOUNT = BigDecimal.valueOf(0.0);//TODO: change to real values
     public static final int SIGNAL_LENGTH = 9;
+    public static final int RSI_CANDLE_NUM = 14;
 }

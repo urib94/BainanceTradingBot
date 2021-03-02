@@ -2,6 +2,7 @@ package CodeExecution;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -18,15 +19,20 @@ import com.binance.client.api.model.trade.Order;
 public class InvestmentManager implements Runnable{
     private final CandlestickInterval interval;
     private final String symbol;
-    ArrayList<EntryStrategy> entryStrategies;
+    ConcurrentLinkedDeque<EntryStrategy> entryStrategies;
+    ConcurrentLinkedDeque<PositionHandler> positionHandlers;
+    ConcurrentLinkedDeque<Future<?>> futures;
     ReadWriteLock entryStrategiesLock = new ReentrantReadWriteLock();
+    ReadWriteLock positionHandlersLock = new ReentrantReadWriteLock();
 
 
     public InvestmentManager(CandlestickInterval interval, String symbol, EntryStrategy entryStrategy) {
         System.out.println("Managing Investment!");
         this.interval = interval;
         this.symbol = symbol;
-        entryStrategies = new ArrayList<>();
+        entryStrategies = new ConcurrentLinkedDeque<>();
+        positionHandlers = new ConcurrentLinkedDeque<>();
+        futures = new ConcurrentLinkedDeque<>();
         entryStrategies.add(entryStrategy);
     }
 
@@ -34,9 +40,6 @@ public class InvestmentManager implements Runnable{
         RealTimeData realTimeData = new RealTimeData(symbol, interval);
         SubscriptionClient subscriptionClient = SubClient.getSubClient().getSubscriptionClient();
         ExecutorService executorService = ExecService.getExecService().getExecutorService();
-        ArrayList<PositionHandler> positionHandlers = new ArrayList<>();
-        ArrayList<Future<?>> futures = new ArrayList<>();
-        ReadWriteLock positionHandlersLock = new ReentrantReadWriteLock();
         PositionHandler oldPosition = AccountBalance.getAccountBalance().manageOldPositions(symbol);
         if (oldPosition != null){
             positionHandlers.add(oldPosition);
@@ -76,10 +79,10 @@ public class InvestmentManager implements Runnable{
         }), System.out::println);
     }
 
-    private void waitUntilFinished(ArrayList<Future<?>> futures){
+    private void waitUntilFinished(ConcurrentLinkedDeque<Future<?>> futures){
         for (Future<?> future: futures){
             try{
-                future.get(2, TimeUnit.SECONDS);//TODO: check if this change is slowing the machine
+                future.get(500, TimeUnit.MILLISECONDS);//TODO: check if this change is slowing the machine
             }catch (Exception ignored){}
             futures.remove(future);
         }

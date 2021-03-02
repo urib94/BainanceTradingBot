@@ -2,6 +2,7 @@ package CodeExecution;
 
 import Data.AccountBalance;
 import Data.Config;
+import Data.ExecService;
 import Data.RequestClient;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.*;

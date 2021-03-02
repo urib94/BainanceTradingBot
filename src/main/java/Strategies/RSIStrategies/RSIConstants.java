@@ -20,8 +20,8 @@ public class RSIConstants {
 	public static final int RSI_ENTRY_THRESHOLD_1 = 27;
 	public static final int RSI_ENTRY_THRESHOLD_2 = 30;
 	public static final int RSI_ENTRY_THRESHOLD_3 = 35;
-	public static final int RSI_CANDLE_NUM = 14;
-    public static final double DEFAULT_STOP_LOSS_PERCENTAGE = 1;
+	public static final int RSI_CANDLE_NUM = 9;
+    public static final double DEFAULT_STOP_LOSS_PERCENTAGE = 0.01;
 	public static final int DEFAULT_LEVERAGE = 6;
 	public static final BigDecimal DEFAULT_BUYING_AMOUNT = BigDecimal.valueOf(10);
 	public static final double DEFAULT_TAKE_PROFIT_PERCENTAGE = 0.5;

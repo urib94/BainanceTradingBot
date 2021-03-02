@@ -43,13 +43,7 @@ public class RealTimeData{
         lastCandleOpenTime = candlestickBars.get(candlestickBars.size() - 1).getOpenTime();
         currentPrice = candlestickBars.get(candlestickBars.size() -1).getClose();
         fillRealTimeData(candlestickBars);
-        rsiIndicator = calculateRSI();
-        rsiOpenValue = calculateCurrentOpenRSIValue();
-        rsiCloseValue = calculateCurrentClosedRSIValue();
-        macdOverRsiIndicator = calculateMacdOverRsi();
-        macdOverRsiMacdLineValue = calculateMacdOverRsiMacdLineValue();
-        macdOverRsiSignalLineValue = calculateMacdOverRsiSignalLineValue();
-        macdOverRsiValue = calculateMacdOverRsiValue();
+        calculateIndicators();
     }
 
     /**
@@ -63,11 +57,7 @@ public class RealTimeData{
     public void updateData(CandlestickEvent event){
         updateLastCandle(event);
         calculateIndicators();
-        System.out.println("RSI OPEN: " + rsiOpenValue);
-        System.out.println("RSI CLOSE: " + rsiCloseValue);
-        System.out.println("Macd line VALUE: " + macdOverRsiMacdLineValue);
-        System.out.println("Signal line VALUE: " + macdOverRsiSignalLineValue);
-        System.out.println("MacdOverRsi VALUE: " + macdOverRsiValue);
+        System.out.println("open rsi: " + rsiOpenValue);
     }
 
     private void fillRealTimeData(List<Candlestick> candlestickBars){
@@ -132,6 +122,8 @@ public class RealTimeData{
     }
 
     private MACDIndicator calculateMacdOverRsi() {
+        ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(realTimeData);
+        RSIIndicator rsiIndicator = new RSIIndicator(closePriceIndicator, MACDOverRSIConstants.RSI_CANDLE_NUM);
         return new MACDIndicator(rsiIndicator, MACDOverRSIConstants.FAST_BAR_COUNT, MACDOverRSIConstants.SLOW_BAR_COUNT);
     }
 

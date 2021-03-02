@@ -31,7 +31,7 @@ public class RSIEntryStrategy implements EntryStrategy {
 
     }
 
-    public PositionHandler run(RealTimeData realTimeData,String symbol) {
+    public synchronized PositionHandler run(RealTimeData realTimeData,String symbol) {
         if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
             if (realTimeData.crossed(RealTimeData.CrossType.DOWN, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_1)) {
                 positionInStrategy = PositionInStrategy.POSITION_TWO;
