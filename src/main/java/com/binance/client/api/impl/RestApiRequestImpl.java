@@ -647,19 +647,6 @@ class RestApiRequestImpl {
         });
         return request;
     }
-//TODO:added by us
-    RestApiRequest<BigDecimal> futureAccountTransfer(String symbol, String amount , WalletTransferType type) {
-        RestApiRequest<BigDecimal> request = new RestApiRequest<>();
-        UrlParamsBuilder builder = UrlParamsBuilder.build()
-                .putToUrl("symbol", symbol)
-                .putToUrl("amount", amount)
-                .putToUrl("type", type);
-
-        request.request = createRequestByPostWithSignature("/sapi/v1/futures/transfer", builder);
-
-        request.jsonParser = (jsonWrapper -> jsonWrapper.getBigDecimal("tranId"));
-        return request;
-    }
 
     RestApiRequest<ResponseResult> changePositionSide(boolean dual) {
         RestApiRequest<ResponseResult> request = new RestApiRequest<>();
@@ -1337,6 +1324,96 @@ class RestApiRequestImpl {
 
                 result.add(element);
             });
+            return result;
+        });
+        return request;
+    }
+
+    RestApiRequest<BigDecimal> futureAccountTransfer(String symbol, String amount , WalletTransferType type) {
+        RestApiRequest<BigDecimal> request = new RestApiRequest<>();
+        UrlParamsBuilder builder = UrlParamsBuilder.build()
+                .putToUrl("symbol", symbol)
+                .putToUrl("amount", amount)
+                .putToUrl("type", type);
+
+        request.request = createRequestByPostWithSignature("/sapi/v1/futures/transfer", builder);
+
+        request.jsonParser = (jsonWrapper -> jsonWrapper.getBigDecimal("tranId"));
+        return request;
+    }
+
+    RestApiRequest<Loan> borrow(String coin, String amount , String collateralCoin ,String collateralAmount) {
+        RestApiRequest<Loan> request = new RestApiRequest<>();
+        UrlParamsBuilder builder = UrlParamsBuilder.build()
+                .putToUrl("coin", coin)
+                .putToUrl("amount", amount)
+                .putToUrl("collateralCoin", collateralCoin)
+                .putToUrl("collateralAmount", collateralAmount);
+
+        request.request = createRequestByPostWithSignature("/sapi/v1/futures/loan/borrow", builder);
+
+        request.jsonParser = (jsonWrapper -> {
+            Loan result = new Loan();
+            result.setCoin(jsonWrapper.getString("coin"));
+            result.setAmount(jsonWrapper.getBigDecimal("amount"));
+            result.setCollateralCoin(jsonWrapper.getString("collateralCoin"));
+            result.setCollateralAmount(jsonWrapper.getBigDecimal("collateralAmount"));
+            result.setTime(jsonWrapper.getLong("time"));
+            result.setBorrowId(jsonWrapper.getLong("borrowId"));
+            return result;
+        });
+        return request;
+    }
+
+    RestApiRequest<JSONObject> repay(String coin, String collateralCoin ,String amount) {
+        RestApiRequest<JSONObject> request = new RestApiRequest<>();
+        UrlParamsBuilder builder = UrlParamsBuilder.build()
+                .putToUrl("coin", coin)
+                .putToUrl("collateralCoin", collateralCoin)
+                .putToUrl("amount", amount);
+
+        request.request = createRequestByPostWithSignature("/sapi/v1/futures/loan/repay", builder);
+
+        request.jsonParser = (jsonWrapper -> {
+            JSONObject result = new JSONObject();
+            result.put("coin", jsonWrapper.getString("coin"));
+            result.put("amount", jsonWrapper.getBigDecimal("amount"));
+            result.put("collateralCoin", jsonWrapper.getString("collateralCoin"));
+            result.put("repayId", jsonWrapper.getBigDecimal("repayId"));
+            return result;
+        });
+        return request;
+    }
+
+    RestApiRequest<CrossCollateralWallet> getCrossCollateralWallet() {
+        RestApiRequest<CrossCollateralWallet> request = new RestApiRequest<>();
+        UrlParamsBuilder builder = UrlParamsBuilder.build();
+        request.request = createRequestByGetWithSignature("/sapi/v2/futures/loan/wallet", builder);
+
+        request.jsonParser = (jsonWrapper -> {
+            CrossCollateralWallet result = new CrossCollateralWallet();
+            result.setTotalCrossCollateral(jsonWrapper.getBigDecimal("totalCrossCollateral"));
+            result.setTotalBorrowed(jsonWrapper.getBigDecimal("totalBorrowed"));
+            result.setTotalInterest(jsonWrapper.getBigDecimal("totalInterest"));
+            result.setInterestFreeLimit(jsonWrapper.getBigDecimal("interestFreeLimit"));
+            result.setAsset(jsonWrapper.getString("asset"));
+
+            List<crossCollateral> crossCollateralList = new LinkedList<>();
+            JsonWrapperArray crossCollateralArray = jsonWrapper.getJsonArray("assets");
+            crossCollateralArray.forEach((item) -> {
+                crossCollateral element = new crossCollateral();
+                element.setLoanCoin(item.getString("loanCoin"));
+                element.setCollateralCoin(item.getString("collateralCoin"));
+                element.setLocked(item.getBigDecimal("locked"));
+                element.setLoanAmount(item.getBigDecimal("loanAmount"));
+                element.setCurrentCollateralRate(item.getBigDecimal("currentCollateralRate"));
+                element.setInterestFreeLimitUsed(item.getBigDecimal("interestFreeLimitUsed"));
+                element.setPrincipalForInterest(item.getBigDecimal("principalForInterest"));
+                element.setInterest(item.getBigDecimal("interest"));
+                crossCollateralList.add(element);
+            });
+            result.setCrossCollaterals(crossCollateralList);
+
             return result;
         });
         return request;

@@ -8,6 +8,7 @@ import com.binance.client.api.model.market.*;
 import com.binance.client.api.model.enums.*;
 import com.binance.client.api.model.trade.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -338,5 +339,33 @@ public interface SyncRequestClient {
      * @return Taker Long/Short Ratio. 
      */
     List<TakerLongShortStat> getTakerLongShortRatio(String symbol, PeriodType period, Long startTime, Long endTime, Integer limit);
+
+    /**
+     * New Future Account Transfer (USER_DATA)
+     *
+     * @return BigDecimal tranId.
+     */
+    BigDecimal futureAccountTransfer(String symbol, String amount , WalletTransferType type);
+
+    /**
+     * Borrow For Cross-Collateral (TRADE)
+     *
+     * @return Loan.
+     */
+    Loan borrow(String coin, String amount , String collateralCoin ,String collateralAmount);
+
+    /**
+     * Borrow For Cross-Collateral (TRADE)
+     *
+     * @return Loan.
+     */
+    JSONObject repay(String coin, String collateralCoin ,String amount);
+
+    /**
+     * Cross-Collateral Wallet V2 (USER_DATA)
+     *
+     * @return CrossCollateralWallet.
+     */
+    CrossCollateralWallet getCrossCollateralWallet();
 
 }

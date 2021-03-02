@@ -28,12 +28,6 @@ public class RealTimeData{
     private BigDecimal currentPrice;
     private RSIIndicator rsiIndicator;
     private MACDIndicator macdOverRsiIndicator;
-//    private MACDIndicator macdOverRsiIndicator;
-////    private double rsiOpenValue;
-////    private double rsiCloseValue;
-////    private double macdOverRsiMacdLineValue;
-////    private double macdOverRsiSignalLineValue;
-////    private double macdOverRsiValue;
 
 
 

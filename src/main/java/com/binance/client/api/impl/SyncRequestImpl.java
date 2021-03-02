@@ -7,6 +7,7 @@ import com.binance.client.api.model.market.*;
 import com.binance.client.api.model.enums.*;
 import com.binance.client.api.model.trade.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class SyncRequestImpl implements SyncRequestClient {
@@ -218,5 +219,25 @@ public class SyncRequestImpl implements SyncRequestClient {
     @Override
     public List<TakerLongShortStat> getTakerLongShortRatio(String symbol, PeriodType period, Long startTime, Long endTime, Integer limit) {
         return RestApiInvoker.callSync(requestImpl.getTakerLongShortRatio(symbol, period, startTime, endTime, limit));
+    }
+    //TODO: added by us:
+    @Override
+    public BigDecimal futureAccountTransfer(String symbol, String amount, WalletTransferType type){
+        return RestApiInvoker.callSync(requestImpl.futureAccountTransfer(symbol, amount, type));
+    }
+
+    @Override
+    public Loan borrow(String coin, String amount , String collateralCoin ,String collateralAmount){
+        return RestApiInvoker.callSync(requestImpl.borrow(coin, amount, collateralCoin, collateralAmount));
+    }
+
+    @Override
+    public JSONObject repay(String coin, String collateralCoin ,String amount){
+        return RestApiInvoker.callSync(requestImpl.repay(coin,  collateralCoin, amount));
+    }
+
+    @Override
+    public CrossCollateralWallet getCrossCollateralWallet() {
+        return RestApiInvoker.callSync(requestImpl.getCrossCollateralWallet());
     }
 }
