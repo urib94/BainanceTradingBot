@@ -50,7 +50,8 @@ public class PositionHandler implements Serializable {
 
     public boolean isSoldOut(){ return isActive && !status.equals(Config.NEW) && (qty.compareTo(BigDecimal.valueOf(0.0)) <= 0);}
 
-    public void run(RealTimeData realTimeData) {
+    public synchronized void run(RealTimeData realTimeData) {
+        System.out.println("selling");
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         for (ExitStrategy exitStrategy : exitStrategies) {
             BigDecimal sellingQtyPercentage = exitStrategy.run(realTimeData);
@@ -68,7 +69,7 @@ public class PositionHandler implements Serializable {
         }
     }
 
-    public void update(CandlestickInterval interval) {
+    public synchronized void update(CandlestickInterval interval) {
         Position position = AccountBalance.getAccountBalance().getPosition(symbol);
         if (orderID != null) {
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
@@ -103,7 +104,7 @@ public class PositionHandler implements Serializable {
         return qty.multiply(percentage);
     }
 
-    public void terminate(){
+    public synchronized void terminate(){
         System.out.println("Terminating");
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         syncRequestClient.cancelAllOpenOrder(Config.SYMBOL);
