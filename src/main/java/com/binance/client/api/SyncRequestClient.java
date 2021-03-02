@@ -368,4 +368,11 @@ public interface SyncRequestClient {
      */
     CrossCollateralWallet getCrossCollateralWallet();
 
+    /**
+     * Daily Account Snapshot (USER_DATA)
+     *
+     * @return MarginLevel.
+     */
+    BigDecimal getMarginLevel();
+
 }

@@ -1419,4 +1419,15 @@ class RestApiRequestImpl {
         return request;
     }
 
+    RestApiRequest<BigDecimal> getMarginLevel() {
+        RestApiRequest<BigDecimal> request = new RestApiRequest<>();
+        UrlParamsBuilder builder = UrlParamsBuilder.build()
+                .putToUrl("type", "MARGIN");
+        request.request = createRequestByGetWithSignature("/sapi/v1/accountSnapshot", builder);
+
+        request.jsonParser = (jsonWrapper -> jsonWrapper.getJsonArray("snapshotVos").getArrayAt(0).getBigDecimalAt(0));
+
+        return request;
+    }
+
 }

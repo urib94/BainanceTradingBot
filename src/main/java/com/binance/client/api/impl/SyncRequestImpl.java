@@ -240,4 +240,9 @@ public class SyncRequestImpl implements SyncRequestClient {
     public CrossCollateralWallet getCrossCollateralWallet() {
         return RestApiInvoker.callSync(requestImpl.getCrossCollateralWallet());
     }
+
+    @Override
+    public BigDecimal getMarginLevel() {
+        return RestApiInvoker.callSync(requestImpl.getMarginLevel());
+    }
 }
