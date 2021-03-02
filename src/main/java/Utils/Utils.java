@@ -32,16 +32,7 @@ public class Utils {
 		}
 	}
 
-	public static EntryStrategy stringToEntryStrategy(String strategyName) {
-		switch (strategyName) {
-			case "rsiStrategy":
-				return new RSIEntryStrategy();
-
-			default:
-				return null;
-		}
-	}
-	private static ZonedDateTime getZonedDateTime(Long timestamp) {
+	public static ZonedDateTime getZonedDateTime(Long timestamp) {
 		return ZonedDateTime.ofInstant(Instant.ofEpochMilli(timestamp),
 				ZoneId.systemDefault());
 	}

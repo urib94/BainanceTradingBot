@@ -24,8 +24,12 @@ public class Main {
         System.out.println("Let's Dance!!!\n");
         AccountBalance accountBalance = AccountBalance.getAccountBalance(); //!Don't touch
         BinanceInfo binanceInfo = BinanceInfo.getBinanceInfo(); //!Don't touch
-        Thread realTimeCommandOperatorThread = new Thread(new RealTimeCommandOperator());
-        realTimeCommandOperatorThread.start();
+        RealTimeCommandOperator realTimeCommandOperator = new RealTimeCommandOperator();
+        try {
+            realTimeCommandOperator.run();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
 

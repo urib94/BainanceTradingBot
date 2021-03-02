@@ -1,7 +1,9 @@
 package CodeExecution;
 
 import Strategies.EntryStrategy;
+import Strategies.MACDOverRSIStrategies.MACDOverRSIEntryStrategy;
 import Strategies.RSIStrategies.RSIConstants;
+import Strategies.RSIStrategies.RSIEntryStrategy;
 import Utils.TimeConstants;
 import Utils.Utils;
 import com.binance.client.api.model.enums.CandlestickInterval;
@@ -9,7 +11,7 @@ import com.binance.client.api.model.enums.CandlestickInterval;
 import java.math.BigDecimal;
 
 public class InputMessage {
-    public String operation;
+    public String operation = "";
     private String symbol;
     private CandlestickInterval interval;
     private EntryStrategy entryStrategy;
@@ -41,14 +43,16 @@ public class InputMessage {
             case RealTImeOperations.CANCEL_ALL_ORDERS:
                 symbol = messageParts[1];
                 break;
+
             case RealTImeOperations.CLOSE_ALL_POSITIONS:
                 break;
+
             case RealTImeOperations.ACTIVATE_STRATEGY:
             symbol = messageParts[1];
             for (CandlestickInterval candlestickInterval: CandlestickInterval.values()){
                 if (candlestickInterval.toString().equals(messageParts[2])) interval = candlestickInterval;
             }
-            entryStrategy = Utils.stringToEntryStrategy(messageParts[3]);
+            entryStrategy = stringToEntryStrategy(messageParts[3]);
             if (entryStrategy != null){
                 entryStrategy.setTakeProfitPercentage(Double.parseDouble(messageParts[4]));
                 entryStrategy.setStopLossPercentage(Double.parseDouble(messageParts[5]));
@@ -56,13 +60,15 @@ public class InputMessage {
                 entryStrategy.setRequestedBuyingAmount(BigDecimal.valueOf(Double.parseDouble(messageParts[7])));
             }
                 break;
+
             case RealTImeOperations.ACTIVATE_STRATEGY_D:
             symbol = messageParts[1];
             for (CandlestickInterval candlestickInterval: CandlestickInterval.values()){
                 if (candlestickInterval.toString().equals(messageParts[2])) interval = candlestickInterval;
             }
-            entryStrategy = Utils.stringToEntryStrategy(messageParts[3]);
+            entryStrategy = stringToEntryStrategy(messageParts[3]);
                 break;
+
             case RealTImeOperations.DEACTIVATE_STRATEGY:
                 symbol = messageParts[1];
                 for (CandlestickInterval candlestickInterval: CandlestickInterval.values()){
@@ -84,10 +90,12 @@ public class InputMessage {
             case RealTImeOperations.GET_CURRENT_BALANCE:
                 symbol = messageParts[1];
                 break;
+
             case RealTImeOperations.LOGIN:
                 apiKey = messageParts[1];
                 secretKey = messageParts[2];
                 break;
+
             case "help":
                 System.out.println("Optional commands:\n" +
                         "cancel all orders, [symbol]\n" +
@@ -102,8 +110,22 @@ public class InputMessage {
                         "login, [apikey], [secretkey]\n"
                 );
                 break;
+
             default:
                 System.out.println("Wrong message");
+        }
+    }
+
+    private EntryStrategy stringToEntryStrategy(String strategyName) {
+        switch (strategyName) {
+            case "rsi":
+                return new RSIEntryStrategy();
+
+            case "macd over rsi":
+                return new MACDOverRSIEntryStrategy();
+
+            default:
+                return null;
         }
     }
 
