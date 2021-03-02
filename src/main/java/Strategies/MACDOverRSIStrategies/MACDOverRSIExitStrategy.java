@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 public class MACDOverRSIExitStrategy implements ExitStrategy {
 	@Override
 	public BigDecimal run(RealTimeData realTimeData) {
-		if (realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()) < 0) {
+		if (realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()) < MACDOverRSIConstants.MACD_OVER_RSI_EXIT_THRESHOLD) {
 			return MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE; //TODO: CHECK WITH URI
 		} else {
 			double currentMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex());
