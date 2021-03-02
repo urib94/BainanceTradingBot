@@ -1,5 +1,6 @@
 package com.binance.client.api.impl;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -644,6 +645,19 @@ class RestApiRequestImpl {
             result.setWorkingType(jsonWrapper.getString("workingType"));
             return result;
         });
+        return request;
+    }
+//TODO:added by us
+    RestApiRequest<BigDecimal> futureAccountTransfer(String symbol, String amount , WalletTransferType type) {
+        RestApiRequest<BigDecimal> request = new RestApiRequest<>();
+        UrlParamsBuilder builder = UrlParamsBuilder.build()
+                .putToUrl("symbol", symbol)
+                .putToUrl("amount", amount)
+                .putToUrl("type", type);
+
+        request.request = createRequestByPostWithSignature("/sapi/v1/futures/transfer", builder);
+
+        request.jsonParser = (jsonWrapper -> jsonWrapper.getBigDecimal("tranId"));
         return request;
     }
 
