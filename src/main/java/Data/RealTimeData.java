@@ -28,6 +28,8 @@ public class RealTimeData{
     private BigDecimal currentPrice;
     private RSIIndicator rsiIndicator;
     private MACDIndicator macdOverRsiIndicator;
+    private SMAIndicator smaIndicator;
+
 
 
 
@@ -92,6 +94,7 @@ public class RealTimeData{
     private void calculateIndicators() {
         rsiIndicator = calculateRSI(RSIConstants.RSI_CANDLE_NUM);
         macdOverRsiIndicator = calculateMacdOverRsi();
+        smaIndicator = new SMAIndicator(new ClosePriceIndicator(realTimeData), 150);
         System.out.println("RSI OPEN VALUE: " + getRsiOpenValue());
         System.out.println("MACDOVER RSI: " + getMacdOverRsiValueAtIndex(getLastIndex()));
     }
@@ -127,6 +130,10 @@ public class RealTimeData{
 
     public double getRSIValueAtIndex(int index) {
         return rsiIndicator.getValue(index).doubleValue();
+    }
+
+    public double getSMAValueAtIndex(int index) {
+        return smaIndicator.getValue(index).doubleValue();
     }
 
     private MACDIndicator calculateMacdOverRsi() {
@@ -210,6 +217,10 @@ public class RealTimeData{
 
     public int getLastIndex(){return realTimeData.getEndIndex();}
     public int getLastCloseIndex(){return realTimeData.getEndIndex()-1;}
+
+    public BaseBarSeries getRealTimeData() {
+        return realTimeData;
+    }
 
     public enum CandleType {
         OPEN,CLOSE

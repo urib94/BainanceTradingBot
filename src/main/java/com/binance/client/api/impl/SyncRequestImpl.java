@@ -245,4 +245,10 @@ public class SyncRequestImpl implements SyncRequestClient {
     public BigDecimal getMarginLevel() {
         return RestApiInvoker.callSync(requestImpl.getMarginLevel());
     }
+
+    @Override
+    public Order postOrderMargin(String symbol, String isIsolated, OrderSide side, OrderType orderType, String quantity, String price,
+                                 String newClientOrderId, TimeInForce timeInForce, NewOrderRespType newOrderRespType) {
+        return RestApiInvoker.callSync(requestImpl.postOrderMargin(symbol, isIsolated, side, orderType,quantity, price, newClientOrderId, timeInForce, newOrderRespType));
+    }
 }

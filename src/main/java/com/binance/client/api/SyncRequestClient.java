@@ -375,4 +375,7 @@ public interface SyncRequestClient {
      */
     BigDecimal getMarginLevel();
 
+    Order postOrderMargin(String symbol, String isIsolated, OrderSide side, OrderType orderType, String quantity, String price,
+                    String newClientOrderId, TimeInForce timeInForce, NewOrderRespType newOrderRespType);
+
 }

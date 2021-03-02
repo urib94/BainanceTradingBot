@@ -1329,7 +1329,7 @@ class RestApiRequestImpl {
         return request;
     }
 
-    RestApiRequest<BigDecimal> futureAccountTransfer(String symbol, String amount , WalletTransferType type) {
+    RestApiRequest<BigDecimal> futureAccountTransfer(String symbol, String amount , WalletTransferType type) {//TODO:replace
         RestApiRequest<BigDecimal> request = new RestApiRequest<>();
         UrlParamsBuilder builder = UrlParamsBuilder.build()
                 .putToUrl("symbol", symbol)
@@ -1427,6 +1427,40 @@ class RestApiRequestImpl {
 
         request.jsonParser = (jsonWrapper -> jsonWrapper.getJsonArray("snapshotVos").getArrayAt(0).getBigDecimalAt(0));
 
+        return request;
+    }
+
+    RestApiRequest<Order> postOrderMargin(String symbol, String isIsolated, OrderSide side, OrderType orderType, String quantity, String price,
+                                    String newClientOrderId, TimeInForce timeInForce, NewOrderRespType newOrderRespType) {
+        RestApiRequest<Order> request = new RestApiRequest<>();
+        UrlParamsBuilder builder = UrlParamsBuilder.build()
+                .putToUrl("symbol", symbol)
+                .putToUrl("isIsolated", isIsolated)
+                .putToUrl("side", side)
+                .putToUrl("type", orderType)
+                .putToUrl("quantity", quantity)
+                .putToUrl("price", price)
+                .putToUrl("newClientOrderId", newClientOrderId)
+                .putToUrl("timeInForce", timeInForce)
+                .putToUrl("newOrderRespType", newOrderRespType);
+
+        request.request = createRequestByPostWithSignature("/sapi/v1/margin/order", builder);
+
+        request.jsonParser = (jsonWrapper -> {
+            Order result = new Order();
+            result.setClientOrderId(jsonWrapper.getString("clientOrderId"));
+            result.setExecutedQty(jsonWrapper.getBigDecimal("executedQty"));
+            result.setOrderId(jsonWrapper.getLong("orderId"));
+            result.setOrigQty(jsonWrapper.getBigDecimal("origQty"));
+            result.setPrice(jsonWrapper.getBigDecimal("price"));
+            result.setSide(jsonWrapper.getString("side"));
+            result.setStatus(jsonWrapper.getString("status"));
+            result.setSymbol(jsonWrapper.getString("symbol"));
+            result.setTimeInForce(jsonWrapper.getString("timeInForce"));
+            result.setType(jsonWrapper.getString("type"));
+            result.setUpdateTime(jsonWrapper.getLong("transactTime"));
+            return result;
+        });
         return request;
     }
 

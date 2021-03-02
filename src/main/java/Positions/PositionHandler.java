@@ -50,7 +50,7 @@ public class PositionHandler implements Serializable {
 
     public boolean isSoldOut(){ return isActive && !status.equals(Config.NEW) && (qty.compareTo(BigDecimal.valueOf(0.0)) <= 0);}
 
-    public synchronized void run(RealTimeData realTimeData) {
+    public synchronized void run(RealTimeData realTimeData) {//TODO: adjust to long and short as exit method
         System.out.println("selling");
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         for (ExitStrategy exitStrategy : exitStrategies) {
