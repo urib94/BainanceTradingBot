@@ -8,12 +8,12 @@ import java.math.BigDecimal;
 public class MACDOverRSIExitStrategy implements ExitStrategy {
 	@Override
 	public BigDecimal run(RealTimeData realTimeData) {
-		if (realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()) < MACDOverRSIConstants.MACD_OVER_RSI_EXIT_THRESHOLD) {
+		double currentMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex());
+		double prevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()-1);
+		double prevPrevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()-2);
+		if (currentMacdOverRsiValue < MACDOverRSIConstants.MACD_OVER_RSI_EXIT_THRESHOLD && prevMacdOverRsiValue > MACDOverRSIConstants.MACD_OVER_RSI_EXIT_THRESHOLD) {
 			return MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE; //TODO: CHECK WITH URI
 		} else {
-			double currentMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex());
-			double prevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()-1);
-			double prevPrevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()-1);
 			boolean rule1 = currentMacdOverRsiValue < 0;
 			boolean rule2 = Math.abs(currentMacdOverRsiValue) < Math.abs(prevMacdOverRsiValue);
 			boolean rule3 = Math.abs(prevMacdOverRsiValue) < Math.abs(prevPrevMacdOverRsiValue);

@@ -162,12 +162,6 @@ public class RealTimeData{
         }
     }
 
-    //TODO: check with Uri
-    public boolean macdOverRSIAbove(int threshold) {
-        return getMacdOverRsiValueAtIndex(getLastCloseIndex()) > threshold;
-    }
-
-
     public RSIIndicator getRsiIndicator() {return rsiIndicator;}
 
     public BigDecimal getCurrentPrice() {
