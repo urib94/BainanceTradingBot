@@ -5,10 +5,7 @@ import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.trade.AccountInformation;
 import com.binance.client.api.model.trade.Asset;
 import com.binance.client.api.model.trade.Position;
-import com.binance.client.api.model.user.AccountUpdate;
-import com.binance.client.api.model.user.BalanceUpdate;
-import com.binance.client.api.model.user.PositionUpdate;
-import com.binance.client.api.model.user.UserDataUpdateEvent;
+import SingletonHelpers.RequestClient;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

@@ -2,7 +2,7 @@ package CodeExecution;
 
 import Data.AccountBalance;
 import Data.Config;
-import Data.RequestClient;
+import SingletonHelpers.RequestClient;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.*;
 import com.binance.client.api.model.trade.MyTrade;
@@ -11,9 +11,6 @@ import com.binance.client.api.model.trade.Position;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.locks.ReadWriteLock;

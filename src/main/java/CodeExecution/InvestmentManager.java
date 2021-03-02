@@ -1,6 +1,5 @@
 package CodeExecution;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -11,9 +10,9 @@ import Data.*;
 import Positions.PositionHandler;
 import Strategies.EntryStrategy;
 import com.binance.client.api.SubscriptionClient;
-import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.*;
-import com.binance.client.api.model.trade.Order;
+import SingletonHelpers.ExecService;
+import SingletonHelpers.SubClient;
 
 public class InvestmentManager implements Runnable{
     private final CandlestickInterval interval;

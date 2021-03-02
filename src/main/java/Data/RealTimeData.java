@@ -13,6 +13,7 @@ import org.ta4j.core.indicators.MACDIndicator;
 import org.ta4j.core.indicators.RSIIndicator;
 import org.ta4j.core.indicators.SMAIndicator;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
+import SingletonHelpers.RequestClient;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -27,11 +28,12 @@ public class RealTimeData{
     private BigDecimal currentPrice;
     private RSIIndicator rsiIndicator;
     private MACDIndicator macdOverRsiIndicator;
-    private double rsiOpenValue;
-    private double rsiCloseValue;
-    private double macdOverRsiMacdLineValue;
-    private double macdOverRsiSignalLineValue;
-    private double macdOverRsiValue;
+//    private MACDIndicator macdOverRsiIndicator;
+////    private double rsiOpenValue;
+////    private double rsiCloseValue;
+////    private double macdOverRsiMacdLineValue;
+////    private double macdOverRsiSignalLineValue;
+////    private double macdOverRsiValue;
 
 
 
@@ -43,13 +45,7 @@ public class RealTimeData{
         lastCandleOpenTime = candlestickBars.get(candlestickBars.size() - 1).getOpenTime();
         currentPrice = candlestickBars.get(candlestickBars.size() -1).getClose();
         fillRealTimeData(candlestickBars);
-        rsiIndicator = calculateRSI();
-        rsiOpenValue = calculateCurrentOpenRSIValue();
-        rsiCloseValue = calculateCurrentClosedRSIValue();
-        macdOverRsiIndicator = calculateMacdOverRsi();
-        macdOverRsiMacdLineValue = calculateMacdOverRsiMacdLineValue();
-        macdOverRsiSignalLineValue = calculateMacdOverRsiSignalLineValue();
-        macdOverRsiValue = calculateMacdOverRsiValue();
+        calculateIndicators();
     }
 
     /**
@@ -63,25 +59,6 @@ public class RealTimeData{
     public void updateData(CandlestickEvent event){
         updateLastCandle(event);
         calculateIndicators();
-        System.out.println("RSI OPEN: " + rsiOpenValue);
-        System.out.println("RSI CLOSE: " + rsiCloseValue);
-        System.out.println("Macd line VALUE: " + macdOverRsiMacdLineValue);
-        System.out.println("Signal line VALUE: " + macdOverRsiSignalLineValue);
-        System.out.println("MacdOverRsi VALUE: " + macdOverRsiValue);
-    }
-
-    private void fillRealTimeData(List<Candlestick> candlestickBars){
-        for (Candlestick candlestickBar : candlestickBars) {
-            ZonedDateTime closeTime = Utils.Utils.getZonedDateTime(candlestickBar.getCloseTime());
-            Duration candleDuration = Duration.ofMillis(candlestickBar.getCloseTime()
-                    - candlestickBar.getOpenTime());
-            double open = candlestickBar.getOpen().doubleValue();
-            double high = candlestickBar.getHigh().doubleValue();
-            double low = candlestickBar.getLow().doubleValue();
-            double close = candlestickBar.getClose().doubleValue();
-            double volume = candlestickBar.getVolume().doubleValue();
-            realTimeData.addBar(candleDuration, closeTime, open, high, low, close, volume);
-        }
     }
 
     private void updateLastCandle(CandlestickEvent event) {
@@ -104,14 +81,25 @@ public class RealTimeData{
         realTimeData.addBar(candleDuration, closeTime, open, high, low, close, volume);
     }
 
+    private void fillRealTimeData(List<Candlestick> candlestickBars){
+        for (Candlestick candlestickBar : candlestickBars) {
+            ZonedDateTime closeTime = Utils.Utils.getZonedDateTime(candlestickBar.getCloseTime());
+            Duration candleDuration = Duration.ofMillis(candlestickBar.getCloseTime()
+                    - candlestickBar.getOpenTime());
+            double open = candlestickBar.getOpen().doubleValue();
+            double high = candlestickBar.getHigh().doubleValue();
+            double low = candlestickBar.getLow().doubleValue();
+            double close = candlestickBar.getClose().doubleValue();
+            double volume = candlestickBar.getVolume().doubleValue();
+            realTimeData.addBar(candleDuration, closeTime, open, high, low, close, volume);
+        }
+    }
+
     private void calculateIndicators() {
         rsiIndicator = calculateRSI();
-        rsiOpenValue = calculateCurrentOpenRSIValue();
-        rsiCloseValue = calculateCurrentClosedRSIValue();
         macdOverRsiIndicator = calculateMacdOverRsi();
-        macdOverRsiMacdLineValue = calculateMacdOverRsiMacdLineValue();
-        macdOverRsiSignalLineValue = calculateMacdOverRsiSignalLineValue();
-        macdOverRsiValue = calculateMacdOverRsiValue();
+        System.out.println("RSI OPEN VALUE: " + getRsiOpenValue());
+        System.out.println("MACDOVER RSI: " + getMacdOverRsiValueAtIndex(getLastIndex()));
     }
 
     private double calculateOSMAValue() {
@@ -122,21 +110,33 @@ public class RealTimeData{
         return (osma.getValue(Config.CANDLE_NUM-1).minus(signal2.getValue(Config.CANDLE_NUM-1))).doubleValue();
     }
 
-    private double calculateMacdOverRsiSignalLineValue() {
+    private double getMacdOverRsiSignalLineValueAtIndex(int index) {
         EMAIndicator signal = new EMAIndicator(macdOverRsiIndicator, MACDOverRSIConstants.SIGNAL_LENGTH);
-        return signal.getValue(realTimeData.getEndIndex()).doubleValue();
+        return signal.getValue(index).doubleValue();
     }
 
-    private double calculateMacdOverRsiMacdLineValue() {
-        return macdOverRsiIndicator.getValue(realTimeData.getEndIndex()).doubleValue();
+    private double getMacdOverRsiMacdLineValueAtIndex(int index) {
+        return macdOverRsiIndicator.getValue(index).doubleValue();
+    }
+
+    private double getMacdOverRsiValueAtIndex(int index) {
+        return getMacdOverRsiMacdLineValueAtIndex(index) - getMacdOverRsiSignalLineValueAtIndex(index);
+    }
+
+    public double getRsiOpenValue() {
+        return rsiIndicator.getValue(realTimeData.getEndIndex()).doubleValue();
+    }
+
+    public double getRsiCloseValue() {
+        return rsiIndicator.getValue(realTimeData.getEndIndex()-1).doubleValue();
+    }
+
+    public double getRSIValueAtIndex(int index) {
+        return rsiIndicator.getValue(index).doubleValue();
     }
 
     private MACDIndicator calculateMacdOverRsi() {
         return new MACDIndicator(rsiIndicator, MACDOverRSIConstants.FAST_BAR_COUNT, MACDOverRSIConstants.SLOW_BAR_COUNT);
-    }
-
-    private double calculateMacdOverRsiValue() {
-        return macdOverRsiMacdLineValue - macdOverRsiSignalLineValue;
     }
 
     private RSIIndicator calculateRSI() {
@@ -144,30 +144,15 @@ public class RealTimeData{
         return new RSIIndicator(closePriceIndicator, RSIConstants.RSI_CANDLE_NUM);
     }
 
-    private double calculateCurrentClosedRSIValue() {
-       return rsiIndicator.getValue(realTimeData.getEndIndex()-1).doubleValue();
-    }
-
-    private double calculateCurrentOpenRSIValue() {
-        return rsiIndicator.getValue(realTimeData.getEndIndex()).doubleValue();
-    }
-
-    /**
-     * Checks if the previous RSIIndicator is above or below the threshold and the current is the opposite.
-     * @param crossType up or down. Checks if the @param rsiType RSIIndicator is up (above) or down (below) the threshold.
-     * @param rsiType close or open
-     * @param threshold - the threshold to check crossing.
-     * @return
-     */
     public boolean crossed(CrossType crossType, RSIType rsiType, int threshold) {
         double rsiValueNow,rsiValuePrev;
         if (rsiType == RSIType.OPEN) {
-            rsiValueNow = rsiOpenValue;
-            rsiValuePrev = rsiCloseValue;
+            rsiValueNow = getRsiOpenValue();
+            rsiValuePrev = getRsiCloseValue();
         }
         else {
-            rsiValueNow = rsiCloseValue;
-            rsiValuePrev = rsiIndicator.getValue(realTimeData.getEndIndex()-2).doubleValue();
+            rsiValueNow = getRsiCloseValue();
+            rsiValuePrev = getRSIValueAtIndex(realTimeData.getEndIndex()-2);
         }
         if (crossType == CrossType.UP) return rsiValueNow > threshold && rsiValuePrev <= threshold;
         return rsiValuePrev >= threshold && rsiValueNow < threshold;
@@ -175,26 +160,23 @@ public class RealTimeData{
 
     public boolean above(RSIType type, int threshold) {
         if (type == RSIType.OPEN){
-            return rsiOpenValue > threshold;
+            return getRsiOpenValue() > threshold;
         }
         else{
-            return rsiCloseValue > threshold;
+            return getRsiCloseValue() > threshold;
         }
     }
 
-    public double getRsiOpenValue() {
-        return rsiOpenValue;
-    }
 
-    public double getRsiCloseValue() {
-        return rsiCloseValue;
-    }
 
     public RSIIndicator getRsiIndicator() {return rsiIndicator;}
 
     public BigDecimal getCurrentPrice() {
         return currentPrice;
     }
+
+    public int getLastIndex(){return realTimeData.getEndIndex();}
+    public int getLastCloseIndex(){return realTimeData.getEndIndex()-1;}
 
     public enum RSIType {
         OPEN,CLOSE

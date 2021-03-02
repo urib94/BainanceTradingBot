@@ -1,5 +1,6 @@
 package Positions;
 import Data.*;
+import SingletonHelpers.BinanceInfo;
 import Strategies.ExitStrategy;
 import Strategies.RSIStrategies.RSIExitStrategy1;
 import Strategies.RSIStrategies.RSIExitStrategy2;
@@ -10,6 +11,7 @@ import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.*;
 import com.binance.client.api.model.trade.Order;
 import com.binance.client.api.model.trade.Position;
+import SingletonHelpers.RequestClient;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

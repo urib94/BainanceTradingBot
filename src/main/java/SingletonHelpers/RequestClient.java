@@ -1,12 +1,8 @@
-package Data;
+package SingletonHelpers;
 
+import Data.Config;
 import com.binance.client.api.RequestOptions;
 import com.binance.client.api.SyncRequestClient;
-import com.binance.client.api.model.trade.AccountInformation;
-import com.binance.client.api.model.trade.Asset;
-import com.binance.client.api.model.trade.Position;
-
-import java.util.HashMap;
 
 public class RequestClient {
 	private  SyncRequestClient syncRequestClient;

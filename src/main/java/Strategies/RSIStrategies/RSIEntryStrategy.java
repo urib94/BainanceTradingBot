@@ -1,12 +1,14 @@
 package Strategies.RSIStrategies;
 
 import Data.*;
+import SingletonHelpers.BinanceInfo;
 import Strategies.EntryStrategy;
 import Positions.PositionHandler;
 import Strategies.ExitStrategy;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.*;
 import com.binance.client.api.model.trade.Order;
+import SingletonHelpers.RequestClient;
 
 import java.math.BigDecimal;
 import java.math.MathContext;

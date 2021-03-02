@@ -17,6 +17,8 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
 
     @Override
     public PositionHandler run(RealTimeData realTimeData, String symbol) {
+
+
         return null;
     }
 

@@ -1,4 +1,6 @@
-package Data;
+package SingletonHelpers;
+
+import Data.Config;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

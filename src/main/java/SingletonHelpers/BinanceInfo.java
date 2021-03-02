@@ -1,4 +1,4 @@
-package Data;
+package SingletonHelpers;
 
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.market.ExchangeInfoEntry;
@@ -6,7 +6,6 @@ import com.binance.client.api.model.market.ExchangeInformation;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 public class BinanceInfo {

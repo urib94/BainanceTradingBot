@@ -1,5 +1,6 @@
-package Data;
+package SingletonHelpers;
 
+import Data.Config;
 import com.binance.client.api.SubscriptionClient;
 
 public class SubClient {
