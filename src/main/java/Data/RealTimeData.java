@@ -90,7 +90,7 @@ public class RealTimeData{
     }
 
     private void calculateIndicators() {
-        rsiIndicator = calculateRSI();
+        rsiIndicator = calculateRSI(RSIConstants.RSI_CANDLE_NUM);
         macdOverRsiIndicator = calculateMacdOverRsi();
         System.out.println("RSI OPEN VALUE: " + getRsiOpenValue());
         System.out.println("MACDOVER RSI: " + getMacdOverRsiValueAtIndex(getLastIndex()));
@@ -104,16 +104,16 @@ public class RealTimeData{
         return (osma.getValue(Config.CANDLE_NUM-1).minus(signal2.getValue(Config.CANDLE_NUM-1))).doubleValue();
     }
 
-    private double getMacdOverRsiSignalLineValueAtIndex(int index) {
+    public double getMacdOverRsiSignalLineValueAtIndex(int index) {
         EMAIndicator signal = new EMAIndicator(macdOverRsiIndicator, MACDOverRSIConstants.SIGNAL_LENGTH);
         return signal.getValue(index).doubleValue();
     }
 
-    private double getMacdOverRsiMacdLineValueAtIndex(int index) {
+    public double getMacdOverRsiMacdLineValueAtIndex(int index) {
         return macdOverRsiIndicator.getValue(index).doubleValue();
     }
 
-    private double getMacdOverRsiValueAtIndex(int index) {
+    public double getMacdOverRsiValueAtIndex(int index) {
         return getMacdOverRsiMacdLineValueAtIndex(index) - getMacdOverRsiSignalLineValueAtIndex(index);
     }
 
@@ -130,12 +130,13 @@ public class RealTimeData{
     }
 
     private MACDIndicator calculateMacdOverRsi() {
-        return new MACDIndicator(rsiIndicator, MACDOverRSIConstants.FAST_BAR_COUNT, MACDOverRSIConstants.SLOW_BAR_COUNT);
+        RSIIndicator rsiIndicator14 = calculateRSI(MACDOverRSIConstants.RSI_CANDLE_NUM);
+        return new MACDIndicator(rsiIndicator14, MACDOverRSIConstants.FAST_BAR_COUNT, MACDOverRSIConstants.SLOW_BAR_COUNT);
     }
 
-    private RSIIndicator calculateRSI() {
+    private RSIIndicator calculateRSI(int candleNum) {
         ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(realTimeData);
-        return new RSIIndicator(closePriceIndicator, RSIConstants.RSI_CANDLE_NUM);
+        return new RSIIndicator(closePriceIndicator, candleNum);
     }
 
     public boolean crossed(CrossType crossType, RSIType rsiType, int threshold) {
@@ -152,7 +153,7 @@ public class RealTimeData{
         return rsiValuePrev >= threshold && rsiValueNow < threshold;
     }
 
-    public boolean above(RSIType type, int threshold) {
+    public boolean rsiAbove(RSIType type, int threshold) {
         if (type == RSIType.OPEN){
             return getRsiOpenValue() > threshold;
         }
@@ -161,6 +162,10 @@ public class RealTimeData{
         }
     }
 
+    //TODO: check with Uri
+    public boolean macdOverRSIAbove(int threshold) {
+        return getMacdOverRsiValueAtIndex(getLastCloseIndex()) > threshold;
+    }
 
 
     public RSIIndicator getRsiIndicator() {return rsiIndicator;}

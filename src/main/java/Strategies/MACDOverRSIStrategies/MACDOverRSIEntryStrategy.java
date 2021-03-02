@@ -17,8 +17,20 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
 
     @Override
     public PositionHandler run(RealTimeData realTimeData, String symbol) {
-
-
+        if (realTimeData.macdOverRSIAbove(MACDOverRSIConstants.MACD_OVER_RSI_ENTRY_THRESHOLD)) {
+            return null;
+        } else {
+            double currentMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex());
+            double prevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()-1);
+            double prevPrevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()-1);
+            boolean rule1 = currentMacdOverRsiValue < 0;
+            boolean rule2 = Math.abs(currentMacdOverRsiValue) < Math.abs(prevMacdOverRsiValue);
+            boolean rule3 = Math.abs(prevMacdOverRsiValue) < Math.abs(prevPrevMacdOverRsiValue);
+            if (rule1 && rule2 && rule3) {
+                //TODO: buy stuff
+                return null;
+            }
+        }
         return null;
     }
 
