@@ -1,11 +1,8 @@
 package CodeExecution;
 
 import Strategies.EntryStrategy;
-import Strategies.MACDOverRSIStrategies.MACDOverRSIEntryStrategy;
-import Strategies.RSIStrategies.RSIConstants;
+import Strategies.MACDOverRSIStrategies.Long.MACDOverRSILongEntryStrategy;
 import Strategies.RSIStrategies.RSIEntryStrategy;
-import Utils.TimeConstants;
-import Utils.Utils;
 import com.binance.client.api.model.enums.CandlestickInterval;
 
 import java.math.BigDecimal;
@@ -122,7 +119,7 @@ public class InputMessage {
                 return new RSIEntryStrategy();
 
             case "macd over rsi":
-                return new MACDOverRSIEntryStrategy();
+                return new MACDOverRSILongEntryStrategy();
 
             default:
                 return null;

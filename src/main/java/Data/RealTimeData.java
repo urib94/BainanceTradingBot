@@ -139,9 +139,19 @@ public class RealTimeData{
         return new RSIIndicator(closePriceIndicator, candleNum);
     }
 
-    public boolean crossed(CrossType crossType, RSIType rsiType, int threshold) {
+    public boolean crossed(IndicatorType indicatorType, CrossType crossType, CandleType candleType, int threshold) {
+        switch (indicatorType) {
+            case RSI:
+                return rsiCrossed(crossType,candleType,threshold);
+            case MACD_OVER_RSI:
+                return macdOverRsiCrossed(crossType,candleType,threshold);
+        }
+        return true; // will not come to this!
+
+    }
+    private boolean rsiCrossed(CrossType crossType,CandleType candleType, int threshold) {
         double rsiValueNow,rsiValuePrev;
-        if (rsiType == RSIType.OPEN) {
+        if (candleType == CandleType.OPEN) {
             rsiValueNow = getRsiOpenValue();
             rsiValuePrev = getRsiCloseValue();
         }
@@ -152,14 +162,44 @@ public class RealTimeData{
         if (crossType == CrossType.UP) return rsiValueNow > threshold && rsiValuePrev <= threshold;
         return rsiValuePrev >= threshold && rsiValueNow < threshold;
     }
+    private boolean macdOverRsiCrossed(CrossType crossType,CandleType candleType, int threshold) {
+        double currentMacdOverRsiValue,prevMacdOverRsiValue;
+        if (candleType == CandleType.OPEN) {
+            currentMacdOverRsiValue = getMacdOverRsiValueAtIndex(getLastIndex());
+            prevMacdOverRsiValue  = getMacdOverRsiValueAtIndex(getLastIndex()-1);
+        } else {
+            currentMacdOverRsiValue = getMacdOverRsiValueAtIndex(getLastCloseIndex());
+            prevMacdOverRsiValue = getMacdOverRsiValueAtIndex(getLastCloseIndex()-1);
+        }
+        if (crossType == CrossType.UP) return currentMacdOverRsiValue > threshold && prevMacdOverRsiValue <= threshold;
+        return prevMacdOverRsiValue >= threshold && currentMacdOverRsiValue < threshold;
+    }
 
-    public boolean rsiAbove(RSIType type, int threshold) {
-        if (type == RSIType.OPEN){
-            return getRsiOpenValue() > threshold;
+
+    public boolean above(IndicatorType indicatorType, CandleType type, int threshold) {
+        if (indicatorType == IndicatorType.RSI) {
+            if (type == CandleType.OPEN) {
+                return getRsiOpenValue() > threshold;
+            } else {
+                return getRsiCloseValue() > threshold;
+            }
+        } else {
+            if (type == CandleType.OPEN) {
+                return getMacdOverRsiValueAtIndex(getLastIndex()) > threshold;
+            } else {
+                return  getMacdOverRsiValueAtIndex(getLastCloseIndex()) > threshold;
+            }
         }
-        else{
-            return getRsiCloseValue() > threshold;
-        }
+    }
+
+    public boolean urisRulesForEntry() {
+        double currentMacdOverRsiValue = getMacdOverRsiValueAtIndex(getLastCloseIndex());
+        double prevMacdOverRsiValue = getMacdOverRsiValueAtIndex(getLastCloseIndex()-1);
+        double prevPrevMacdOverRsiValue = getMacdOverRsiValueAtIndex(getLastCloseIndex()-2);
+        boolean rule1 = currentMacdOverRsiValue < 0;
+        boolean rule2 = Math.abs(currentMacdOverRsiValue) < Math.abs(prevMacdOverRsiValue);
+        boolean rule3 = Math.abs(prevMacdOverRsiValue) < Math.abs(prevPrevMacdOverRsiValue);
+        return rule1 && rule2 && rule3;
     }
 
     public RSIIndicator getRsiIndicator() {return rsiIndicator;}
@@ -171,11 +211,14 @@ public class RealTimeData{
     public int getLastIndex(){return realTimeData.getEndIndex();}
     public int getLastCloseIndex(){return realTimeData.getEndIndex()-1;}
 
-    public enum RSIType {
+    public enum CandleType {
         OPEN,CLOSE
     }
 
     public enum CrossType {
         UP,DOWN
+    }
+    public enum IndicatorType {
+        RSI,MACD_OVER_RSI
     }
 }

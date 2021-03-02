@@ -35,12 +35,12 @@ public class RSIEntryStrategy implements EntryStrategy {
 
     public synchronized PositionHandler run(RealTimeData realTimeData,String symbol) {
         if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
-            if (realTimeData.crossed(RealTimeData.CrossType.DOWN, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_1)) {
+            if (realTimeData.crossed(RealTimeData.IndicatorType.RSI,RealTimeData.CrossType.DOWN, RealTimeData.CandleType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_1)) {
                 positionInStrategy = PositionInStrategy.POSITION_TWO;
             }
             return null;
         } else if (positionInStrategy == PositionInStrategy.POSITION_TWO) {
-            if (realTimeData.crossed(RealTimeData.CrossType.UP, RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_2)) {
+            if (realTimeData.crossed(RealTimeData.IndicatorType.RSI,RealTimeData.CrossType.UP, RealTimeData.CandleType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_2)) {
                 rsiValueToCheckForPosition3 = realTimeData.getRsiCloseValue();
                 positionInStrategy = PositionInStrategy.POSITION_THREE;
             }
@@ -55,7 +55,7 @@ public class RSIEntryStrategy implements EntryStrategy {
             if(rsiValueToCheckForPosition3 != realTimeData.getRsiCloseValue()) {
                 time_passed_from_position_2 ++;
             }
-            if (realTimeData.rsiAbove(RealTimeData.RSIType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_3)) { //TODO:fix
+            if (realTimeData.above(RealTimeData.IndicatorType.RSI,RealTimeData.CandleType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_3)) { //TODO:fix
                 time_passed_from_position_2 = 0;
                 positionInStrategy = PositionInStrategy.POSITION_ONE;
                 rsiValueToCheckForPosition3 = -1;

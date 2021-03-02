@@ -1,14 +1,17 @@
-package Strategies.MACDOverRSIStrategies;
+package Strategies.MACDOverRSIStrategies.Long;
 
 import Data.RealTimeData;
 import Positions.PositionHandler;
 import Strategies.EntryStrategy;
+import Strategies.ExitStrategy;
+import Strategies.MACDOverRSIStrategies.MACDOverRSIConstants;
 import Strategies.RSIStrategies.PositionInStrategy;
 import Strategies.RSIStrategies.RSIConstants;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 
-public class MACDOverRSIEntryStrategy implements EntryStrategy {
+public class MACDOverRSILongEntryStrategy implements EntryStrategy {
 
     double takeProfitPercentage = MACDOverRSIConstants.DEFAULT_TAKE_PROFIT_PERCENTAGE;
     private double stopLossPercentage = MACDOverRSIConstants.DEFAULT_STOP_LOSS_PERCENTAGE;
@@ -17,24 +20,19 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
 
     @Override
     public PositionHandler run(RealTimeData realTimeData, String symbol) {
-        double currentMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex());
-        double prevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()-1);
-        double prevPrevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()-2);
-
-        if (currentMacdOverRsiValue > MACDOverRSIConstants.MACD_OVER_RSI_ENTRY_THRESHOLD && prevMacdOverRsiValue < MACDOverRSIConstants.MACD_OVER_RSI_ENTRY_THRESHOLD) {
+        if (realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.UP,RealTimeData.CandleType.CLOSE,0)) {
             //TODO: buy stuff
+            ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
+            exitStrategies.add(new MACDOverRSILongExitStrategy1());
+            exitStrategies.add(new MACDOverRSILongExitStrategy2());
 
-
-            return null;
         }
         if (realTimeData.getMacdOverRsiSignalLineValueAtIndex(realTimeData.getLastCloseIndex()) < 0) {
-            boolean rule1 = currentMacdOverRsiValue < 0;
-            boolean rule2 = Math.abs(currentMacdOverRsiValue) < Math.abs(prevMacdOverRsiValue);
-            boolean rule3 = Math.abs(prevMacdOverRsiValue) < Math.abs(prevPrevMacdOverRsiValue);
-            if (rule1 && rule2 && rule3) {
+            if (realTimeData.urisRulesForEntry()) {
                 //TODO: buy stuff
-
-
+                ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
+                exitStrategies.add(new MACDOverRSILongExitStrategy1());
+                exitStrategies.add(new MACDOverRSILongExitStrategy2());
 
                 return null;
             }
