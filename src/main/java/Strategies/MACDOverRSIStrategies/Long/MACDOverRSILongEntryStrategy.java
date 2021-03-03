@@ -27,8 +27,8 @@ public class MACDOverRSILongEntryStrategy implements EntryStrategy {
     public PositionHandler run(RealTimeData realTimeData, String symbol) {
 
         boolean rule1 = realTimeData.getMacdOverRsiSignalLineValueAtIndex(realTimeData.getLastCloseIndex()) < 0;
-        boolean rule2 = realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.UP,RealTimeData.CandleType.CLOSE,Config.ZERO);
-        boolean currentPriceAboveSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(Config.CANDLE_NUM)).compareTo(realTimeData.getCurrentPrice()) < Config.ZERO;
+        boolean rule2 = realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.UP,RealTimeData.CandleType.OPEN,Config.ZERO);
+        boolean currentPriceAboveSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(realTimeData.getCurrentPrice()) < Config.ZERO;
         if (currentPriceAboveSMA) {
             if (rule1 && realTimeData.urisRulesOfEntry()) return buyAndCreatePositionHandler(realTimeData,symbol);
             if (rule2) return buyAndCreatePositionHandler(realTimeData,symbol);
