@@ -2,6 +2,7 @@ package Strategies.RSIStrategies;
 
 import Data.RealTimeData;
 import Strategies.ExitStrategy;
+import Strategies.PositionInStrategy;
 
 import java.math.BigDecimal;
 

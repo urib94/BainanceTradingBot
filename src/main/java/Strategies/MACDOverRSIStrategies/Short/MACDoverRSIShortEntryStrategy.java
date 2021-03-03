@@ -26,10 +26,13 @@ public class MACDoverRSIShortEntryStrategy implements EntryStrategy {
 
 	@Override
 	public PositionHandler run(RealTimeData realTimeData, String symbol) {
-		if (! (BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(Config.CANDLE_NUM)).compareTo(realTimeData.getCurrentPrice()) <= Config.ZERO)){
-			SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-			if (realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.DOWN, RealTimeData.CandleType.CLOSE,0)) {
+		boolean rule1 = realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.DOWN, RealTimeData.CandleType.CLOSE,0);
+		boolean rule2 = realTimeData.getMacdOverRsiSignalLineValueAtIndex(realTimeData.getLastCloseIndex()) < 0;
+		boolean currentPriceBelowSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(Config.CANDLE_NUM)).compareTo(realTimeData.getCurrentPrice()) > Config.ZERO;
+		if (currentPriceBelowSMA){
+			if (rule1 && realTimeData.urisRulesOfEntry()) {
 				//TODO: short stuff
+				SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
 				syncRequestClient.changeInitialLeverage(symbol,leverage);
 				String buyingQty = getBuyingQtyAsString(realTimeData, symbol);
 				Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.MARKET, null,

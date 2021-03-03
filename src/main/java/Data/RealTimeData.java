@@ -152,6 +152,7 @@ public class RealTimeData{
                 return rsiCrossed(crossType,candleType,threshold);
             case MACD_OVER_RSI:
                 return macdOverRsiCrossed(crossType,candleType,threshold);
+
         }
         return true; // will not come to this!
 
@@ -182,7 +183,6 @@ public class RealTimeData{
         return prevMacdOverRsiValue >= threshold && currentMacdOverRsiValue < threshold;
     }
 
-
     public boolean above(IndicatorType indicatorType, CandleType type, int threshold) {
         if (indicatorType == IndicatorType.RSI) {
             if (type == CandleType.OPEN) {
@@ -190,11 +190,17 @@ public class RealTimeData{
             } else {
                 return getRsiCloseValue() > threshold;
             }
-        } else {
+        } else if(indicatorType == IndicatorType.MACD_OVER_RSI) {
             if (type == CandleType.OPEN) {
                 return getMacdOverRsiValueAtIndex(getLastIndex()) > threshold;
             } else {
                 return  getMacdOverRsiValueAtIndex(getLastCloseIndex()) > threshold;
+            }
+        } else {
+            if (type == CandleType.OPEN) {
+                return getSMAValueAtIndex(getLastIndex())>threshold;
+            } else {
+                return getSMAValueAtIndex(getLastCloseIndex()) > threshold;
             }
         }
     }
@@ -230,6 +236,6 @@ public class RealTimeData{
         UP,DOWN
     }
     public enum IndicatorType {
-        RSI,MACD_OVER_RSI
+        RSI,MACD_OVER_RSI, SMA
     }
 }

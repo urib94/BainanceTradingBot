@@ -11,7 +11,7 @@ public class MACDOverRSIConstants {
     public static final BigDecimal DEFAULT_BUYING_AMOUNT = BigDecimal.valueOf(0.0);//TODO: change to real values
     public static final int SIGNAL_LENGTH = 9;
     public static final int RSI_CANDLE_NUM = 14;
-
+    public static final int SMA_THRESHOLD = 150;
     public static final BigDecimal MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE = new BigDecimal(100);
 
     public static final String LEVERAGED_COIN = "btc";

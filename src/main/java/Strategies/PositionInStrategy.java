@@ -1,4 +1,4 @@
-package Strategies.RSIStrategies;
+package Strategies;
 
 public enum PositionInStrategy {
 	POSITION_ONE,

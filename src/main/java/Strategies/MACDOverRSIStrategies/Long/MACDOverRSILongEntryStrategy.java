@@ -25,37 +25,32 @@ public class MACDOverRSILongEntryStrategy implements EntryStrategy {
 
     @Override
     public PositionHandler run(RealTimeData realTimeData, String symbol) {
-        if (BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(Config.CANDLE_NUM)).compareTo(realTimeData.getCurrentPrice()) < Config.ZERO){
-            SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-            if (realTimeData.getMacdOverRsiSignalLineValueAtIndex(realTimeData.getLastCloseIndex()) < 0) {
-                if (realTimeData.urisRulesOfEntry()) {
-                    syncRequestClient.changeInitialLeverage(symbol,leverage);
-                    String buyingQty = getBuyingQtyAsString(realTimeData, symbol);
-                    Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.MARKET, null,
-                            buyingQty,null,null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-                    ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
-                    exitStrategies.add(new MACDOverRSILongExitStrategy1());
-                    exitStrategies.add(new MACDOverRSILongExitStrategy2());
-                    return new PositionHandler(buyOrder ,exitStrategies);
-                }
+
+        boolean rule1 = realTimeData.getMacdOverRsiSignalLineValueAtIndex(realTimeData.getLastCloseIndex()) < 0;
+        boolean rule2 = realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.UP,RealTimeData.CandleType.CLOSE,Config.ZERO);
+        boolean currentPriceAboveSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(Config.CANDLE_NUM)).compareTo(realTimeData.getCurrentPrice()) < Config.ZERO;
+        if (currentPriceAboveSMA) {
+            if (rule1 && realTimeData.urisRulesOfEntry()) {
+                return buyAndCreatePositionHandler(realTimeData,symbol);
             }
-            if (realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.UP,RealTimeData.CandleType.CLOSE,0)) {
-                //TODO: buy stuff
-                try{
-                    syncRequestClient.changeInitialLeverage(symbol,leverage);
-                    String buyingQty = getBuyingQtyAsString(realTimeData, symbol);
-                    Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.MARKET, null,
-                            buyingQty,null,null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-                    ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
-                    exitStrategies.add(new MACDOverRSILongExitStrategy1());
-                    exitStrategies.add(new MACDOverRSILongExitStrategy2());
-                    return new PositionHandler(buyOrder ,exitStrategies);
-                }catch (Exception ignored){}
+            if (rule2) {
+                return buyAndCreatePositionHandler(realTimeData,symbol);
             }
         }
         return null;
     }
 
+    private PositionHandler buyAndCreatePositionHandler(RealTimeData realTimeData, String symbol) {
+        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+        syncRequestClient.changeInitialLeverage(symbol,leverage);
+        String buyingQty = getBuyingQtyAsString(realTimeData, symbol);
+        Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.MARKET, null,
+                buyingQty,null,null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+        ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
+        exitStrategies.add(new MACDOverRSILongExitStrategy1());
+        exitStrategies.add(new MACDOverRSILongExitStrategy2());
+        return new PositionHandler(buyOrder ,exitStrategies);
+    }
     @Override
     public void setTakeProfitPercentage(double takeProfitPercentage) {
         this.takeProfitPercentage =takeProfitPercentage;

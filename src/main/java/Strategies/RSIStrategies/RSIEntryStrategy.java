@@ -5,6 +5,7 @@ import SingletonHelpers.BinanceInfo;
 import Strategies.EntryStrategy;
 import Positions.PositionHandler;
 import Strategies.ExitStrategy;
+import Strategies.PositionInStrategy;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.*;
 import com.binance.client.api.model.trade.Order;
