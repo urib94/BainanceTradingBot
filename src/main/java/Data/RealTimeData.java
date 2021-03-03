@@ -94,7 +94,7 @@ public class RealTimeData{
     private void calculateIndicators() {
         rsiIndicator = calculateRSI(RSIConstants.RSI_CANDLE_NUM);
         macdOverRsiIndicator = calculateMacdOverRsi();
-        smaIndicator = new SMAIndicator(new ClosePriceIndicator(realTimeData), 150);
+        smaIndicator = new SMAIndicator(new ClosePriceIndicator(realTimeData), MACDOverRSIConstants.SMA_CANDLE_NUM);
         System.out.println("RSI OPEN VALUE: " + getRsiOpenValue());
         System.out.println("MACDOVER RSI: " + getMacdOverRsiValueAtIndex(getLastIndex()));
     }

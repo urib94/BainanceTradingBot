@@ -1,10 +1,11 @@
 package Strategies;
 
 import Data.RealTimeData;
+import Positions.SellingInstructions;
 
 import java.math.BigDecimal;
 
 public interface ExitStrategy {
-    BigDecimal run(RealTimeData realTimeData);
+    SellingInstructions run(RealTimeData realTimeData);
 
 }
