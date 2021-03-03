@@ -10,7 +10,7 @@ public class MACDOverRSIShortExitStrategy2 implements ExitStrategy {
 
 	@Override
 	public BigDecimal run(RealTimeData realTimeData) {
-		if (realTimeData.urisRulesForEntry()) {
+		if (realTimeData.urisRulesOfEntry()) {
 			return MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE; //TODO: check with Uri
 		}
 		return null;

@@ -1,4 +1,5 @@
 package Positions;
+import CodeExecution.RealTImeOperations;
 import Data.*;
 import SingletonHelpers.BinanceInfo;
 import Strategies.ExitStrategy;
@@ -50,7 +51,7 @@ public class PositionHandler implements Serializable {
 
     public boolean isSoldOut(){ return isActive && !status.equals(Config.NEW) && (qty.compareTo(BigDecimal.valueOf(0.0)) <= 0);}
 
-    public synchronized void run(RealTimeData realTimeData) {//TODO: adjust to long and short as exit method
+    public synchronized void run(RealTimeData realTimeData) {//TODO: adjust to long and short and trailing as exit method
         System.out.println("selling");
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         for (ExitStrategy exitStrategy : exitStrategies) {
@@ -108,5 +109,62 @@ public class PositionHandler implements Serializable {
         System.out.println("Terminating");
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         syncRequestClient.cancelAllOpenOrder(Config.SYMBOL);
+    }
+
+    private void closePosition(ClosePositionTypes type, BigDecimal sellingQtyPercentage, double trailingPercentage){
+        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+        switch (type) {
+            case SELL:
+
+
+
+
+
+
+                break;
+
+            case SELL_WITH_TRAILING:
+
+
+
+
+
+
+                break;
+
+            case CLOSE_SHORT:
+
+
+
+
+
+
+
+
+                break;
+
+            case CLOSE_SHORT_WITH_TRAILING:
+
+
+
+
+
+
+
+
+
+                break;
+
+            default:
+                System.out.println("Wrong closePositionType");
+        }
+
+    }
+
+    public enum ClosePositionTypes{
+        SELL,
+        SELL_WITH_TRAILING,
+        CLOSE_SHORT,
+        CLOSE_SHORT_WITH_TRAILING;
     }
 }

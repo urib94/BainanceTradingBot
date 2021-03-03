@@ -199,7 +199,7 @@ public class RealTimeData{
         }
     }
 
-    public boolean urisRulesForEntry() {
+    public boolean urisRulesOfEntry() {
         double currentMacdOverRsiValue = getMacdOverRsiValueAtIndex(getLastCloseIndex());
         double prevMacdOverRsiValue = getMacdOverRsiValueAtIndex(getLastCloseIndex()-1);
         double prevPrevMacdOverRsiValue = getMacdOverRsiValueAtIndex(getLastCloseIndex()-2);
