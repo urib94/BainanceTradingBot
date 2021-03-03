@@ -57,6 +57,7 @@ public class PositionHandler implements Serializable {
         for (ExitStrategy exitStrategy : exitStrategies) {
             BigDecimal sellingQtyPercentage = exitStrategy.run(realTimeData);
             if (sellingQtyPercentage != null) {
+                closePosition();
                 String sellingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingQtyPercentage), symbol);
                 if (sellingQty.equals("0.000")){
                     sellingQty = "0.001";
