@@ -27,6 +27,7 @@ public class PositionHandler implements Serializable {
     private String status = Config.NEW;
     private final ArrayList<ExitStrategy> exitStrategies;
     private Long baseTime = 0L;
+    private boolean isTrailing = false;
 
     public PositionHandler(Order order, ArrayList<ExitStrategy> _exitStrategies){//TODO: trying something
         clientOrderId = order.getClientOrderId();
@@ -53,8 +54,9 @@ public class PositionHandler implements Serializable {
 
     public synchronized void run(RealTimeData realTimeData) {//TODO: adjust to long and short and trailing as exit method
         for (ExitStrategy exitStrategy : exitStrategies) {
-            SellingInstructions sellingInstructions = exitStrategy.run(realTimeData);
+            SellingInstructions sellingInstructions = exitStrategy.run(realTimeData, isTrailing);
             if (sellingInstructions != null) {
+                if (sellingInstructions.isStopTrailing()) isTrailing = false;
                 closePosition(sellingInstructions, realTimeData);
             }
         }
@@ -117,7 +119,7 @@ public class PositionHandler implements Serializable {
                 break;
 
             case SELL_WITH_TRAILING:
-
+                isTrailing = true;
 
 
 
@@ -126,18 +128,18 @@ public class PositionHandler implements Serializable {
                 break;
 
             case CLOSE_SHORT:
-
-
-
-
-
-
-
-
+                String buyingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingInstructions.getSellingQtyPercentage()), symbol);
+                if (buyingQty.equals("0.000")){//TODO: change to something better in format qty.
+                    buyingQty = "0.001";
+                }
+                try {
+                    Order buyingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
+                            buyingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
+                } catch (Exception exception) { exception.printStackTrace();}
                 break;
 
             case CLOSE_SHORT_WITH_TRAILING:
-
+                isTrailing = true;
 
 
 

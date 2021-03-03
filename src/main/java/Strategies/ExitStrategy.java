@@ -6,6 +6,5 @@ import Positions.SellingInstructions;
 import java.math.BigDecimal;
 
 public interface ExitStrategy {
-    SellingInstructions run(RealTimeData realTimeData);
-
+    SellingInstructions run(RealTimeData realTimeData, boolean isTrailing);
 }
