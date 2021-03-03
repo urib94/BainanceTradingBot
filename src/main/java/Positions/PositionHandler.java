@@ -110,7 +110,14 @@ public class PositionHandler implements Serializable {
         String sellingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingInstructions.getSellingQtyPercentage()), symbol);
         switch (sellingInstructions.getType()) {
 
-            case SELL:
+            case SELL_LIMIT:
+                try {
+                    Order sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
+                            sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
+                } catch (Exception exception) { exception.printStackTrace();}
+                break;
+
+            case SELL_MARKET://TODO:COMPLETE
                 try {
                     Order sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
@@ -128,7 +135,14 @@ public class PositionHandler implements Serializable {
                 } catch (Exception exception) { exception.printStackTrace();}
                 break;
 
-            case CLOSE_SHORT:
+            case CLOSE_SHORT_LIMIT:
+                try {
+                    Order buyingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
+                            sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
+                } catch (Exception exception) { exception.printStackTrace();}
+                break;
+
+            case CLOSE_SHORT_MARKET:
                 try {
                     Order buyingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
@@ -172,9 +186,11 @@ public class PositionHandler implements Serializable {
     }
 
     public enum ClosePositionTypes{
-        SELL,
+        SELL_MARKET,
+        SELL_LIMIT,
         SELL_WITH_TRAILING,
-        CLOSE_SHORT,
+        CLOSE_SHORT_MARKET,
+        CLOSE_SHORT_LIMIT,
         CLOSE_SHORT_WITH_TRAILING;
     }
 }
