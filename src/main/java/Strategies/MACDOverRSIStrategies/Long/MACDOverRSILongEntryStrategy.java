@@ -7,6 +7,7 @@ import SingletonHelpers.BinanceInfo;
 import SingletonHelpers.RequestClient;
 import Strategies.EntryStrategy;
 import Strategies.ExitStrategy;
+import Strategies.MACDOverRSIStrategies.MACDOverRSIBaseEntryStrategy;
 import Strategies.MACDOverRSIStrategies.MACDOverRSIConstants;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.*;
@@ -16,7 +17,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
 
-public class MACDOverRSILongEntryStrategy implements EntryStrategy {
+public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
 
     double takeProfitPercentage = MACDOverRSIConstants.DEFAULT_TAKE_PROFIT_PERCENTAGE;
     private double stopLossPercentage = MACDOverRSIConstants.DEFAULT_STOP_LOSS_PERCENTAGE;
@@ -30,7 +31,7 @@ public class MACDOverRSILongEntryStrategy implements EntryStrategy {
         boolean rule2 = realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.UP,RealTimeData.CandleType.OPEN,Config.ZERO);
         boolean currentPriceAboveSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(realTimeData.getCurrentPrice()) < Config.ZERO;
         if (currentPriceAboveSMA) {
-            if (rule1 && realTimeData.urisRulesOfEntry()) return buyAndCreatePositionHandler(realTimeData,symbol);
+            if (rule1 && urisRulesOfEntry(realTimeData)) return buyAndCreatePositionHandler(realTimeData,symbol);
             if (rule2) return buyAndCreatePositionHandler(realTimeData,symbol);
         }
         return null;

@@ -5,13 +5,19 @@ import Strategies.ExitStrategy;
 
 public abstract class MACDOverRSIBaseExitStrategy implements ExitStrategy {
 
-    public boolean urisRulesOfEntry(RealTimeData realTimeData) {
-        double currentMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex());
-        double prevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()-1);
-        double prevPrevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()-2);
+    public boolean urisRuleOfExit(RealTimeData realTimeData) {
+        double currentMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex());
+        double prevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()-1);
+        double prevPrevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()-2);
         boolean rule1 = currentMacdOverRsiValue < 0;
         boolean rule2 = Math.abs(currentMacdOverRsiValue) < Math.abs(prevMacdOverRsiValue);
         boolean rule3 = Math.abs(prevMacdOverRsiValue) < Math.abs(prevPrevMacdOverRsiValue);
         return rule1 && rule2 && rule3;
     }
+    public boolean currentCandleBiggerThanPrev(RealTimeData realTimeData) {
+        double now = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex());
+        double prev = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()-1);
+        return Math.abs(prev) <= Math.abs(now);
+    }
+
 }

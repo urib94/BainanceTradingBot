@@ -205,16 +205,6 @@ public class RealTimeData{
         }
     }
 
-    public boolean urisRulesOfEntry() {
-        double currentMacdOverRsiValue = getMacdOverRsiValueAtIndex(getLastCloseIndex());
-        double prevMacdOverRsiValue = getMacdOverRsiValueAtIndex(getLastCloseIndex()-1);
-        double prevPrevMacdOverRsiValue = getMacdOverRsiValueAtIndex(getLastCloseIndex()-2);
-        boolean rule1 = currentMacdOverRsiValue < 0;
-        boolean rule2 = Math.abs(currentMacdOverRsiValue) < Math.abs(prevMacdOverRsiValue);
-        boolean rule3 = Math.abs(prevMacdOverRsiValue) < Math.abs(prevPrevMacdOverRsiValue);
-        return rule1 && rule2 && rule3;
-    }
-
     public RSIIndicator getRsiIndicator() {return rsiIndicator;}
 
     public BigDecimal getCurrentPrice() {
