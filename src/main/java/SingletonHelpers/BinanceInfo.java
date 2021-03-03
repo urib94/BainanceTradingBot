@@ -1,5 +1,6 @@
 package SingletonHelpers;
 
+import Utils.Utils;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.market.ExchangeInfoEntry;
 import com.binance.client.api.model.market.ExchangeInformation;

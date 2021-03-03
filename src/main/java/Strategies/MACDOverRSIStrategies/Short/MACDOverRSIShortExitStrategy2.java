@@ -1,17 +1,17 @@
 package Strategies.MACDOverRSIStrategies.Short;
 
+import Data.Config;
 import Data.RealTimeData;
+import Positions.SellingInstructions;
 import Strategies.ExitStrategy;
 import Strategies.MACDOverRSIStrategies.MACDOverRSIConstants;
-
-import java.math.BigDecimal;
 
 public class MACDOverRSIShortExitStrategy2 implements ExitStrategy {
 
 	@Override
-	public BigDecimal run(RealTimeData realTimeData) {
-		if (realTimeData.urisRulesOfEntry()) {
-			return MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE; //TODO: check with Uri
+	public SellingInstructions run(RealTimeData realTimeData, boolean isTrailing) {
+		if (realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.UP,RealTimeData.CandleType.OPEN, Config.ZERO)) {
+			//todo: do something
 		}
 		return null;
 	}

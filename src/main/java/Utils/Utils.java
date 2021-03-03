@@ -1,5 +1,6 @@
 package Utils;
 
+import Data.Config;
 import Data.RealTimeData;
 import SingletonHelpers.BinanceInfo;
 import Strategies.EntryStrategy;
@@ -63,5 +64,11 @@ public class Utils {
 	public static String getStopLossPriceAsString(RealTimeData realTimeData, String symbol, double stopLossPercentage) {
 		BigDecimal stopLossPrice = realTimeData.getCurrentPrice().subtract(realTimeData.getCurrentPrice().multiply(BigDecimal.valueOf(stopLossPercentage)));
 		return BinanceInfo.formatPrice(stopLossPrice, symbol);
+	}
+
+	public static BigDecimal fixQuantity(BigDecimal amt)
+	{
+		if (amt.compareTo(new BigDecimal(0)) <= 0) return new BigDecimal(1).scaleByPowerOfTen(-1 * (amt.scale()));
+		return amt;
 	}
 }

@@ -18,7 +18,7 @@ public class RSIExitStrategy3 implements ExitStrategy {
 	 * @param realTimeData
 	 * @return the percentage of quantity to sell, null otherwise.
 	 */
-	public SellingInstructions run(RealTimeData realTimeData) {
+	public SellingInstructions run(RealTimeData realTimeData, boolean isTrailing) {
 		if (firstTime) {
 			rsiValueBefore = realTimeData.getRsiCloseValue(); // last closed candle rsi value
 			firstTime = false;
