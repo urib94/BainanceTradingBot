@@ -26,13 +26,13 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
 
     @Override
     public PositionHandler run(RealTimeData realTimeData, String symbol) {
-
-        boolean rule1 = realTimeData.getMacdOverRsiSignalLineValueAtIndex(realTimeData.getLastCloseIndex()) < 0;
-        boolean rule2 = realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.UP,RealTimeData.CandleType.OPEN,Config.ZERO);
         boolean currentPriceAboveSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(realTimeData.getCurrentPrice()) < Config.ZERO;
         if (currentPriceAboveSMA) {
-            if (rule1 && urisRulesOfEntry(realTimeData)) return buyAndCreatePositionHandler(realTimeData,symbol);
-            if (rule2) return buyAndCreatePositionHandler(realTimeData,symbol);
+            boolean rule1 = realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.UP,RealTimeData.CandleType.OPEN,Config.ZERO);
+            if (rule1) return buyAndCreatePositionHandler(realTimeData,symbol);
+            boolean rule2 = realTimeData.getMacdOverRsiSignalLineValueAtIndex(realTimeData.getLastIndex()) < Config.ZERO;
+            boolean macdValueBelowZero = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()) < 0;
+            if (rule2 && macdValueBelowZero && urisRulesOfEntry(realTimeData)) return buyAndCreatePositionHandler(realTimeData,symbol);
         }
         return null;
     }
@@ -46,6 +46,8 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
         ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
         exitStrategies.add(new MACDOverRSILongExitStrategy1());
         exitStrategies.add(new MACDOverRSILongExitStrategy2());
+        exitStrategies.add(new MACDOverRSILongExitStrategy3());
+        exitStrategies.add(new MACDOverRSILongExitStrategy4());
         return new PositionHandler(buyOrder ,exitStrategies);
     }
     @Override

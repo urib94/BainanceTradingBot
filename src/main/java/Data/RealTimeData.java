@@ -152,7 +152,6 @@ public class RealTimeData{
                 return rsiCrossed(crossType,candleType,threshold);
             case MACD_OVER_RSI:
                 return macdOverRsiCrossed(crossType,candleType,threshold);
-
         }
         return true; // will not come to this!
 

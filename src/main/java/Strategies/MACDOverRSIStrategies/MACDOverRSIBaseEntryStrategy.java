@@ -9,9 +9,15 @@ public abstract class MACDOverRSIBaseEntryStrategy implements EntryStrategy {
         double currentMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex());
         double prevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()-1);
         double prevPrevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()-2);
-        boolean rule1 = currentMacdOverRsiValue < 0;
-        boolean rule2 = Math.abs(currentMacdOverRsiValue) < Math.abs(prevMacdOverRsiValue);
-        boolean rule3 = Math.abs(prevMacdOverRsiValue) < Math.abs(prevPrevMacdOverRsiValue);
-        return rule1 && rule2 && rule3;
+        boolean rule1 = Math.abs(currentMacdOverRsiValue) < Math.abs(prevMacdOverRsiValue);
+        boolean rule2 = Math.abs(prevMacdOverRsiValue) < Math.abs(prevPrevMacdOverRsiValue);
+        return rule1 && rule2;
     }
+
+    public boolean currentCandleBiggerThanPrev(RealTimeData realTimeData) {
+        double now = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex());
+        double prev = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()-1);
+        return Math.abs(prev) <= Math.abs(now);
+    }
+
 }

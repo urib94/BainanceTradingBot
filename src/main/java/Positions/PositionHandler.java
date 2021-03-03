@@ -185,6 +185,7 @@ public class PositionHandler implements Serializable {
         return currentPrice.subtract((currentPrice.multiply(BigDecimal.valueOf(trailingPercentage)))).toString();
     }
 
+    //todo: ADD MARKET AND LIMIT YA PUBLIC
     public enum ClosePositionTypes{
         SELL_MARKET,
         SELL_LIMIT,

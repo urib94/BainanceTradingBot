@@ -47,6 +47,8 @@ public class MACDoverRSIShortEntryStrategy extends MACDOverRSIBaseEntryStrategy 
 		ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
 		exitStrategies.add(new MACDOverRSIShortExitStrategy1());
 		exitStrategies.add(new MACDOverRSIShortExitStrategy2());
+		exitStrategies.add(new MACDOverRSIShortExitStrategy3());
+		exitStrategies.add(new MACDOverRSIShortExitStrategy4());
 		return null;
 	}
 
