@@ -28,6 +28,8 @@ public class PositionHandler implements Serializable {
     private final ArrayList<ExitStrategy> exitStrategies;
     private Long baseTime = 0L;
     private boolean isTrailing = false;
+    private Order trailingOrder = null;
+
 
     public PositionHandler(Order order, ArrayList<ExitStrategy> _exitStrategies){//TODO: trying something
         clientOrderId = order.getClientOrderId();
@@ -50,13 +52,13 @@ public class PositionHandler implements Serializable {
         exitStrategies.add(new RSIExitStrategy4());
     }
 
-    public boolean isSoldOut(){ return isActive && !status.equals(Config.NEW) && (qty.compareTo(BigDecimal.valueOf(0.0)) <= 0);}
+    public synchronized boolean isSoldOut(){ return isActive && !status.equals(Config.NEW) && (qty.compareTo(BigDecimal.valueOf(0.0)) <= 0);}
 
     public synchronized void run(RealTimeData realTimeData) {//TODO: adjust to long and short and trailing as exit method
         for (ExitStrategy exitStrategy : exitStrategies) {
             SellingInstructions sellingInstructions = exitStrategy.run(realTimeData, isTrailing);
             if (sellingInstructions != null) {
-                if (sellingInstructions.isStopTrailing()) isTrailing = false;
+                if (sellingInstructions.isStopTrailing()) stopTrailing();
                 closePosition(sellingInstructions, realTimeData);
             }
         }
@@ -105,13 +107,10 @@ public class PositionHandler implements Serializable {
 
     private void closePosition(SellingInstructions sellingInstructions, RealTimeData realTimeData){
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+        String sellingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingInstructions.getSellingQtyPercentage()), symbol);
         switch (sellingInstructions.getType()) {
 
             case SELL:
-                String sellingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingInstructions.getSellingQtyPercentage()), symbol);
-                if (sellingQty.equals("0.000")){
-                    sellingQty = "0.001";
-                }
                 try {
                     Order sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
@@ -120,40 +119,56 @@ public class PositionHandler implements Serializable {
 
             case SELL_WITH_TRAILING:
                 isTrailing = true;
-
-
-
-
-
+                closeTrailingOrder();
+                try {
+                    String trailingPrice = calculateSellingTrailingPrice(realTimeData.getCurrentPrice(), sellingInstructions.getTrailingPercentage());
+                    Order sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
+                            sellingQty, trailingPrice, Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
+                    trailingOrder = sellingOrder;
+                } catch (Exception exception) { exception.printStackTrace();}
                 break;
 
             case CLOSE_SHORT:
-                String buyingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingInstructions.getSellingQtyPercentage()), symbol);
-                if (buyingQty.equals("0.000")){//TODO: change to something better in format qty.
-                    buyingQty = "0.001";
-                }
                 try {
                     Order buyingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
-                            buyingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
+                            sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
                 } catch (Exception exception) { exception.printStackTrace();}
                 break;
 
             case CLOSE_SHORT_WITH_TRAILING:
                 isTrailing = true;
-
-
-
-
-
-
-
-
+                closeTrailingOrder();
+                try {
+                    String trailingPrice = calculateBuyingTrailingPrice(realTimeData.getCurrentPrice(), sellingInstructions.getTrailingPercentage());
+                    Order buyingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
+                            sellingQty, trailingPrice, Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
+                    trailingOrder = buyingOrder;
+                } catch (Exception exception) { exception.printStackTrace();}
                 break;
 
             default:
                 System.out.println("Wrong closePositionType");
         }
+    }
 
+    private void stopTrailing() {
+        closeTrailingOrder();
+        isTrailing = false;
+    }
+
+    private void closeTrailingOrder() {
+        if (trailingOrder != null){
+            SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+            syncRequestClient.cancelOrder(trailingOrder.getSymbol(), trailingOrder.getOrderId(), trailingOrder.getClientOrderId());
+        }
+    }
+
+    private String calculateBuyingTrailingPrice(BigDecimal currentPrice, double trailingPercentage) {
+        return currentPrice.add((currentPrice.multiply(BigDecimal.valueOf(trailingPercentage)))).toString();
+    }
+
+    private String calculateSellingTrailingPrice(BigDecimal currentPrice, double trailingPercentage) {
+        return currentPrice.subtract((currentPrice.multiply(BigDecimal.valueOf(trailingPercentage)))).toString();
     }
 
     public enum ClosePositionTypes{
