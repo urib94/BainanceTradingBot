@@ -1,9 +1,9 @@
-package Strategies.MACDOverRSIStrategies.Long;
+package Strategies.MACDOverRSIStrategies;
 
 import Data.RealTimeData;
-import Strategies.EntryStrategy;
+import Strategies.ExitStrategy;
 
-public abstract class MACDOverRSILongBaseEntryStrategy implements EntryStrategy {
+public abstract class MACDOverRSIBaseExitStrategy implements ExitStrategy {
 
     public boolean urisRulesOfEntry(RealTimeData realTimeData) {
         double currentMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex());
