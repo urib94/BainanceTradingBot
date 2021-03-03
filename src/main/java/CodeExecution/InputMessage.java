@@ -93,6 +93,10 @@ public class InputMessage {
                 secretKey = messageParts[2];
                 break;
 
+            case RealTImeOperations.BUY_NOW:
+                symbol = messageParts[1];
+                break;
+
             case "help":
                 System.out.println("Optional commands:\n" +
                         "cancel all orders, [symbol]\n" +
@@ -104,7 +108,8 @@ public class InputMessage {
                         "get open positions\n" +
                         "get open orders, [symbol]\n" +
                         "get current balance, [symbol]\n" +
-                        "login, [apikey], [secretkey]\n"
+                        "login, [apikey], [secretkey]\n" +
+                        "buy now, [symbol]\n"
                 );
                 break;
 
@@ -118,7 +123,7 @@ public class InputMessage {
             case "rsi":
                 return new RSIEntryStrategy();
 
-            case "macd over rsi":
+            case "macd":
                 return new MACDOverRSILongEntryStrategy();
 
             default:

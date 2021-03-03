@@ -121,6 +121,12 @@ public class RealTimeCommandOperator {
             Config.setApiKey(message.getApiKey());
             Config.setSecretKey(message.getSecretKey());
         });
+
+        commandsAndOps.put(RealTImeOperations.BUY_NOW, (message) -> {
+            SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+            Order sellingOrder = syncRequestClient.postOrder(message.getSymbol().toLowerCase(), OrderSide.BUY, null, OrderType.MARKET, null,
+                    "0.001", null, null, null, null, null, null, NewOrderRespType.RESULT);
+        });
     }
 
     public void run() throws InterruptedException {
