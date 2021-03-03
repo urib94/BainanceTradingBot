@@ -30,33 +30,24 @@ public class MACDoverRSIShortEntryStrategy implements EntryStrategy {
 		boolean rule2 = realTimeData.getMacdOverRsiSignalLineValueAtIndex(realTimeData.getLastCloseIndex()) < 0;
 		boolean currentPriceBelowSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(Config.CANDLE_NUM)).compareTo(realTimeData.getCurrentPrice()) > Config.ZERO;
 		if (currentPriceBelowSMA){
-			if (rule1 && realTimeData.urisRulesOfEntry()) {
-				//TODO: short stuff
-				SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-				syncRequestClient.changeInitialLeverage(symbol,leverage);
-				String buyingQty = getBuyingQtyAsString(realTimeData, symbol);
-				Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.MARKET, null,
-						buyingQty,null,null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);//TODO: check if buying with market price is ok.
-
-				ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
-				exitStrategies.add(new MACDOverRSIShortExitStrategy1());
-				exitStrategies.add(new MACDOverRSIShortExitStrategy2());
-				return null;
-			}
-			if (realTimeData.getMacdOverRsiSignalLineValueAtIndex(realTimeData.getLastCloseIndex()) < 0) {
-				if (realTimeData.urisRulesOfEntry()) {
-					//TODO: short stuff
-					ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
-					exitStrategies.add(new MACDOverRSIShortExitStrategy1());
-					exitStrategies.add(new MACDOverRSIShortExitStrategy2());
-					return null;
-				}
-			}
+			if (rule1) return buyAndCreatePositionHandler(realTimeData,symbol);
+			if (rule2 && realTimeData.urisRulesOfEntry()) return buyAndCreatePositionHandler(realTimeData,symbol);
 		}
 		return null;
 	}
 
+	private PositionHandler buyAndCreatePositionHandler(RealTimeData realTimeData, String symbol) {
+		SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+		syncRequestClient.changeInitialLeverage(symbol,leverage);
+		String buyingQty = Utils.Utils.getBuyingQtyAsString(realTimeData, symbol,leverage,requestedBuyingAmount);
+		Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.MARKET, null,
+				buyingQty,null,null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);//TODO: check if buying with market price is ok.
 
+		ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
+		exitStrategies.add(new MACDOverRSIShortExitStrategy1());
+		exitStrategies.add(new MACDOverRSIShortExitStrategy2());
+		return null;
+	}
 
 
 

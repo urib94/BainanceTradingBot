@@ -1,5 +1,7 @@
 package Utils;
 
+import Data.RealTimeData;
+import SingletonHelpers.BinanceInfo;
 import Strategies.EntryStrategy;
 import Strategies.RSIStrategies.RSIEntryStrategy;
 import com.binance.client.api.model.enums.CandlestickInterval;
@@ -8,6 +10,8 @@ import org.ta4j.core.Indicator;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import org.ta4j.core.num.Num;
 
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.time.*;
 import java.util.ArrayList;
 
@@ -45,5 +49,19 @@ public class Utils {
 			baseBarSeries.addBar(Duration.ofMillis(7L),getZonedDateTime(timestamp++),1,2,3,currentDiff,4,5);
 		}
 		return new ClosePriceIndicator(baseBarSeries);
+	}
+	public static String getBuyingQtyAsString(RealTimeData realTimeData, String symbol, int leverage, BigDecimal requestedBuyingAmount) {
+		BigDecimal buyingQty = requestedBuyingAmount.multiply(BigDecimal.valueOf(leverage)).divide(realTimeData.getCurrentPrice(), MathContext.DECIMAL32);
+		return BinanceInfo.formatQty(buyingQty, symbol);
+	}
+
+	public static String getTakeProfitPriceAsString(RealTimeData realTimeData, String symbol, double takeProfitPercentage) {
+		BigDecimal takeProfitPrice = realTimeData.getCurrentPrice().add((realTimeData.getCurrentPrice().multiply(BigDecimal.valueOf(takeProfitPercentage))));
+		return BinanceInfo.formatPrice(takeProfitPrice, symbol);
+	}
+
+	public static String getStopLossPriceAsString(RealTimeData realTimeData, String symbol, double stopLossPercentage) {
+		BigDecimal stopLossPrice = realTimeData.getCurrentPrice().subtract(realTimeData.getCurrentPrice().multiply(BigDecimal.valueOf(stopLossPercentage)));
+		return BinanceInfo.formatPrice(stopLossPrice, symbol);
 	}
 }

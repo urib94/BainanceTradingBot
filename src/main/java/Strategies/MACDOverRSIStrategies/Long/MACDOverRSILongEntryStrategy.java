@@ -30,12 +30,8 @@ public class MACDOverRSILongEntryStrategy implements EntryStrategy {
         boolean rule2 = realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.UP,RealTimeData.CandleType.CLOSE,Config.ZERO);
         boolean currentPriceAboveSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(Config.CANDLE_NUM)).compareTo(realTimeData.getCurrentPrice()) < Config.ZERO;
         if (currentPriceAboveSMA) {
-            if (rule1 && realTimeData.urisRulesOfEntry()) {
-                return buyAndCreatePositionHandler(realTimeData,symbol);
-            }
-            if (rule2) {
-                return buyAndCreatePositionHandler(realTimeData,symbol);
-            }
+            if (rule1 && realTimeData.urisRulesOfEntry()) return buyAndCreatePositionHandler(realTimeData,symbol);
+            if (rule2) return buyAndCreatePositionHandler(realTimeData,symbol);
         }
         return null;
     }
@@ -43,7 +39,7 @@ public class MACDOverRSILongEntryStrategy implements EntryStrategy {
     private PositionHandler buyAndCreatePositionHandler(RealTimeData realTimeData, String symbol) {
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         syncRequestClient.changeInitialLeverage(symbol,leverage);
-        String buyingQty = getBuyingQtyAsString(realTimeData, symbol);
+        String buyingQty = Utils.Utils.getBuyingQtyAsString(realTimeData, symbol,leverage,requestedBuyingAmount);
         Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.MARKET, null,
                 buyingQty,null,null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
         ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
@@ -69,10 +65,5 @@ public class MACDOverRSILongEntryStrategy implements EntryStrategy {
     @Override
     public void setRequestedBuyingAmount(BigDecimal requestedBuyingAmount) {
         this.requestedBuyingAmount = requestedBuyingAmount;
-    }
-
-    private String getBuyingQtyAsString(RealTimeData realTimeData, String symbol) {
-        BigDecimal buyingQty = requestedBuyingAmount.multiply(BigDecimal.valueOf(leverage)).divide(realTimeData.getCurrentPrice(), MathContext.DECIMAL32);
-        return BinanceInfo.formatQty(buyingQty, symbol);
     }
 }
