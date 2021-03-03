@@ -4,10 +4,11 @@ import Data.Config;
 import Data.RealTimeData;
 import Positions.SellingInstructions;
 import Strategies.ExitStrategy;
+import Strategies.MACDOverRSIStrategies.MACDOverRSIBaseExitStrategy;
 
 import java.math.BigDecimal;
 
-public class MACDOverRSIShortExitStrategy1 implements ExitStrategy {
+public class MACDOverRSIShortExitStrategy1 extends MACDOverRSIBaseExitStrategy {
 
 	@Override
 	public SellingInstructions run(RealTimeData realTimeData, boolean isTrailing) {

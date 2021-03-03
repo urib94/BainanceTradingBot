@@ -6,6 +6,7 @@ import Positions.PositionHandler;
 import SingletonHelpers.RequestClient;
 import Strategies.EntryStrategy;
 import Strategies.ExitStrategy;
+import Strategies.MACDOverRSIStrategies.MACDOverRSIBaseEntryStrategy;
 import Strategies.MACDOverRSIStrategies.MACDOverRSIConstants;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.NewOrderRespType;
@@ -17,7 +18,7 @@ import com.binance.client.api.model.trade.Order;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
-public class MACDoverRSIShortEntryStrategy implements EntryStrategy {
+public class MACDoverRSIShortEntryStrategy extends MACDOverRSIBaseEntryStrategy {
 
 	double takeProfitPercentage = MACDOverRSIConstants.DEFAULT_TAKE_PROFIT_PERCENTAGE;
 	private double stopLossPercentage = MACDOverRSIConstants.DEFAULT_STOP_LOSS_PERCENTAGE;
@@ -31,7 +32,7 @@ public class MACDoverRSIShortEntryStrategy implements EntryStrategy {
 		boolean currentPriceBelowSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(Config.CANDLE_NUM)).compareTo(realTimeData.getCurrentPrice()) > Config.ZERO;
 		if (currentPriceBelowSMA){
 			if (rule1) return buyAndCreatePositionHandler(realTimeData,symbol);
-			if (rule2 && realTimeData.urisRulesOfEntry()) return buyAndCreatePositionHandler(realTimeData,symbol);
+			if (rule2 && urisRulesOfEntry(realTimeData)) return buyAndCreatePositionHandler(realTimeData,symbol);
 		}
 		return null;
 	}
@@ -48,8 +49,6 @@ public class MACDoverRSIShortEntryStrategy implements EntryStrategy {
 		exitStrategies.add(new MACDOverRSIShortExitStrategy2());
 		return null;
 	}
-
-
 
 
 	@Override

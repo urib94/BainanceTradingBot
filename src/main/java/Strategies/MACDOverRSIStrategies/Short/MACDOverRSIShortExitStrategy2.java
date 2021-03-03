@@ -4,9 +4,10 @@ import Data.Config;
 import Data.RealTimeData;
 import Positions.SellingInstructions;
 import Strategies.ExitStrategy;
+import Strategies.MACDOverRSIStrategies.MACDOverRSIBaseExitStrategy;
 import Strategies.MACDOverRSIStrategies.MACDOverRSIConstants;
 
-public class MACDOverRSIShortExitStrategy2 implements ExitStrategy {
+public class MACDOverRSIShortExitStrategy2 extends MACDOverRSIBaseExitStrategy {
 
 	@Override
 	public SellingInstructions run(RealTimeData realTimeData, boolean isTrailing) {
