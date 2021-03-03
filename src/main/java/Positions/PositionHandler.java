@@ -52,21 +52,10 @@ public class PositionHandler implements Serializable {
     public boolean isSoldOut(){ return isActive && !status.equals(Config.NEW) && (qty.compareTo(BigDecimal.valueOf(0.0)) <= 0);}
 
     public synchronized void run(RealTimeData realTimeData) {//TODO: adjust to long and short and trailing as exit method
-        System.out.println("selling");
-        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         for (ExitStrategy exitStrategy : exitStrategies) {
-            BigDecimal sellingQtyPercentage = exitStrategy.run(realTimeData);
-            if (sellingQtyPercentage != null) {
-                closePosition();
-                String sellingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingQtyPercentage), symbol);
-                if (sellingQty.equals("0.000")){
-                    sellingQty = "0.001";
-                }
-                try { //TODO: in case don't succeed selling.
-                    Order sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
-                            sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
-                    System.out.println("Sold order: " + sellingOrder);
-                } catch (Exception e) { System.out.println(e);}
+            SellingInstructions sellingInstructions = exitStrategy.run(realTimeData);
+            if (sellingInstructions != null) {
+                closePosition(sellingInstructions, realTimeData);
             }
         }
     }
@@ -112,16 +101,19 @@ public class PositionHandler implements Serializable {
         syncRequestClient.cancelAllOpenOrder(Config.SYMBOL);
     }
 
-    private void closePosition(ClosePositionTypes type, BigDecimal sellingQtyPercentage, double trailingPercentage){
+    private void closePosition(SellingInstructions sellingInstructions, RealTimeData realTimeData){
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-        switch (type) {
+        switch (sellingInstructions.getType()) {
+
             case SELL:
-
-
-
-
-
-
+                String sellingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingInstructions.getSellingQtyPercentage()), symbol);
+                if (sellingQty.equals("0.000")){
+                    sellingQty = "0.001";
+                }
+                try {
+                    Order sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
+                            sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
+                } catch (Exception exception) { exception.printStackTrace();}
                 break;
 
             case SELL_WITH_TRAILING:
