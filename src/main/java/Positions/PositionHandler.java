@@ -134,7 +134,7 @@ public class PositionHandler implements Serializable {
     private void closePosition(SellingInstructions sellingInstructions, RealTimeData realTimeData){
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         String sellingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingInstructions.getSellingQtyPercentage()), symbol);
-        TelegramMessenger.sendToTelegram("Closing position - " + "expected pnl: "+ AccountBalance.getAccountBalance().getPosition(symbol).getUnrealizedProfit() + "         time: " + ZonedDateTime.now());
+        TelegramMessenger.sendToTelegram("Closing position: " + ZonedDateTime.now());
         switch (sellingInstructions.getType()) {
 
             case STAY_IN_POSITION:

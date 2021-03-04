@@ -44,7 +44,7 @@ public class MACDOverRSIShortEntryStrategy extends MACDOverRSIBaseEntryStrategy 
 	//todo: check short!
 	private PositionHandler buyAndCreatePositionHandler(RealTimeData realTimeData, String symbol) {
 		try{
-			TelegramMessenger.sendToTelegram("buying short, hist: " + realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()) + "time: " + ZonedDateTime.now());
+			TelegramMessenger.sendToTelegram("buying short: " + ZonedDateTime.now());
 			SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
 			syncRequestClient.changeInitialLeverage(symbol,leverage);
 			String buyingQty = Utils.Utils.getBuyingQtyAsString(realTimeData, symbol,leverage,requestedBuyingAmount);
@@ -55,8 +55,7 @@ public class MACDOverRSIShortEntryStrategy extends MACDOverRSIBaseEntryStrategy 
 			exitStrategies.add(new MACDOverRSIShortExitStrategy2());
 			exitStrategies.add(new MACDOverRSIShortExitStrategy3());
 			exitStrategies.add(new MACDOverRSIShortExitStrategy4());
-			TelegramMessenger.sendToTelegram("buying short, hist: " + realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()) + "time: " + ZonedDateTime.now());
-			System.out.println("bought short, time: " + System.currentTimeMillis());
+			TelegramMessenger.sendToTelegram("buying short: " + ZonedDateTime.now());
 			return new PositionHandler(buyOrder ,exitStrategies);
 		}catch (Exception exception){
 			exception.printStackTrace();}

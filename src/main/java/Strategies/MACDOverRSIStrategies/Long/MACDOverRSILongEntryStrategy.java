@@ -29,7 +29,7 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
 
     @Override
     public synchronized PositionHandler run(RealTimeData realTimeData, String symbol) {
-        boolean notInPosition = AccountBalance.getAccountBalance().getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) <= 0;
+        boolean notInPosition = AccountBalance.getAccountBalance().getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == 0;
         boolean currentPriceAboveSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(realTimeData.getCurrentPrice()) < Config.ZERO;
         if (currentPriceAboveSMA && notInPosition) {
             boolean rule1 = realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.UP,RealTimeData.CandleType.CLOSE,Config.ZERO);
@@ -44,7 +44,7 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
     }
 
     private PositionHandler buyAndCreatePositionHandler(RealTimeData realTimeData, String symbol) {//TODO: maybe change market later.
-        TelegramMessenger.sendToTelegram("buying long, hist: " + realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()) + "time: " + ZonedDateTime.now());
+        TelegramMessenger.sendToTelegram("buying long: " + ZonedDateTime.now());
         try{
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             syncRequestClient.changeInitialLeverage(symbol,leverage);

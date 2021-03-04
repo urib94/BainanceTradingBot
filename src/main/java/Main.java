@@ -16,7 +16,7 @@ public class Main {
         AccountBalance accountBalance = AccountBalance.getAccountBalance(); //!Don't touch
         BinanceInfo binanceInfo = BinanceInfo.getBinanceInfo(); //!Don't touch
         RealTimeCommandOperator realTimeCommandOperator = new RealTimeCommandOperator();
-        TelegramMessenger.sendToTelegram("Start running, hope we don't lose too much money this time..." + ZonedDateTime.now());
+        TelegramMessenger.sendToTelegram("Start running: " + ZonedDateTime.now());
         try {
             realTimeCommandOperator.run();
         } catch (InterruptedException e) {
