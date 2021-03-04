@@ -51,12 +51,12 @@ public class RealTimeData{
      * to realTimeData
      * @param event - the new Candlestick received from the subscribeCandleStickEvent.
      */
-    public void updateData(CandlestickEvent event){
+    public synchronized void updateData(CandlestickEvent event){
         updateLastCandle(event);
         calculateIndicators();
-//        System.out.println("macd: " + getMacdOverRsiMacdLineValueAtIndex(getLastIndex()) + " time: " + System.currentTimeMillis());
-//        System.out.println("signal: " + getMacdOverRsiSignalLineValueAtIndex(getLastIndex()) + " time: " + System.currentTimeMillis());
-//        System.out.println("hist: " + getMacdOverRsiValueAtIndex(getLastIndex()) + " time: " + System.currentTimeMillis());
+        System.out.println("macd: " + getMacdOverRsiMacdLineValueAtIndex(getLastIndex()) + " time: " + System.currentTimeMillis());
+        System.out.println("signal: " + getMacdOverRsiSignalLineValueAtIndex(getLastIndex()) + " time: " + System.currentTimeMillis());
+        System.out.println("hist: " + getMacdOverRsiValueAtIndex(getLastIndex()) + " time: " + System.currentTimeMillis());
     }
 
     private void updateLastCandle(CandlestickEvent event) {

@@ -82,7 +82,7 @@ public class InvestmentManager implements Runnable{
     private void waitUntilFinished(ConcurrentLinkedDeque<Future<?>> futures){
         for (Future<?> future: futures){
             try{
-                future.get(500, TimeUnit.MILLISECONDS);//TODO: check if this change is slowing the machine
+                future.get();
             }catch (Exception ignored){}
             futures.remove(future);
         }

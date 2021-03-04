@@ -29,6 +29,7 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
 
     @Override
     public synchronized PositionHandler run(RealTimeData realTimeData, String symbol) {
+        System.out.println("strategy running");
         boolean notInPosition = AccountBalance.getAccountBalance().getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) <= 0;
         boolean currentPriceAboveSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(realTimeData.getCurrentPrice()) < Config.ZERO;
         if (currentPriceAboveSMA && notInPosition) {
