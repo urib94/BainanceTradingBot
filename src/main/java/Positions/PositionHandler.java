@@ -2,7 +2,9 @@ package Positions;
 import CodeExecution.RealTImeOperations;
 import Data.*;
 import SingletonHelpers.BinanceInfo;
+import SingletonHelpers.TelegramMessenger;
 import Strategies.ExitStrategy;
+import Strategies.MACDOverRSIStrategies.MACDOverRSIConstants;
 import Strategies.RSIStrategies.RSIExitStrategy1;
 import Strategies.RSIStrategies.RSIExitStrategy2;
 import Strategies.RSIStrategies.RSIExitStrategy3;
@@ -16,11 +18,12 @@ import SingletonHelpers.RequestClient;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 
 public class PositionHandler implements Serializable {
-    private final String clientOrderId;
-    private final Long orderID;
+    private String clientOrderId;
+    private Long orderID;
     private BigDecimal qty = BigDecimal.valueOf(0.0);
     private final String symbol;
     private boolean isActive = false;
@@ -52,7 +55,7 @@ public class PositionHandler implements Serializable {
         exitStrategies.add(new RSIExitStrategy4());
     }
 
-    public synchronized boolean isSoldOut(){ return isActive && !status.equals(Config.NEW) && (qty.compareTo(BigDecimal.valueOf(0.0)) <= 0);}
+    public synchronized boolean isSoldOut(){ return isActive && !status.equals(Config.NEW)&& (qty.compareTo(BigDecimal.valueOf(0.0)) == 0);}
 
     public synchronized void run(RealTimeData realTimeData) {//TODO: adjust to long and short and trailing as exit method
         for (ExitStrategy exitStrategy : exitStrategies) {
@@ -64,19 +67,22 @@ public class PositionHandler implements Serializable {
         }
     }
 
-    public synchronized void update(CandlestickInterval interval) {
+    public synchronized void update(RealTimeData realTimeData, CandlestickInterval interval) {
         Position position = AccountBalance.getAccountBalance().getPosition(symbol);
         if (orderID != null) {
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             Order order = syncRequestClient.getOrder(symbol, orderID, clientOrderId);
             status = order.getStatus();
-            isActive(order,interval);
+            isActive(realTimeData, order,interval);
         }
         qty = position.getPositionAmt();
     }
 
-    private void isActive(Order order,CandlestickInterval interval) {
-        if (status.equals(Config.PARTIALLY_FILLED)){
+    private void isActive(RealTimeData realTimeData, Order order,CandlestickInterval interval) {
+        if (status.equals(Config.NEW)){
+            rebuyOrder(realTimeData, order);
+        }
+        else if (status.equals(Config.PARTIALLY_FILLED)){
             Long updateTime = order.getUpdateTime();
             if (baseTime.equals(0L)) {
                 baseTime = updateTime;
@@ -95,12 +101,32 @@ public class PositionHandler implements Serializable {
         }
     }
 
+    private void rebuyOrder(RealTimeData realTimeData, Order order) {
+        try{
+            SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+            OrderSide side = stringToOrderSide(order.getSide());
+            Order buyOrder = syncRequestClient.postOrder(symbol, side, null, OrderType.LIMIT, TimeInForce.GTC,
+                    order.getOrigQty().toString(),realTimeData.getCurrentPrice().toString(),null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+            clientOrderId = buyOrder.getClientOrderId();
+            orderID = buyOrder.getOrderId();
+        }catch (Exception exception){
+            exception.printStackTrace();
+        }
+    }
+
+    private OrderSide stringToOrderSide(String side) {
+        for (OrderSide orderSide: OrderSide.values()){
+            if (orderSide.toString().equals(side)) return orderSide;
+        }
+        return null;
+    }
+
     private BigDecimal percentageOfQuantity(BigDecimal percentage) {
         return qty.multiply(percentage);
     }
 
     public synchronized void terminate(){
-        System.out.println("Terminating");
+        TelegramMessenger.sendToTelegram("Position closed!" + "         time: " + ZonedDateTime.now());
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         syncRequestClient.cancelAllOpenOrder(Config.SYMBOL);
     }
@@ -108,6 +134,7 @@ public class PositionHandler implements Serializable {
     private void closePosition(SellingInstructions sellingInstructions, RealTimeData realTimeData){
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         String sellingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingInstructions.getSellingQtyPercentage()), symbol);
+        TelegramMessenger.sendToTelegram("Closing position - " + "expected pnl: "+ AccountBalance.getAccountBalance().getPosition(symbol).getUnrealizedProfit() + "         time: " + ZonedDateTime.now());
         switch (sellingInstructions.getType()) {
 
             case STAY_IN_POSITION:
@@ -115,15 +142,9 @@ public class PositionHandler implements Serializable {
 
             case SELL_LIMIT:
                 try {
-                    Order sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.FOK,
+                    Order sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
                     Order orderCheck = syncRequestClient.getOrder(sellingOrder.getSymbol(), sellingOrder.getOrderId(), sellingOrder.getClientOrderId());
-                    while (orderCheck.getStatus().equals(Config.EXPIRED)){
-                        syncRequestClient.cancelOrder(sellingOrder.getSymbol(), sellingOrder.getOrderId(), sellingOrder.getClientOrderId());
-                        sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.FOK,
-                                sellingQty,realTimeData.getCurrentPrice().toString(),Config.REDUCE_ONLY,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-                        orderCheck = syncRequestClient.getOrder(sellingOrder.getSymbol(), sellingOrder.getOrderId(), sellingOrder.getClientOrderId());
-                    }
                 } catch (Exception exception) { exception.printStackTrace();}
                 break;
 
@@ -146,15 +167,8 @@ public class PositionHandler implements Serializable {
 
             case CLOSE_SHORT_LIMIT:
                 try {
-                    Order buyingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.FOK,
+                    Order buyingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
-                    Order orderCheck = syncRequestClient.getOrder(buyingOrder.getSymbol(), buyingOrder.getOrderId(), buyingOrder.getClientOrderId());
-                    while (orderCheck.getStatus().equals(Config.EXPIRED)){
-                        syncRequestClient.cancelOrder(buyingOrder.getSymbol(), buyingOrder.getOrderId(), buyingOrder.getClientOrderId());
-                        buyingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.FOK,
-                                sellingQty,realTimeData.getCurrentPrice().toString(),Config.REDUCE_ONLY,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-                        orderCheck = syncRequestClient.getOrder(buyingOrder.getSymbol(), buyingOrder.getOrderId(), buyingOrder.getClientOrderId());
-                    }
                 } catch (Exception exception) { exception.printStackTrace();}
                 break;
 

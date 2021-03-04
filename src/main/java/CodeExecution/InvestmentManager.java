@@ -50,7 +50,7 @@ public class InvestmentManager implements Runnable{
             waitUntilFinished(futures);
             positionHandlersLock.readLock().lock();
             for (PositionHandler positionHandler :positionHandlers){
-                positionHandler.update(interval);
+                positionHandler.update(realTimeData, interval);
                 if (positionHandler.isSoldOut()){
                     positionHandler.terminate();
                     positionHandlers.remove(positionHandler);

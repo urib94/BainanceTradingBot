@@ -4,16 +4,19 @@ import Data.Config;
 import Data.RealTimeData;
 import Positions.PositionHandler;
 import Positions.SellingInstructions;
+import SingletonHelpers.TelegramMessenger;
 import Strategies.ExitStrategy;
 import Strategies.MACDOverRSIStrategies.MACDOverRSIBaseExitStrategy;
 import Strategies.MACDOverRSIStrategies.MACDOverRSIConstants;
+
+import java.time.ZonedDateTime;
 
 public class MACDOverRSILongExitStrategy2 extends MACDOverRSIBaseExitStrategy {
 
 	@Override
 	public SellingInstructions run(RealTimeData realTimeData, boolean isTrailing) {
 		if (realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.DOWN, RealTimeData.CandleType.OPEN, Config.ZERO)) {
-			System.out.println("exiting position with long exit 2");
+			TelegramMessenger.sendToTelegram("exiting position with long exit 2" + "time: " + ZonedDateTime.now());
 			return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT, MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE,Config.ZERO);
 		}
 		return null;

@@ -1074,10 +1074,11 @@ class RestApiRequestImpl {
         return request;
     }
 
-    RestApiRequest<List<MyTrade>> getAccountTrades(String symbol) {
+    RestApiRequest<List<MyTrade>> getAccountTrades(String symbol, String limit) {
         RestApiRequest<List<MyTrade>> request = new RestApiRequest<>();
         UrlParamsBuilder builder = UrlParamsBuilder.build()
-                .putToUrl("symbol", symbol);
+                .putToUrl("symbol", symbol)
+                .putToUrl("limit", limit);
         request.request = createRequestByGetWithSignature("/fapi/v1/userTrades", builder);
 
         request.jsonParser = (jsonWrapper -> {

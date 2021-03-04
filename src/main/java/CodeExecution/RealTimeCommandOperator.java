@@ -90,8 +90,12 @@ public class RealTimeCommandOperator {
 
         commandsAndOps.put(RealTImeOperations.GET_LAST_TRADES, (message) -> {//TODO: complete
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-            List<MyTrade> myTrades = syncRequestClient.getAccountTrades(message.getSymbol());
-            System.out.println(myTrades);
+            List<MyTrade> myTrades = syncRequestClient.getAccountTrades(message.getSymbol(), "20");
+            int index = 1;
+            for (MyTrade trade : myTrades) {
+                System.out.println("Trade " + index + ": " + trade);
+                index++;
+            }
         });
 
         commandsAndOps.put(RealTImeOperations.GET_OPEN_POSITIONS, (message) -> {

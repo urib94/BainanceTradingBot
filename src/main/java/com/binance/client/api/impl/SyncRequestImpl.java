@@ -172,8 +172,8 @@ public class SyncRequestImpl implements SyncRequestClient {
     }
     
     @Override
-    public List<MyTrade> getAccountTrades(String symbol) {
-        return RestApiInvoker.callSync(requestImpl.getAccountTrades(symbol));
+    public List<MyTrade> getAccountTrades(String symbol, String limit) {
+        return RestApiInvoker.callSync(requestImpl.getAccountTrades(symbol, limit));
     }
     
     @Override
