@@ -102,6 +102,7 @@ public class PositionHandler implements Serializable {
     }
 
     private void rebuyOrder(RealTimeData realTimeData, Order order) {
+        TelegramMessenger.sendToTelegram("buying again: " + ZonedDateTime.now());
         try{
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             OrderSide side = stringToOrderSide(order.getSide());

@@ -54,9 +54,9 @@ public class RealTimeData{
     public synchronized void updateData(CandlestickEvent event){
         updateLastCandle(event);
         calculateIndicators();
-        System.out.println("macd: " + getMacdOverRsiMacdLineValueAtIndex(getLastIndex()) + " time: " + System.currentTimeMillis());
-        System.out.println("signal: " + getMacdOverRsiSignalLineValueAtIndex(getLastIndex()) + " time: " + System.currentTimeMillis());
-        System.out.println("hist: " + getMacdOverRsiValueAtIndex(getLastIndex()) + " time: " + System.currentTimeMillis());
+//        System.out.println("macd: " + getMacdOverRsiMacdLineValueAtIndex(getLastIndex()) + " time: " + System.currentTimeMillis());
+//        System.out.println("signal: " + getMacdOverRsiSignalLineValueAtIndex(getLastIndex()) + " time: " + System.currentTimeMillis());
+//        System.out.println("hist: " + getMacdOverRsiValueAtIndex(getLastIndex()) + " time: " + System.currentTimeMillis());
     }
 
     private void updateLastCandle(CandlestickEvent event) {
