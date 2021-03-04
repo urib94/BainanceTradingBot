@@ -99,16 +99,16 @@ public class RealTimeData{
         smaIndicator = new SMAIndicator(new ClosePriceIndicator(realTimeData), MACDOverRSIConstants.SMA_CANDLE_NUM);
     }
 
-    public double getMacdOverRsiSignalLineValueAtIndex(int index) {
+    public synchronized double getMacdOverRsiSignalLineValueAtIndex(int index) {
         EMAIndicator signal = new EMAIndicator(macdOverRsiIndicator, MACDOverRSIConstants.SIGNAL_LENGTH);
         return signal.getValue(index).doubleValue();
     }
 
-    public double getMacdOverRsiMacdLineValueAtIndex(int index) {
+    public synchronized double getMacdOverRsiMacdLineValueAtIndex(int index) {
         return macdOverRsiIndicator.getValue(index).doubleValue();
     }
 
-    public double getMacdOverRsiValueAtIndex(int index) {
+    public synchronized double getMacdOverRsiValueAtIndex(int index) {
         return getMacdOverRsiMacdLineValueAtIndex(index) - getMacdOverRsiSignalLineValueAtIndex(index);
     }
 

@@ -23,6 +23,8 @@ public class InvestmentManager implements Runnable{
     ConcurrentLinkedDeque<Future<?>> futures;
     ReadWriteLock entryStrategiesLock = new ReentrantReadWriteLock();
     ReadWriteLock positionHandlersLock = new ReentrantReadWriteLock();
+    ReadWriteLock iterationLock = new ReentrantReadWriteLock();
+
 
 
     public InvestmentManager(CandlestickInterval interval, String symbol, EntryStrategy entryStrategy) {
@@ -44,10 +46,9 @@ public class InvestmentManager implements Runnable{
             positionHandlers.add(oldPosition);
         }
         subscriptionClient.subscribeCandlestickEvent(symbol, interval, ((event) -> {
-            waitUntilFinished(futures);
+            iterationLock.writeLock().lock();
             executorService.submit(()->realTimeData.updateData(event));
             executorService.submit(()->AccountBalance.getAccountBalance().updateBalance());
-            waitUntilFinished(futures);
             positionHandlersLock.readLock().lock();
             for (PositionHandler positionHandler :positionHandlers){
                 positionHandler.update(realTimeData, interval);
@@ -86,6 +87,7 @@ public class InvestmentManager implements Runnable{
             }catch (Exception ignored){}
             futures.remove(future);
         }
+        iterationLock.writeLock().unlock();
     }
 
     public void addEntryStrategy(EntryStrategy entryStrategy){
