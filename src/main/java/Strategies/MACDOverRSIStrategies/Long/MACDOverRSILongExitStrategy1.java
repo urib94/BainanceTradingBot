@@ -14,9 +14,9 @@ public class MACDOverRSILongExitStrategy1 extends MACDOverRSIBaseExitStrategy {
 
 	@Override
 	public SellingInstructions run(RealTimeData realTimeData, boolean isTrailing) {
-		boolean currentPriceBelowSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(realTimeData.getCurrentPrice()) >= Config.ZERO;
+		boolean currentPriceBelowSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(realTimeData.getCurrentPrice()) > Config.ZERO;
 		if (currentPriceBelowSMA) {
-
+			System.out.println("exiting position with long exit 1");
 			return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_MARKET,MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE,Config.ZERO);
 		}
 		return null;

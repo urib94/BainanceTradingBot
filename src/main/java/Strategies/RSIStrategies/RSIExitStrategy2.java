@@ -28,14 +28,14 @@ public class RSIExitStrategy2 implements ExitStrategy {
 			if (! realTimeData.above(RealTimeData.IndicatorType.RSI,RealTimeData.CandleType.CLOSE, RSIConstants.RSI_EXIT_OPTION_2_UNDER_THRESHOLD1)) {
 				System.out.println(this.getClass().getSimpleName() + "Switching to Position 3. Returning 40% ");
 				positionInStrategy = PositionInStrategy.POSITION_THREE;
-				return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL, RSIConstants.RSI_EXIT_OPTION_2_SELLING_PERCENTAGE1, Config.ZERO);
+				return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT, RSIConstants.RSI_EXIT_OPTION_2_SELLING_PERCENTAGE1, Config.ZERO);
 
 			}
 		} else if(positionInStrategy == PositionInStrategy.POSITION_THREE) {
 			if (! realTimeData.above(RealTimeData.IndicatorType.RSI,RealTimeData.CandleType.CLOSE, RSIConstants.RSI_EXIT_OPTION_2_UNDER_THRESHOLD2)) {
 				positionInStrategy = PositionInStrategy.POSITION_ONE;
 				System.out.println(this.getClass().getSimpleName() + "Switching to Position 1. Returning 100% ");
-				return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL, RSIConstants.RSI_EXIT_OPTION_2_SELLING_PERCENTAGE2, Config.ZERO);
+				return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT, RSIConstants.RSI_EXIT_OPTION_2_SELLING_PERCENTAGE2, Config.ZERO);
 			}
 		}
 		return null;

@@ -45,8 +45,9 @@ public class InvestmentManager implements Runnable{
         }
         subscriptionClient.subscribeCandlestickEvent(symbol, interval, ((event) -> {
             waitUntilFinished(futures);
-            realTimeData.updateData(event);
-            AccountBalance.getAccountBalance().updateBalance();
+            executorService.submit(()->realTimeData.updateData(event));
+            executorService.submit(()->AccountBalance.getAccountBalance().updateBalance());
+            waitUntilFinished(futures);
             positionHandlersLock.readLock().lock();
             for (PositionHandler positionHandler :positionHandlers){
                 positionHandler.update(interval);

@@ -18,7 +18,7 @@ public class RSIExitStrategy4 implements ExitStrategy {
 		System.out.println("rsi open value: " + realTimeData.getRsiOpenValue());
 		if (!(realTimeData.above(RealTimeData.IndicatorType.RSI,RealTimeData.CandleType.OPEN, RSIConstants.RSI_EXIT_OPTION_4_UNDER_THRESHOLD))) {
 			System.out.println("Exiting with RSI exit strategy 4!");
-			return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL, RSIConstants.RSI_EXIT_OPTION_4_SELLING_PERCENTAGE, Config.ZERO);
+			return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT, RSIConstants.RSI_EXIT_OPTION_4_SELLING_PERCENTAGE, Config.ZERO);
 		}
 		return null;
 	}

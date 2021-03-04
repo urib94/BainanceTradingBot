@@ -1,7 +1,6 @@
 package Data;
 
 import Strategies.MACDOverRSIStrategies.MACDOverRSIConstants;
-import Strategies.OSMAStrategies.OSMAConstants;
 import Strategies.RSIStrategies.RSIConstants;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.CandlestickInterval;
@@ -55,6 +54,9 @@ public class RealTimeData{
     public void updateData(CandlestickEvent event){
         updateLastCandle(event);
         calculateIndicators();
+//        System.out.println("macd: " + getMacdOverRsiMacdLineValueAtIndex(getLastIndex()) + " time: " + System.currentTimeMillis());
+//        System.out.println("signal: " + getMacdOverRsiSignalLineValueAtIndex(getLastIndex()) + " time: " + System.currentTimeMillis());
+//        System.out.println("hist: " + getMacdOverRsiValueAtIndex(getLastIndex()) + " time: " + System.currentTimeMillis());
     }
 
     private void updateLastCandle(CandlestickEvent event) {
@@ -95,16 +97,6 @@ public class RealTimeData{
         rsiIndicator = calculateRSI(RSIConstants.RSI_CANDLE_NUM);
         macdOverRsiIndicator = calculateMacdOverRsi();
         smaIndicator = new SMAIndicator(new ClosePriceIndicator(realTimeData), MACDOverRSIConstants.SMA_CANDLE_NUM);
-        System.out.println("RSI OPEN VALUE: " + getRsiOpenValue());
-        System.out.println("MACDOVER RSI: " + getMacdOverRsiValueAtIndex(getLastIndex()));
-    }
-
-    private double calculateOSMAValue() {
-        MACDIndicator macd = new MACDIndicator(new ClosePriceIndicator(realTimeData), OSMAConstants.SHORT_BAR_COUNT,OSMAConstants.LONG_BAR_COUNT);
-        SMAIndicator signal = new SMAIndicator(macd,OSMAConstants.BAR_COUNT);
-        ClosePriceIndicator osma = Utils.Utils.diffByElementBetweenIndicators(macd,signal,Config.CANDLE_NUM);
-        SMAIndicator signal2 = new SMAIndicator(osma,OSMAConstants.BAR_COUNT);
-        return (osma.getValue(Config.CANDLE_NUM-1).minus(signal2.getValue(Config.CANDLE_NUM-1))).doubleValue();
     }
 
     public double getMacdOverRsiSignalLineValueAtIndex(int index) {

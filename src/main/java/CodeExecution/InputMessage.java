@@ -2,6 +2,7 @@ package CodeExecution;
 
 import Strategies.EntryStrategy;
 import Strategies.MACDOverRSIStrategies.Long.MACDOverRSILongEntryStrategy;
+import Strategies.MACDOverRSIStrategies.Short.MACDOverRSIShortEntryStrategy;
 import Strategies.RSIStrategies.RSIEntryStrategy;
 import com.binance.client.api.model.enums.CandlestickInterval;
 
@@ -38,10 +39,20 @@ public class InputMessage {
         operation = messageParts[0];
         switch (operation) {
             case RealTImeOperations.CANCEL_ALL_ORDERS:
+
+            case RealTImeOperations.BUY_NOW:
+
+            case RealTImeOperations.GET_LAST_TRADES:
+
+            case RealTImeOperations.GET_OPEN_ORDERS:
+
+            case RealTImeOperations.GET_CURRENT_BALANCE:
                 symbol = messageParts[1];
                 break;
 
             case RealTImeOperations.CLOSE_ALL_POSITIONS:
+
+            case RealTImeOperations.GET_OPEN_POSITIONS:
                 break;
 
             case RealTImeOperations.ACTIVATE_STRATEGY:
@@ -73,28 +84,9 @@ public class InputMessage {
                 }
                 break;
 
-            case RealTImeOperations.GET_LAST_TRADES:
-                symbol = messageParts[1];
-                break;
-
-            case RealTImeOperations.GET_OPEN_POSITIONS:
-                break;
-
-            case RealTImeOperations.GET_OPEN_ORDERS:
-                symbol = messageParts[1];
-                break;
-
-            case RealTImeOperations.GET_CURRENT_BALANCE:
-                symbol = messageParts[1];
-                break;
-
             case RealTImeOperations.LOGIN:
                 apiKey = messageParts[1];
                 secretKey = messageParts[2];
-                break;
-
-            case RealTImeOperations.BUY_NOW:
-                symbol = messageParts[1];
                 break;
 
             case "help":
@@ -123,8 +115,11 @@ public class InputMessage {
             case "rsi":
                 return new RSIEntryStrategy();
 
-            case "macd":
+            case "macd long":
                 return new MACDOverRSILongEntryStrategy();
+
+            case "macd short":
+                return new MACDOverRSIShortEntryStrategy();
 
             default:
                 return null;

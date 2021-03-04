@@ -110,17 +110,27 @@ public class PositionHandler implements Serializable {
         String sellingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingInstructions.getSellingQtyPercentage()), symbol);
         switch (sellingInstructions.getType()) {
 
+            case STAY_IN_POSITION:
+                break;
+
             case SELL_LIMIT:
                 try {
-                    Order sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
+                    Order sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.FOK,
                             sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
+                    Order orderCheck = syncRequestClient.getOrder(sellingOrder.getSymbol(), sellingOrder.getOrderId(), sellingOrder.getClientOrderId());
+                    while (orderCheck.getStatus().equals(Config.EXPIRED)){
+                        syncRequestClient.cancelOrder(sellingOrder.getSymbol(), sellingOrder.getOrderId(), sellingOrder.getClientOrderId());
+                        sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.FOK,
+                                sellingQty,realTimeData.getCurrentPrice().toString(),Config.REDUCE_ONLY,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+                        orderCheck = syncRequestClient.getOrder(sellingOrder.getSymbol(), sellingOrder.getOrderId(), sellingOrder.getClientOrderId());
+                    }
                 } catch (Exception exception) { exception.printStackTrace();}
                 break;
 
-            case SELL_MARKET://TODO:COMPLETE
+            case SELL_MARKET:
                 try {
-                    Order sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
-                            sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
+                    Order sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.MARKET, null,
+                            sellingQty, null, Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
                 } catch (Exception exception) { exception.printStackTrace();}
                 break;
 
@@ -128,24 +138,30 @@ public class PositionHandler implements Serializable {
                 isTrailing = true;
                 closeTrailingOrder();
                 try {
-                    String trailingPrice = calculateSellingTrailingPrice(realTimeData.getCurrentPrice(), sellingInstructions.getTrailingPercentage());
-                    Order sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
+                    String trailingPrice = BinanceInfo.formatPrice(calculateSellingTrailingPrice(realTimeData.getCurrentPrice(), sellingInstructions.getTrailingPercentage()), symbol);
+                    trailingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, trailingPrice, Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
-                    trailingOrder = sellingOrder;
                 } catch (Exception exception) { exception.printStackTrace();}
                 break;
 
             case CLOSE_SHORT_LIMIT:
                 try {
-                    Order buyingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
+                    Order buyingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.FOK,
                             sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
+                    Order orderCheck = syncRequestClient.getOrder(buyingOrder.getSymbol(), buyingOrder.getOrderId(), buyingOrder.getClientOrderId());
+                    while (orderCheck.getStatus().equals(Config.EXPIRED)){
+                        syncRequestClient.cancelOrder(buyingOrder.getSymbol(), buyingOrder.getOrderId(), buyingOrder.getClientOrderId());
+                        buyingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.FOK,
+                                sellingQty,realTimeData.getCurrentPrice().toString(),Config.REDUCE_ONLY,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+                        orderCheck = syncRequestClient.getOrder(buyingOrder.getSymbol(), buyingOrder.getOrderId(), buyingOrder.getClientOrderId());
+                    }
                 } catch (Exception exception) { exception.printStackTrace();}
                 break;
 
             case CLOSE_SHORT_MARKET:
                 try {
-                    Order buyingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
-                            sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
+                    Order buyingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.MARKET, null,
+                            sellingQty, null, Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
                 } catch (Exception exception) { exception.printStackTrace();}
                 break;
 
@@ -153,15 +169,14 @@ public class PositionHandler implements Serializable {
                 isTrailing = true;
                 closeTrailingOrder();
                 try {
-                    String trailingPrice = calculateBuyingTrailingPrice(realTimeData.getCurrentPrice(), sellingInstructions.getTrailingPercentage());
-                    Order buyingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
+                    String trailingPrice = BinanceInfo.formatPrice(calculateBuyingTrailingPrice(realTimeData.getCurrentPrice(), sellingInstructions.getTrailingPercentage()), symbol);
+                    trailingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, trailingPrice, Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
-                    trailingOrder = buyingOrder;
                 } catch (Exception exception) { exception.printStackTrace();}
                 break;
 
             default:
-                System.out.println("Wrong closePositionType");
+
         }
     }
 
@@ -177,16 +192,17 @@ public class PositionHandler implements Serializable {
         }
     }
 
-    private String calculateBuyingTrailingPrice(BigDecimal currentPrice, double trailingPercentage) {
-        return currentPrice.add((currentPrice.multiply(BigDecimal.valueOf(trailingPercentage)))).toString();
+    private BigDecimal calculateBuyingTrailingPrice(BigDecimal currentPrice, double trailingPercentage) {
+        return currentPrice.add((currentPrice.multiply(BigDecimal.valueOf(trailingPercentage)).multiply(BigDecimal.valueOf(1.0/100))));
     }
 
-    private String calculateSellingTrailingPrice(BigDecimal currentPrice, double trailingPercentage) {
-        return currentPrice.subtract((currentPrice.multiply(BigDecimal.valueOf(trailingPercentage)))).toString();
+    private BigDecimal calculateSellingTrailingPrice(BigDecimal currentPrice, double trailingPercentage) {
+        return currentPrice.subtract((currentPrice.multiply(BigDecimal.valueOf(trailingPercentage)).multiply(BigDecimal.valueOf(1.0/100))));
     }
 
     //todo: ADD MARKET AND LIMIT YA PUBLIC
     public enum ClosePositionTypes{
+        STAY_IN_POSITION,
         SELL_MARKET,
         SELL_LIMIT,
         SELL_WITH_TRAILING,
