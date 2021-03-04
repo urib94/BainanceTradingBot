@@ -186,7 +186,7 @@ public class PositionHandler implements Serializable {
                 closeTrailingOrder();
                 try {
                     String trailingPrice = BinanceInfo.formatPrice(calculateBuyingTrailingPrice(realTimeData.getCurrentPrice(), sellingInstructions.getTrailingPercentage()), symbol);
-                    System.out.println("trailing price " + trailingPrice);
+                    System.out.println(sellingQty);
                     trailingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, trailingPrice, Config.REDUCE_ONLY, null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                 } catch (Exception exception) { exception.printStackTrace();}
