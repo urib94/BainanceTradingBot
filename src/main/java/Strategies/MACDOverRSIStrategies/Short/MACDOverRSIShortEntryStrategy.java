@@ -24,6 +24,7 @@ public class MACDOverRSIShortEntryStrategy extends MACDOverRSIBaseEntryStrategy 
 	private double stopLossPercentage = MACDOverRSIConstants.DEFAULT_STOP_LOSS_PERCENTAGE;
 	private int leverage = MACDOverRSIConstants.DEFAULT_LEVERAGE;
 	private  BigDecimal requestedBuyingAmount = MACDOverRSIConstants.DEFAULT_BUYING_AMOUNT;
+	private boolean once = true;
 
 	@Override
 	public synchronized PositionHandler run(RealTimeData realTimeData, String symbol) {
