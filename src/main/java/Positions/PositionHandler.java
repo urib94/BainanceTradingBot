@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class PositionHandler implements Serializable {
     private String clientOrderId;
@@ -31,6 +32,7 @@ public class PositionHandler implements Serializable {
     private final ArrayList<ExitStrategy> exitStrategies;
     private Long baseTime = 0L;
     private boolean isTrailing = false;
+    private boolean rebuying = false;
     private Order trailingOrder = null;
 
 
@@ -55,7 +57,9 @@ public class PositionHandler implements Serializable {
         exitStrategies.add(new RSIExitStrategy4());
     }
 
-    public synchronized boolean isSoldOut(){ return isActive && !status.equals(Config.NEW)&& (qty.compareTo(BigDecimal.valueOf(0.0)) == 0);}
+    public synchronized boolean isSoldOut(){
+        System.out.println(qty);
+        return isActive && !status.equals(Config.NEW) && !rebuying &&(qty.compareTo(BigDecimal.valueOf(0.0)) == 0);}
 
     public synchronized void run(RealTimeData realTimeData) {//TODO: adjust to long and short and trailing as exit method
         for (ExitStrategy exitStrategy : exitStrategies) {
@@ -68,6 +72,7 @@ public class PositionHandler implements Serializable {
     }
 
     public synchronized void update(RealTimeData realTimeData, CandlestickInterval interval) {
+        rebuying = false;
         Position position = AccountBalance.getAccountBalance().getPosition(symbol);
         if (orderID != null) {
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
@@ -102,9 +107,11 @@ public class PositionHandler implements Serializable {
     }
 
     private void rebuyOrder(RealTimeData realTimeData, Order order) {
-        TelegramMessenger.sendToTelegram("buying again: " + ZonedDateTime.now());
+        TelegramMessenger.sendToTelegram("buying again: " + new Date(System.currentTimeMillis()));
+        rebuying = true;
         try{
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+            syncRequestClient.cancelAllOpenOrder(symbol);
             OrderSide side = stringToOrderSide(order.getSide());
             Order buyOrder = syncRequestClient.postOrder(symbol, side, null, OrderType.LIMIT, TimeInForce.GTC,
                     order.getOrigQty().toString(),realTimeData.getCurrentPrice().toString(),null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
@@ -127,7 +134,7 @@ public class PositionHandler implements Serializable {
     }
 
     public synchronized void terminate(){
-        TelegramMessenger.sendToTelegram("Position closed!" + "         time: " + ZonedDateTime.now());
+        TelegramMessenger.sendToTelegram("Position closed!" + "         time: " + new Date(System.currentTimeMillis()));
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         syncRequestClient.cancelAllOpenOrder(Config.SYMBOL);
     }
@@ -135,7 +142,7 @@ public class PositionHandler implements Serializable {
     private void closePosition(SellingInstructions sellingInstructions, RealTimeData realTimeData){
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         String sellingQty = BinanceInfo.formatQty(percentageOfQuantity(sellingInstructions.getSellingQtyPercentage()), symbol);
-        TelegramMessenger.sendToTelegram("Closing position: " + ZonedDateTime.now());
+        TelegramMessenger.sendToTelegram("Closing position: " + new Date(System.currentTimeMillis()));
         switch (sellingInstructions.getType()) {
 
             case STAY_IN_POSITION:
@@ -161,7 +168,6 @@ public class PositionHandler implements Serializable {
                 closeTrailingOrder();
                 try {
                     String trailingPrice = BinanceInfo.formatPrice(calculateSellingTrailingPrice(realTimeData.getCurrentPrice(), sellingInstructions.getTrailingPercentage()), symbol);
-                    System.out.println("trailing price " + trailingPrice);
                     trailingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, trailingPrice, Config.REDUCE_ONLY, null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                 } catch (Exception exception) { exception.printStackTrace();}

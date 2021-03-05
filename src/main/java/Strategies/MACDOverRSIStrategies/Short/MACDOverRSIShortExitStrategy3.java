@@ -10,16 +10,17 @@ import Strategies.MACDOverRSIStrategies.MACDOverRSIConstants;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.Date;
 
 public class MACDOverRSIShortExitStrategy3 extends MACDOverRSIBaseExitStrategy {
 
 	@Override
 	public SellingInstructions run(RealTimeData realTimeData, boolean isTrailing) {
-		if (isTrailing && currentCandleBiggerThanPrev(realTimeData)) {
+		if (isTrailing && ! currentCandleBiggerThanPrev(realTimeData)) {
 			return new SellingInstructions(PositionHandler.ClosePositionTypes.STAY_IN_POSITION, BigDecimal.valueOf(Config.DOUBLE_ZERO), Config.ZERO,Config.TRUE);
 		}
-		else if (realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()) < Config.ZERO && absoluteDecliningPyramid(realTimeData)) {
-			TelegramMessenger.sendToTelegram("exiting position with short exit 3" + "time: " + ZonedDateTime.now());
+		else if (realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()) < Config.ZERO && decliningPyramid(realTimeData, DecliningType.NEGATIVE)) {
+			TelegramMessenger.sendToTelegram("exiting position with short exit 3" + "time: " + new Date(System.currentTimeMillis()));
 			return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_WITH_TRAILING, MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE,
 					MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE,Config.FALSE);
 		}

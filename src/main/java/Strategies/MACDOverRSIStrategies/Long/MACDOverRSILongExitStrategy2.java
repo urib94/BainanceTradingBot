@@ -10,13 +10,14 @@ import Strategies.MACDOverRSIStrategies.MACDOverRSIBaseExitStrategy;
 import Strategies.MACDOverRSIStrategies.MACDOverRSIConstants;
 
 import java.time.ZonedDateTime;
+import java.util.Date;
 
 public class MACDOverRSILongExitStrategy2 extends MACDOverRSIBaseExitStrategy {
 
 	@Override
 	public SellingInstructions run(RealTimeData realTimeData, boolean isTrailing) {
-		if (realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.DOWN, RealTimeData.CandleType.OPEN, Config.ZERO)) {
-			TelegramMessenger.sendToTelegram("exiting position with long exit 2" + "time: " + ZonedDateTime.now());
+		if (realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.DOWN, RealTimeData.CandleType.CLOSE, Config.ZERO)) {
+			TelegramMessenger.sendToTelegram("exiting position with long exit 2" + "time: " + new Date(System.currentTimeMillis()));
 			return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT, MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE,Config.ZERO);
 		}
 		return null;

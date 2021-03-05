@@ -14,11 +14,8 @@ import com.binance.client.api.model.enums.*;
 import com.binance.client.api.model.trade.Order;
 
 import java.math.BigDecimal;
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
+import java.util.Date;
 
 public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
 
@@ -30,28 +27,29 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
     @Override
     public synchronized PositionHandler run(RealTimeData realTimeData, String symbol) {
         boolean notInPosition = AccountBalance.getAccountBalance().getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == 0;
+        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+        boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
         boolean currentPriceAboveSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(realTimeData.getCurrentPrice()) < Config.ZERO;
-        if (currentPriceAboveSMA && notInPosition) {
+        if (currentPriceAboveSMA && notInPosition && noOpenOrders) {
             boolean rule1 = realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.UP,RealTimeData.CandleType.CLOSE,Config.ZERO);
             if (rule1) return buyAndCreatePositionHandler(realTimeData,symbol);
             else {
-                boolean rule2 = realTimeData.getMacdOverRsiSignalLineValueAtIndex(realTimeData.getLastIndex()) < Config.ZERO;
                 boolean macdValueBelowZero = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()) < 0;
-                if (rule2 && macdValueBelowZero && absoluteDecliningPyramid(realTimeData)) return buyAndCreatePositionHandler(realTimeData,symbol);
+                if (macdValueBelowZero && decliningPyramid(realTimeData, DecliningType.NEGATIVE)) return buyAndCreatePositionHandler(realTimeData,symbol);
             }
         }
         return null;
     }
 
     private PositionHandler buyAndCreatePositionHandler(RealTimeData realTimeData, String symbol) {//TODO: maybe change market later.
-        TelegramMessenger.sendToTelegram("buying long: " + ZonedDateTime.now());
+        TelegramMessenger.sendToTelegram("buying long: " + new Date(System.currentTimeMillis()));
         try{
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             syncRequestClient.changeInitialLeverage(symbol,leverage);
             String buyingQty = Utils.Utils.getBuyingQtyAsString(realTimeData, symbol,leverage,requestedBuyingAmount);
             Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
                     buyingQty,realTimeData.getCurrentPrice().toString(),null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-            TelegramMessenger.sendToTelegram("bought long, time: " + "time: " + ZonedDateTime.now());
+            TelegramMessenger.sendToTelegram("buying long: buyOrder: "+ buyingQty + " " + new Date(System.currentTimeMillis()));
             ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
             exitStrategies.add(new MACDOverRSILongExitStrategy1());
             exitStrategies.add(new MACDOverRSILongExitStrategy2());
