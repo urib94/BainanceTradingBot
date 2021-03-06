@@ -51,12 +51,9 @@ public class AccountBalance {
     }
 
     public Position getPosition(String symbol) {
-        System.out.println(1.0);
         positionsLock.readLock().lock();
-        System.out.println(1.1);
         if (positions.containsKey(symbol)){
             Position position = positions.get(symbol);
-            System.out.println(1.2);
             positionsLock.readLock().unlock();
             return position;
         }

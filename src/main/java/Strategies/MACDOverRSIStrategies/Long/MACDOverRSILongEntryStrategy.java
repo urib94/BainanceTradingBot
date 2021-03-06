@@ -31,7 +31,7 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
 
 
     @Override
-    public PositionHandler run(RealTimeData realTimeData, String symbol) {
+    public synchronized PositionHandler run(RealTimeData realTimeData, String symbol) {
         boolean notInPosition = accountBalance.getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == 0;
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
@@ -56,6 +56,7 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
             Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
                     buyingQty,realTimeData.getCurrentPrice().toString(),null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
             TelegramMessenger.sendToTelegram("buying long: buyOrder: "+ buyingQty + " " + new Date(System.currentTimeMillis()));
+            System.out.println("hist: " + realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()));
             ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
             exitStrategies.add(new MACDOverRSILongExitStrategy1());
             exitStrategies.add(new MACDOverRSILongExitStrategy2());
