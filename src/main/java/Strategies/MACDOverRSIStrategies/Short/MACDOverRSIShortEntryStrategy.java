@@ -36,7 +36,7 @@ public class MACDOverRSIShortEntryStrategy extends MACDOverRSIBaseEntryStrategy 
 		boolean notInPosition = accountBalance.getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == Config.ZERO;
 		SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
 		boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
-		boolean currentPriceBelowSMA = true;//BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(realTimeData.getCurrentPrice()) >= Config.ZERO;
+		boolean currentPriceBelowSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(realTimeData.getCurrentPrice()) >= Config.ZERO;
 		if (currentPriceBelowSMA && notInPosition && noOpenOrders) {
 			boolean rule1 = realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.DOWN, RealTimeData.CandleType.CLOSE, Config.ZERO);
 			if (rule1) return buyAndCreatePositionHandler(realTimeData, symbol);
