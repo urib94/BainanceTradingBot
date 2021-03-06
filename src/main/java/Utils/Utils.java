@@ -68,7 +68,7 @@ public class Utils {
 
 	public static String fixQuantity(String amt) {
 		if (Double.parseDouble(amt) == 0) {
-			amt = amt.substring(0, amt.length()).concat("1");
+			amt = amt.substring(0, amt.length()-1).concat("1");
 		}
 		return amt;
 	}
