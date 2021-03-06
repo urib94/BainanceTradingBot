@@ -44,7 +44,7 @@ public class Utils {
 
 	public static ClosePriceIndicator diffByElementBetweenIndicators(Indicator<Num> indicator1, Indicator<Num> indicator2, int length) {
 		BaseBarSeries baseBarSeries = new BaseBarSeries();
-		Long timestamp = 1L;
+		long timestamp = 1L;
 		for (int i = 0; i < length; i++) {
 			Double currentDiff = (indicator1.getValue(i).minus(indicator2.getValue(i))).doubleValue();
 			baseBarSeries.addBar(Duration.ofMillis(7L),getZonedDateTime(timestamp++),1,2,3,currentDiff,4,5);
@@ -53,7 +53,7 @@ public class Utils {
 	}
 	public static String getBuyingQtyAsString(RealTimeData realTimeData, String symbol, int leverage, BigDecimal requestedBuyingAmount) {
 		BigDecimal buyingQty = requestedBuyingAmount.multiply(BigDecimal.valueOf(leverage)).divide(realTimeData.getCurrentPrice(), MathContext.DECIMAL32);
-		return BinanceInfo.formatQty(buyingQty, symbol);
+		return fixQuantity(BinanceInfo.formatQty(buyingQty, symbol));
 	}
 
 	public static String getTakeProfitPriceAsString(RealTimeData realTimeData, String symbol, double takeProfitPercentage) {
@@ -66,9 +66,10 @@ public class Utils {
 		return BinanceInfo.formatPrice(stopLossPrice, symbol);
 	}
 
-	public static BigDecimal fixQuantity(BigDecimal amt)
-	{
-		if (amt.compareTo(new BigDecimal(0)) <= 0) return new BigDecimal(1).scaleByPowerOfTen(-1 * (amt.scale()));
+	public static String fixQuantity(String amt) {
+		if (Double.parseDouble(amt) == 0) {
+			amt = amt.substring(0, amt.length()).concat("1");
+		}
 		return amt;
 	}
 }
