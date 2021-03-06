@@ -32,7 +32,7 @@ public class PositionHandler implements Serializable {
     private final ArrayList<ExitStrategy> exitStrategies;
     private Long baseTime = 0L;
     private boolean isTrailing = false;
-    private boolean rebuying = false;
+    private boolean rebuying = true;
     private Order trailingOrder = null;
 
 
