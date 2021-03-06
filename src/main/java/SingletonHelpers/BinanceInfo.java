@@ -45,7 +45,7 @@ public class BinanceInfo {
 
     public static String formatQty(BigDecimal buyingQty, String symbol){
         String formatter = "%." + symbolInformation.get(symbol).getQuantityPrecision().toString() + "f";
-        return String.format(formatter, buyingQty.doubleValue());
+        return String.format(formatter, Math.abs(buyingQty.doubleValue()));
     }
 
     public static String formatPrice(BigDecimal price, String symbol){

@@ -23,10 +23,16 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
     private double stopLossPercentage = MACDOverRSIConstants.DEFAULT_STOP_LOSS_PERCENTAGE;
     private int leverage = MACDOverRSIConstants.DEFAULT_LEVERAGE;
     private  BigDecimal requestedBuyingAmount = MACDOverRSIConstants.DEFAULT_BUYING_AMOUNT;
+    private AccountBalance accountBalance;
+
+    public MACDOverRSILongEntryStrategy(){
+        accountBalance = AccountBalance.getAccountBalance();
+    }
+
 
     @Override
-    public synchronized PositionHandler run(RealTimeData realTimeData, String symbol) {
-        boolean notInPosition = AccountBalance.getAccountBalance().getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == 0;
+    public PositionHandler run(RealTimeData realTimeData, String symbol) {
+        boolean notInPosition = accountBalance.getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == 0;
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
         boolean currentPriceAboveSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(realTimeData.getCurrentPrice()) < Config.ZERO;

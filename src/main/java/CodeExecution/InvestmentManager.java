@@ -49,6 +49,7 @@ public class InvestmentManager implements Runnable{
             iterationLock.writeLock().lock();
             executorService.submit(()->realTimeData.updateData(event));
             executorService.submit(()->AccountBalance.getAccountBalance().updateBalance());
+            waitUntilFinished(futures);
             positionHandlersLock.readLock().lock();
             for (PositionHandler positionHandler :positionHandlers){
                 positionHandler.update(realTimeData, interval);
@@ -57,24 +58,18 @@ public class InvestmentManager implements Runnable{
                     positionHandlers.remove(positionHandler);
                 }
                 else{
-                    Future<?> future = executorService.submit(()->{
-                        positionHandler.run(realTimeData);
-                    });
-                    futures.add(future);
+                    positionHandler.run(realTimeData);
                 }
             }
             positionHandlersLock.readLock().unlock();
             entryStrategiesLock.readLock().lock();
             for (EntryStrategy entryStrategy: entryStrategies){
-                Future<?> future = executorService.submit(()-> {
-                    PositionHandler positionHandler = entryStrategy.run(realTimeData, symbol);
-                    if (positionHandler != null){
-                        positionHandlersLock.writeLock().lock();
-                        positionHandlers.add(positionHandler);
-                        positionHandlersLock.writeLock().unlock();
-                    }
-                });
-                futures.add(future);
+                PositionHandler positionHandler = entryStrategy.run(realTimeData, symbol);
+                if (positionHandler != null){
+                    positionHandlersLock.writeLock().lock();
+                    positionHandlers.add(positionHandler);
+                    positionHandlersLock.writeLock().unlock();
+                }
             }
             entryStrategiesLock.readLock().unlock();
         }), System.out::println);

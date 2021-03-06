@@ -12,12 +12,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class AccountBalance {
-    private HashMap<String, Asset> assets;
-    private HashMap<String, Position> positions;
+    private ConcurrentHashMap<String, Asset> assets;
+    private ConcurrentHashMap<String, Position> positions;
     private final ReadWriteLock assetsLock = new ReentrantReadWriteLock();
     private final ReadWriteLock positionsLock = new ReentrantReadWriteLock();
 
@@ -26,8 +27,8 @@ public class AccountBalance {
     }
 
     private AccountBalance(){
-        assets = new HashMap<>();
-        positions = new HashMap<>();
+        assets = new ConcurrentHashMap<>();
+        positions = new ConcurrentHashMap<>();
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         AccountInformation accountInformation = syncRequestClient.getAccountInformation();
         for (Position position: accountInformation.getPositions())positions.put(position.getSymbol().toLowerCase(), position);
@@ -40,27 +41,33 @@ public class AccountBalance {
 
     public BigDecimal getCoinBalance(String symbol) {
         assetsLock.readLock().lock();
-        try {
-            if (assets.containsKey(symbol)) return assets.get(symbol).getWalletBalance();
-            return null;
-        }finally {
+        if (assets.containsKey(symbol)){
+            BigDecimal coinBalance = assets.get(symbol).getWalletBalance();
             assetsLock.readLock().unlock();
+            return coinBalance;
         }
+        assetsLock.readLock().unlock();
+        return null;
     }
 
     public Position getPosition(String symbol) {
+        System.out.println(1.0);
         positionsLock.readLock().lock();
-        try {
-            if (positions.containsKey(symbol)) return positions.get(symbol);
-            return null;
-        }finally {
+        System.out.println(1.1);
+        if (positions.containsKey(symbol)){
+            Position position = positions.get(symbol);
+            System.out.println(1.2);
             positionsLock.readLock().unlock();
+            return position;
         }
+        positionsLock.readLock().unlock();
+        return null;
+
     }
 
     public void updateBalance(){
-        assets = new HashMap<>();
-        positions = new HashMap<>();
+        assets = new ConcurrentHashMap<>();
+        positions = new ConcurrentHashMap<>();
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         AccountInformation accountInformation = syncRequestClient.getAccountInformation();
         for (Position position: accountInformation.getPositions())positions.put(position.getSymbol().toLowerCase(), position);
