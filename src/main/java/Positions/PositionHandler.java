@@ -118,6 +118,7 @@ public class PositionHandler implements Serializable {
                     order.getOrigQty().toString(),realTimeData.getCurrentPrice().toString(),null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
             clientOrderId = buyOrder.getClientOrderId();
             orderID = buyOrder.getOrderId();
+            System.out.println(realTimeData.getCurrentPrice());
         }catch (Exception exception){
             exception.printStackTrace();
         }

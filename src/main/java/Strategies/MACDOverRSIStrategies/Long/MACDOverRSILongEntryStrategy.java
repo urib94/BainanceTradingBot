@@ -27,6 +27,7 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
 
     public MACDOverRSILongEntryStrategy(){
         accountBalance = AccountBalance.getAccountBalance();
+        System.out.println("long");
     }
 
 
@@ -35,7 +36,7 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
         boolean notInPosition = accountBalance.getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == 0;
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
-        boolean currentPriceAboveSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(realTimeData.getCurrentPrice()) < Config.ZERO;
+        boolean currentPriceAboveSMA = true;//BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(realTimeData.getCurrentPrice()) < Config.ZERO;
         if (currentPriceAboveSMA && notInPosition && noOpenOrders) {
             boolean rule1 = realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.UP,RealTimeData.CandleType.CLOSE,Config.ZERO);
             if (rule1) return buyAndCreatePositionHandler(realTimeData,symbol);
@@ -58,7 +59,7 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
             TelegramMessenger.sendToTelegram("buying long: buyOrder: "+ buyingQty + " " + new Date(System.currentTimeMillis()));
             System.out.println("hist: " + realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()));
             ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
-            exitStrategies.add(new MACDOverRSILongExitStrategy1());
+            //exitStrategies.add(new MACDOverRSILongExitStrategy1());
             exitStrategies.add(new MACDOverRSILongExitStrategy2());
             exitStrategies.add(new MACDOverRSILongExitStrategy3());
             exitStrategies.add(new MACDOverRSILongExitStrategy4());

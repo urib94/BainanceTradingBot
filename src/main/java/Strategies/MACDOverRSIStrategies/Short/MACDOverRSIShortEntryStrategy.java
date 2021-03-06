@@ -23,13 +23,20 @@ public class MACDOverRSIShortEntryStrategy extends MACDOverRSIBaseEntryStrategy 
 	private double stopLossPercentage = MACDOverRSIConstants.DEFAULT_STOP_LOSS_PERCENTAGE;
 	private int leverage = MACDOverRSIConstants.DEFAULT_LEVERAGE;
 	private  BigDecimal requestedBuyingAmount = MACDOverRSIConstants.DEFAULT_BUYING_AMOUNT;
+	private AccountBalance accountBalance;
+
+
+	public MACDOverRSIShortEntryStrategy(){
+		accountBalance = AccountBalance.getAccountBalance();
+		System.out.println("short");
+	}
 
 	@Override
 	public synchronized PositionHandler run(RealTimeData realTimeData, String symbol) {//TODO: not in position too slow.
-		boolean notInPosition = AccountBalance.getAccountBalance().getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == Config.ZERO;
+		boolean notInPosition = accountBalance.getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == Config.ZERO;
 		SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
 		boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
-		boolean currentPriceBelowSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(realTimeData.getCurrentPrice()) >= Config.ZERO;
+		boolean currentPriceBelowSMA = true;//BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(realTimeData.getCurrentPrice()) >= Config.ZERO;
 		if (currentPriceBelowSMA && notInPosition && noOpenOrders) {
 			boolean rule1 = realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.DOWN, RealTimeData.CandleType.CLOSE, Config.ZERO);
 			if (rule1) return buyAndCreatePositionHandler(realTimeData, symbol);
@@ -51,10 +58,10 @@ public class MACDOverRSIShortEntryStrategy extends MACDOverRSIBaseEntryStrategy 
 			Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
 					buyingQty,realTimeData.getCurrentPrice().toString(),null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
 			ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
-			exitStrategies.add(new MACDOverRSIShortExitStrategy1());
+			//exitStrategies.add(new MACDOverRSIShortExitStrategy1());
 			exitStrategies.add(new MACDOverRSIShortExitStrategy2());
 			exitStrategies.add(new MACDOverRSIShortExitStrategy3());
-			exitStrategies.add(new MACDOverRSIShortExitStrategy4());
+			//exitStrategies.add(new MACDOverRSIShortExitStrategy4());
 			TelegramMessenger.sendToTelegram("buying short: " + "buyOrder: "+ buyingQty + " " + new Date(System.currentTimeMillis()));
 			return new PositionHandler(buyOrder ,exitStrategies);
 		}catch (Exception exception){

@@ -21,14 +21,10 @@ public class InvestmentManager implements Runnable{
     ConcurrentLinkedDeque<EntryStrategy> entryStrategies;
     ConcurrentLinkedDeque<PositionHandler> positionHandlers;
     ConcurrentLinkedDeque<Future<?>> futures;
-    ReadWriteLock entryStrategiesLock = new ReentrantReadWriteLock();
-    ReadWriteLock positionHandlersLock = new ReentrantReadWriteLock();
-    ReadWriteLock iterationLock = new ReentrantReadWriteLock();
 
 
 
     public InvestmentManager(CandlestickInterval interval, String symbol, EntryStrategy entryStrategy) {
-        System.out.println("Managing Investment!");
         this.interval = interval;
         this.symbol = symbol;
         entryStrategies = new ConcurrentLinkedDeque<>();
@@ -46,11 +42,10 @@ public class InvestmentManager implements Runnable{
             positionHandlers.add(oldPosition);
         }
         subscriptionClient.subscribeCandlestickEvent(symbol, interval, ((event) -> {
-            iterationLock.writeLock().lock();
             executorService.submit(()->realTimeData.updateData(event));
             executorService.submit(()->AccountBalance.getAccountBalance().updateBalance());
             waitUntilFinished(futures);
-            positionHandlersLock.readLock().lock();
+            System.out.println(realTimeData.getCurrentPrice() );
             for (PositionHandler positionHandler :positionHandlers){
                 positionHandler.update(realTimeData, interval);
                 if (positionHandler.isSoldOut()){
@@ -61,17 +56,12 @@ public class InvestmentManager implements Runnable{
                     positionHandler.run(realTimeData);
                 }
             }
-            positionHandlersLock.readLock().unlock();
-            entryStrategiesLock.readLock().lock();
             for (EntryStrategy entryStrategy: entryStrategies){
                 PositionHandler positionHandler = entryStrategy.run(realTimeData, symbol);
                 if (positionHandler != null){
-                    positionHandlersLock.writeLock().lock();
                     positionHandlers.add(positionHandler);
-                    positionHandlersLock.writeLock().unlock();
                 }
             }
-            entryStrategiesLock.readLock().unlock();
         }), System.out::println);
     }
 
@@ -82,20 +72,15 @@ public class InvestmentManager implements Runnable{
             }catch (Exception ignored){}
             futures.remove(future);
         }
-        iterationLock.writeLock().unlock();
     }
 
     public void addEntryStrategy(EntryStrategy entryStrategy){
-        entryStrategiesLock.writeLock().lock();
         entryStrategies.add(entryStrategy);
-        entryStrategiesLock.writeLock().unlock();
     }
 
     public void removeEntryStrategy(EntryStrategy entryStrategy) {
         if (entryStrategies.contains(entryStrategy)){
-            entryStrategiesLock.writeLock().lock();
             entryStrategies.remove(entryStrategy);
-            entryStrategiesLock.writeLock().unlock();
         }
     }
 }

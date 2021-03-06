@@ -54,9 +54,9 @@ public class RealTimeData{
     public synchronized void updateData(CandlestickEvent event){
         updateLastCandle(event);
         calculateIndicators();
-        System.out.println("macd: " + getMacdOverRsiMacdLineValueAtIndex(getLastCloseIndex()) + " time: " + System.currentTimeMillis());
-        System.out.println("signal: " + getMacdOverRsiSignalLineValueAtIndex(getLastCloseIndex()) + " time: " + System.currentTimeMillis());
-        System.out.println("hist: " + getMacdOverRsiValueAtIndex(getLastCloseIndex()) + " time: " + System.currentTimeMillis());
+//        System.out.println("macd: " + getMacdOverRsiMacdLineValueAtIndex(getLastCloseIndex()) + " time: " + System.currentTimeMillis());
+//        System.out.println("signal: " + getMacdOverRsiSignalLineValueAtIndex(getLastCloseIndex()) + " time: " + System.currentTimeMillis());
+//        System.out.println("hist: " + getMacdOverRsiValueAtIndex(getLastCloseIndex()) + " time: " + System.currentTimeMillis());
     }
 
     private void updateLastCandle(CandlestickEvent event) {
@@ -198,7 +198,7 @@ public class RealTimeData{
 
     public RSIIndicator getRsiIndicator() {return rsiIndicator;}
 
-    public BigDecimal getCurrentPrice() {
+    public synchronized BigDecimal getCurrentPrice() {
         return currentPrice;
     }
 
