@@ -34,6 +34,7 @@ public class PositionHandler implements Serializable {
     private boolean isTrailing = false;
     private boolean rebuying = true;
     private Order trailingOrder = null;
+    private boolean selling = false;
 
 
     public PositionHandler(Order order, ArrayList<ExitStrategy> _exitStrategies){//TODO: trying something
@@ -59,7 +60,7 @@ public class PositionHandler implements Serializable {
 
     public synchronized boolean isSoldOut(){
         System.out.println(qty);
-        return isActive && !status.equals(Config.NEW) && !rebuying &&(qty.compareTo(BigDecimal.valueOf(0.0)) == 0);}
+        return isActive && selling && (!status.equals(Config.NEW)) && (!rebuying) && ((qty.compareTo(BigDecimal.valueOf(0.0)) == 0));}
 
     public synchronized void run(RealTimeData realTimeData) {//TODO: adjust to long and short and trailing as exit method
         for (ExitStrategy exitStrategy : exitStrategies) {
@@ -200,6 +201,7 @@ public class PositionHandler implements Serializable {
             default:
 
         }
+        selling = true;
     }
 
     private void stopTrailing() {
