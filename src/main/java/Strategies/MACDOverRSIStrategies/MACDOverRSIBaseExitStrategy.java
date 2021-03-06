@@ -4,27 +4,36 @@ import Data.RealTimeData;
 import Strategies.ExitStrategy;
 
 public abstract class MACDOverRSIBaseExitStrategy implements ExitStrategy {
-    public boolean decliningPyramid(RealTimeData realTimeData, DecliningType type) {
-        boolean rule1;
-        boolean rule2;
-        double currentMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()-1);
-        double prevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()-2);
-        double prevPrevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()-3);
-        if (type == DecliningType.NEGATIVE){
-            rule1 = currentMacdOverRsiValue > prevMacdOverRsiValue;
-            rule2 = prevMacdOverRsiValue > prevPrevMacdOverRsiValue;
-        }
-        else{
-            rule1 = currentMacdOverRsiValue < prevMacdOverRsiValue;
-            rule2 = prevMacdOverRsiValue < prevPrevMacdOverRsiValue;
-        }
-        return rule1 && rule2;
-    }
+
 
     public boolean currentCandleBiggerThanPrev(RealTimeData realTimeData) {
         double now = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()-1);
         double prev = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()-2);
         return Math.abs(prev) <= Math.abs(now);
+    }
+
+    public boolean upwardsPyramid(RealTimeData realTimeData) {
+        double now = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()-1);
+        double prev = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()-2);
+        double prevprev = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()-3);
+        return Math.abs(prevprev) <= Math.abs(prev) && Math.abs(prev) <= Math.abs(now);
+    }
+    public boolean downwardsPyramid(RealTimeData realTimeData) {
+        double now = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()-1);
+        double prev = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()-2);
+        double prevprev = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()-3);
+        return Math.abs(prevprev) >= Math.abs(prev) && Math.abs(prev) >= Math.abs(now);
+    }
+
+    public boolean negativeThreeHistograms(RealTimeData realTimeData) {
+        return realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()) < 0
+                && realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()-1) < 0
+                && realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()-2) < 0;
+    }
+    public boolean positiveThreeHistograms(RealTimeData realTimeData) {
+        return realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()) > 0
+                && realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()-1) > 0
+                && realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()-2) > 0;
     }
 
     public enum DecliningType{
