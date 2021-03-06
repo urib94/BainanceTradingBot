@@ -5,6 +5,7 @@ import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.market.ExchangeInfoEntry;
 import com.binance.client.api.model.market.ExchangeInformation;
 
+import javax.rmi.CORBA.Util;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
