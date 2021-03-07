@@ -33,6 +33,8 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
 
     @Override
     public synchronized PositionHandler run(RealTimeData realTimeData, String symbol) {
+        System.out.println(1);
+        System.out.println(realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()));
         boolean notInPosition = accountBalance.getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == 0;
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
@@ -45,6 +47,7 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
                 if (macdValueBelowZero && decliningPyramid(realTimeData, DecliningType.NEGATIVE)) return buyAndCreatePositionHandler(realTimeData,symbol);
             }
         }
+        System.out.println(2);
         return null;
     }
 

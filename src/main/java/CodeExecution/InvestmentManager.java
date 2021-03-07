@@ -42,26 +42,26 @@ public class InvestmentManager implements Runnable{
             positionHandlers.add(oldPosition);
         }
         subscriptionClient.subscribeCandlestickEvent(symbol, interval, ((event) -> {
-            executorService.submit(()->realTimeData.updateData(event));
-            executorService.submit(()->AccountBalance.getAccountBalance().updateBalance());
-            waitUntilFinished(futures);
-            System.out.println(realTimeData.getCurrentPrice() );
-            for (PositionHandler positionHandler :positionHandlers){
-                positionHandler.update(realTimeData, interval);
-                if (positionHandler.isSoldOut()){
-                    positionHandler.terminate();
-                    positionHandlers.remove(positionHandler);
+            executorService.execute(()->{
+                realTimeData.updateData(event);
+                AccountBalance.getAccountBalance().updateBalance();
+                for (PositionHandler positionHandler :positionHandlers){
+                    positionHandler.update(realTimeData, interval);
+                    if (positionHandler.isSoldOut()){
+                        positionHandler.terminate();
+                        positionHandlers.remove(positionHandler);
+                    }
+                    else{
+                        positionHandler.run(realTimeData);
+                    }
                 }
-                else{
-                    positionHandler.run(realTimeData);
+                for (EntryStrategy entryStrategy: entryStrategies){
+                    PositionHandler positionHandler = entryStrategy.run(realTimeData, symbol);
+                    if (positionHandler != null){
+                        positionHandlers.add(positionHandler);
+                    }
                 }
-            }
-            for (EntryStrategy entryStrategy: entryStrategies){
-                PositionHandler positionHandler = entryStrategy.run(realTimeData, symbol);
-                if (positionHandler != null){
-                    positionHandlers.add(positionHandler);
-                }
-            }
+            });
         }), System.out::println);
     }
 

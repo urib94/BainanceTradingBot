@@ -11,7 +11,7 @@ public class Config {
 	public static final boolean FALSE = false;
 	public static String API_KEY = "h4AdqbWrKlF5wOxWmbNTKLq7IpDReZOvVXeOujGwUfU0HjXdIejUmqKvoVLbcXJ6";
 	public static String SECRET_KEY = "7qqNLwB7ZXiZu2nBJhrdv7ARVpNDhImNA1Rj1oXR6eGjZFkGsRC9ayEO7HLYVm6w";
-	public static final int THREAD_NUM = 3;
+	public static final int THREAD_NUM = 1;
 	public static final String SYMBOL = "btcusdt";
 	public static final int CANDLE_NUM = 1000;
 	public static final CandlestickInterval INTERVAL =  CandlestickInterval.ONE_MINUTE;
