@@ -14,6 +14,7 @@ public class MACDOverRSIConstants {
     public static final int SMA_CANDLE_NUM = 150;
     public static final BigDecimal MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE = new BigDecimal(100);
     public static final double POSITIVE_TRAILING_PERCENTAGE = 0.25;
+    public static final double CONSTANT_TRAILING_PERCENTAGE = 0.4;
     public static final double LONG_EXIT2_OPEN_THRESHOLD = -0.3;
     public static final double SHORT_EXIT2_OPEN_THRESHOLD = 0.3;
     public static final String LEVERAGED_COIN = "btc";

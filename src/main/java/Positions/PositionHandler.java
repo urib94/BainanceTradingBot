@@ -34,6 +34,8 @@ public class PositionHandler implements Serializable {
     private boolean isTrailing = false;
     private boolean rebuying = true;
     private Order trailingOrder = null;
+    private Order constantLongTrailingOrder = null;
+    private Order constantShortTrailingOrder = null;
     private boolean selling = false;
 
 
@@ -167,9 +169,9 @@ public class PositionHandler implements Serializable {
 
             case SELL_WITH_TRAILING:
                 isTrailing = true;
-                closeTrailingOrder();
+                closeTrailingOrder(TrailingType.TEMPORARY);
                 try {
-                    String trailingPrice = BinanceInfo.formatPrice(calculateSellingTrailingPrice(realTimeData.getCurrentPrice(), sellingInstructions.getTrailingPercentage()), symbol);
+                    String trailingPrice = BinanceInfo.formatPrice(calculateSellingTrailingPrice(realTimeData.getCurrentPrice(), sellingInstructions.getTrailingPercentage(), TrailingType.TEMPORARY), symbol);
                     trailingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, trailingPrice, Config.REDUCE_ONLY, null, trailingPrice, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                 } catch (Exception exception) { exception.printStackTrace();}
@@ -191,10 +193,28 @@ public class PositionHandler implements Serializable {
 
             case CLOSE_SHORT_WITH_TRAILING:
                 isTrailing = true;
-                closeTrailingOrder();
+                closeTrailingOrder(TrailingType.TEMPORARY);
                 try {
-                    String trailingPrice = BinanceInfo.formatPrice(calculateBuyingTrailingPrice(realTimeData.getCurrentPrice(), sellingInstructions.getTrailingPercentage()), symbol);
+                    String trailingPrice = BinanceInfo.formatPrice(calculateBuyingTrailingPrice(realTimeData.getCurrentPrice(), sellingInstructions.getTrailingPercentage(), TrailingType.TEMPORARY), symbol);
                     trailingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
+                            sellingQty, trailingPrice, Config.REDUCE_ONLY, null, trailingPrice, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+                } catch (Exception exception) { exception.printStackTrace();}
+                break;
+
+            case TRAILING_LONG_STOP_LOSS:
+                closeTrailingOrder(TrailingType.CONSTANT_LONG);
+                try {
+                    String trailingPrice = BinanceInfo.formatPrice(calculateSellingTrailingPrice(realTimeData.getCurrentPrice(), sellingInstructions.getTrailingPercentage(), TrailingType.CONSTANT_LONG), symbol);
+                    constantLongTrailingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
+                            sellingQty, trailingPrice, Config.REDUCE_ONLY, null, trailingPrice, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+                } catch (Exception exception) { exception.printStackTrace();}
+                break;
+
+            case TRAILING_SHORT_STOP_LOSS:
+                closeTrailingOrder(TrailingType.CONSTANT_SHORT);
+                try {
+                    String trailingPrice = BinanceInfo.formatPrice(calculateBuyingTrailingPrice(realTimeData.getCurrentPrice(), sellingInstructions.getTrailingPercentage(), TrailingType.CONSTANT_SHORT), symbol);
+                    constantShortTrailingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, trailingPrice, Config.REDUCE_ONLY, null, trailingPrice, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                 } catch (Exception exception) { exception.printStackTrace();}
                 break;
@@ -206,23 +226,42 @@ public class PositionHandler implements Serializable {
     }
 
     private void stopTrailing() {
-        closeTrailingOrder();
+        closeTrailingOrder(TrailingType.TEMPORARY);
         isTrailing = false;
     }
 
-    private void closeTrailingOrder() {
-        if (trailingOrder != null){
-            SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-            syncRequestClient.cancelOrder(trailingOrder.getSymbol(), trailingOrder.getOrderId(), trailingOrder.getClientOrderId());
+    private void closeTrailingOrder(TrailingType type) {
+        Order currentTrailingOrder;
+        if (type == TrailingType.TEMPORARY){
+            currentTrailingOrder = trailingOrder;
         }
+        else if (type == TrailingType.CONSTANT_LONG){
+            currentTrailingOrder = constantLongTrailingOrder;
+        }
+        else{
+            currentTrailingOrder = constantShortTrailingOrder;
+        }
+        if (currentTrailingOrder != null){
+            SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+            syncRequestClient.cancelOrder(currentTrailingOrder.getSymbol(), currentTrailingOrder.getOrderId(), currentTrailingOrder.getClientOrderId());
+        }
+
     }
 
-    private BigDecimal calculateBuyingTrailingPrice(BigDecimal currentPrice, double trailingPercentage) {
-        return currentPrice.add((currentPrice.multiply(BigDecimal.valueOf(trailingPercentage)).multiply(BigDecimal.valueOf(1.0/100))));
+    private BigDecimal calculateBuyingTrailingPrice(BigDecimal currentPrice, double trailingPercentage, TrailingType type) {
+        double currentTrailingPercentage = trailingPercentage;
+        if (type == TrailingType.CONSTANT_LONG || type == TrailingType.CONSTANT_SHORT){
+            currentTrailingPercentage = MACDOverRSIConstants.CONSTANT_TRAILING_PERCENTAGE;
+        }
+        return currentPrice.add((currentPrice.multiply(BigDecimal.valueOf(currentTrailingPercentage)).multiply(BigDecimal.valueOf(1.0/100))));
     }
 
-    private BigDecimal calculateSellingTrailingPrice(BigDecimal currentPrice, double trailingPercentage) {
-        return currentPrice.subtract((currentPrice.multiply(BigDecimal.valueOf(trailingPercentage)).multiply(BigDecimal.valueOf(1.0/100))));
+    private BigDecimal calculateSellingTrailingPrice(BigDecimal currentPrice, double trailingPercentage, TrailingType type) {
+        double currentTrailingPercentage = trailingPercentage;
+        if (type == TrailingType.CONSTANT_LONG || type == TrailingType.CONSTANT_SHORT){
+            currentTrailingPercentage = MACDOverRSIConstants.CONSTANT_TRAILING_PERCENTAGE;
+        }
+        return currentPrice.subtract((currentPrice.multiply(BigDecimal.valueOf(currentTrailingPercentage)).multiply(BigDecimal.valueOf(1.0/100))));
     }
 
     //todo: ADD MARKET AND LIMIT YA PUBLIC
@@ -233,6 +272,14 @@ public class PositionHandler implements Serializable {
         SELL_WITH_TRAILING,
         CLOSE_SHORT_MARKET,
         CLOSE_SHORT_LIMIT,
-        CLOSE_SHORT_WITH_TRAILING;
+        CLOSE_SHORT_WITH_TRAILING,
+        TRAILING_LONG_STOP_LOSS,
+        TRAILING_SHORT_STOP_LOSS;
+    }
+
+    public enum TrailingType{
+        CONSTANT_SHORT,
+        CONSTANT_LONG,
+        TEMPORARY;
     }
 }
