@@ -38,6 +38,7 @@ public class PositionHandler implements Serializable {
     private Order constantLongTrailingOrder = null;
     private Order constantShortTrailingOrder = null;
     private boolean selling = false;
+    private BigDecimal highestPrice;
 
 
     public PositionHandler(Order order, ArrayList<ExitStrategy> _exitStrategies){//TODO: trying something
@@ -46,6 +47,7 @@ public class PositionHandler implements Serializable {
         symbol = order.getSymbol().toLowerCase();
         exitStrategies = _exitStrategies;
         orderPrice = order.getPrice();
+        highestPrice = order.getPrice();
     }
 
     public PositionHandler(BigDecimal qty){//TODO: trying something
@@ -77,6 +79,10 @@ public class PositionHandler implements Serializable {
 
     public synchronized void update(RealTimeData realTimeData, CandlestickInterval interval) {
         rebuying = false;
+        BigDecimal currentPrice = realTimeData.getCurrentPrice();
+        if (currentPrice.compareTo(highestPrice) > 0){
+            highestPrice = currentPrice;
+        }
         Position position = AccountBalance.getAccountBalance().getPosition(symbol);
         if (orderID != null) {
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
@@ -278,7 +284,9 @@ public class PositionHandler implements Serializable {
         CLOSE_SHORT_LIMIT,
         CLOSE_SHORT_WITH_TRAILING,
         TRAILING_LONG_STOP_LOSS,
-        TRAILING_SHORT_STOP_LOSS;
+        TRAILING_SHORT_STOP_LOSS,
+        DEFEND_SHORT,
+        DEFEND_LONG;
     }
 
     public enum TrailingType{
