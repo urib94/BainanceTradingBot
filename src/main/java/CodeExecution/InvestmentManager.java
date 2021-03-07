@@ -1,10 +1,7 @@
 package CodeExecution;
 
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import Data.*;
@@ -18,6 +15,7 @@ import SingletonHelpers.SubClient;
 public class InvestmentManager implements Runnable{
     private final CandlestickInterval interval;
     private final String symbol;
+    private final Object lock = new Object();
     ConcurrentLinkedDeque<EntryStrategy> entryStrategies;
     ConcurrentLinkedDeque<PositionHandler> positionHandlers;
     ConcurrentLinkedDeque<Future<?>> futures;
@@ -36,13 +34,13 @@ public class InvestmentManager implements Runnable{
     public void run(){
         RealTimeData realTimeData = new RealTimeData(symbol, interval);
         SubscriptionClient subscriptionClient = SubClient.getSubClient().getSubscriptionClient();
-        ExecutorService executorService = ExecService.getExecService().getExecutorService();
-        PositionHandler oldPosition = AccountBalance.getAccountBalance().manageOldPositions(symbol);
-        if (oldPosition != null){
-            positionHandlers.add(oldPosition);
-        }
+        ExecutorService iterationExecutorService = ExecService.getExecService().getExecutorService();
+//        PositionHandler oldPosition = AccountBalance.getAccountBalance().manageOldPositions(symbol);
+//        if (oldPosition != null){
+//            positionHandlers.add(oldPosition);
+//        }
         subscriptionClient.subscribeCandlestickEvent(symbol, interval, ((event) -> {
-            executorService.execute(()->{
+            iterationExecutorService.execute(()->{
                 realTimeData.updateData(event);
                 AccountBalance.getAccountBalance().updateBalance();
                 for (PositionHandler positionHandler :positionHandlers){

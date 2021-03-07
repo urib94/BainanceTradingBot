@@ -29,7 +29,7 @@ public class MACDOverRSIShortExitStrategy4 extends MACDOverRSIBaseExitStrategy {
 		} else {
 			if (upwardsPyramid(realTimeData) && positiveThreeHistograms(realTimeData)) {
 				TelegramMessenger.sendToTelegram("trailing position with short exit 4" + "time: " + new Date(System.currentTimeMillis()));
-				return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_WITH_TRAILING,
+				return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_WITH_TRAILING,
 						MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE,
 						MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE,Config.FALSE); //ask wolloch
 			}

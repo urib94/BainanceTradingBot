@@ -124,7 +124,7 @@ public class RealTimeData{
         return rsiIndicator.getValue(index).doubleValue();
     }
 
-    public double getSMAValueAtIndex(int index) {
+    public synchronized double getSMAValueAtIndex(int index) {
         return smaIndicator.getValue(index).doubleValue();
     }
 

@@ -11,9 +11,9 @@ public class Config {
 	public static final boolean FALSE = false;
 	public static String API_KEY = "h4AdqbWrKlF5wOxWmbNTKLq7IpDReZOvVXeOujGwUfU0HjXdIejUmqKvoVLbcXJ6";
 	public static String SECRET_KEY = "7qqNLwB7ZXiZu2nBJhrdv7ARVpNDhImNA1Rj1oXR6eGjZFkGsRC9ayEO7HLYVm6w";
-	public static final int THREAD_NUM = 1;
+	public static final int THREAD_NUM = 5;
 	public static final String SYMBOL = "btcusdt";
-	public static final int CANDLE_NUM = 1000;
+	public static final int CANDLE_NUM = 500;
 	public static final CandlestickInterval INTERVAL =  CandlestickInterval.ONE_MINUTE;
 	public static final Integer LEVERAGE = 6;
 	public static final BigDecimal BUYING_AMOUNT_REQUESTED = BigDecimal.valueOf(10);

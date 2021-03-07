@@ -33,8 +33,6 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
 
     @Override
     public synchronized PositionHandler run(RealTimeData realTimeData, String symbol) {
-        System.out.println(1);
-        System.out.println(realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()));
         boolean notInPosition = accountBalance.getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == 0;
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
@@ -47,7 +45,6 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
                 if (macdValueBelowZero && decliningPyramid(realTimeData, DecliningType.NEGATIVE)) return buyAndCreatePositionHandler(realTimeData,symbol);
             }
         }
-        System.out.println(2);
         return null;
     }
 
@@ -59,13 +56,14 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
             String buyingQty = Utils.Utils.getBuyingQtyAsString(realTimeData, symbol,leverage,requestedBuyingAmount);
             Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
                     buyingQty,realTimeData.getCurrentPrice().toString(),null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-            TelegramMessenger.sendToTelegram("buying long: buyOrder: "+ buyingQty + " " + new Date(System.currentTimeMillis()));
+            TelegramMessenger.sendToTelegram("buying long: buyOrder: "+ buyOrder.toString() + new Date(System.currentTimeMillis()));
             System.out.println("hist: " + realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()));
             ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
             //exitStrategies.add(new MACDOverRSILongExitStrategy1());
             exitStrategies.add(new MACDOverRSILongExitStrategy2());
             exitStrategies.add(new MACDOverRSILongExitStrategy3());
             exitStrategies.add(new MACDOverRSILongExitStrategy4());
+            //exitStrategies.add(new MACDOverRSILongExitStrategy5());
             return new PositionHandler(buyOrder ,exitStrategies);
         }catch (Exception exception){
             exception.printStackTrace();

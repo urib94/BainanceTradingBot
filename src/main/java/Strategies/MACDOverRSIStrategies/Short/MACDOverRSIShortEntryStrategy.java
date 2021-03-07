@@ -32,7 +32,7 @@ public class MACDOverRSIShortEntryStrategy extends MACDOverRSIBaseEntryStrategy 
 	}
 
 	@Override
-	public synchronized PositionHandler run(RealTimeData realTimeData, String symbol) {//TODO: not in position too slow.
+	public synchronized PositionHandler run(RealTimeData realTimeData, String symbol) {
 		boolean notInPosition = accountBalance.getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == Config.ZERO;
 		SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
 		boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
@@ -61,7 +61,8 @@ public class MACDOverRSIShortEntryStrategy extends MACDOverRSIBaseEntryStrategy 
 			//exitStrategies.add(new MACDOverRSIShortExitStrategy1());
 			exitStrategies.add(new MACDOverRSIShortExitStrategy2());
 			exitStrategies.add(new MACDOverRSIShortExitStrategy3());
-			//exitStrategies.add(new MACDOverRSIShortExitStrategy4());
+			exitStrategies.add(new MACDOverRSIShortExitStrategy4());
+			//exitStrategies.add(new MACDOverRSIShortExitStrategy5());
 			TelegramMessenger.sendToTelegram("buying short: " + "buyOrder: "+ buyingQty + " " + new Date(System.currentTimeMillis()));
 			return new PositionHandler(buyOrder ,exitStrategies);
 		}catch (Exception exception){

@@ -59,16 +59,21 @@ public class AccountBalance {
         }
         positionsLock.readLock().unlock();
         return null;
-
     }
 
     public void updateBalance(){
-        assets = new ConcurrentHashMap<>();
-        positions = new ConcurrentHashMap<>();
+        ConcurrentHashMap<String, Asset> newAssets = new ConcurrentHashMap<>();
+        ConcurrentHashMap<String, Position> newPositions = new ConcurrentHashMap<>();
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         AccountInformation accountInformation = syncRequestClient.getAccountInformation();
-        for (Position position: accountInformation.getPositions())positions.put(position.getSymbol().toLowerCase(), position);
-        for (Asset asset: accountInformation.getAssets())assets.put(asset.getAsset().toLowerCase(), asset);
+        for (Position position: accountInformation.getPositions())newPositions.put(position.getSymbol().toLowerCase(), position);
+        for (Asset asset: accountInformation.getAssets())newAssets.put(asset.getAsset().toLowerCase(), asset);
+        positionsLock.writeLock().lock();
+        positions = newPositions;
+        positionsLock.writeLock().unlock();
+        assetsLock.writeLock().lock();
+        assets = newAssets;
+        assetsLock.writeLock().unlock();
     }
 
     public PositionHandler manageOldPositions(String symbol) {

@@ -2,6 +2,7 @@ package Strategies.RSIStrategies;
 
 import Data.*;
 import SingletonHelpers.BinanceInfo;
+import SingletonHelpers.TelegramMessenger;
 import Strategies.EntryStrategy;
 import Positions.PositionHandler;
 import Strategies.ExitStrategy;
@@ -15,6 +16,7 @@ import SingletonHelpers.RequestClient;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class RSIEntryStrategy implements EntryStrategy {
     double takeProfitPercentage = RSIConstants.DEFAULT_TAKE_PROFIT_PERCENTAGE;
@@ -65,6 +67,7 @@ public class RSIEntryStrategy implements EntryStrategy {
                 syncRequestClient.changeInitialLeverage(symbol,leverage);
                 String buyingQty = Utils.getBuyingQtyAsString(realTimeData,symbol,leverage,requestedBuyingAmount);
                 try{
+                    TelegramMessenger.sendToTelegram("buying long: " + new Date(System.currentTimeMillis()));
                     Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.MARKET, null,
                             buyingQty,null,null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);//TODO: check if buying with market price is ok.
                     String takeProfitPrice = Utils.getTakeProfitPriceAsString(realTimeData, symbol,takeProfitPercentage);
@@ -73,8 +76,7 @@ public class RSIEntryStrategy implements EntryStrategy {
                     String stopLossPrice = Utils.getStopLossPriceAsString(realTimeData, symbol, stopLossPercentage);
                     Order stopLossOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP, TimeInForce.GTC,
                             buyingQty,stopLossPrice,null,null, stopLossPrice,null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-                    System.out.println("\n\n++++++++++++++++++++Buying+++++++++++++++++++");
-                    System.out.println("Buy order: " + buyOrder);
+                    TelegramMessenger.sendToTelegram("Buy order: " + buyOrder + " " + new Date(System.currentTimeMillis()));
                     ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
                     exitStrategies.add(new RSIExitStrategy1());
                     exitStrategies.add(new RSIExitStrategy2());
