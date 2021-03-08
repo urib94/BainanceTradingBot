@@ -24,7 +24,7 @@ Metholodgy - each entry strategy corresponds to its similary-named exit strategi
 * Cross 65 and until 73 up -> cross 60 down (selling 50% of position) -> cross 50 down (selling all position).
 * Cross 73 up -> cross 70 down (selling 40% of position) -> cross 60 down (selling all position).
 * The RSI loses a value of at least 15 in the last 2 candles (including the open one) - selling all position
-* Crossing 30 down (selling all positio).
+* Crossing 30 down (selling all position), safety net.
 2. Five possible Long MACD Over RSI strategies.
 * Current price below SMA 150 -> Market
 * Crossing the zero line downwards -> Limit
@@ -34,20 +34,18 @@ Metholodgy - each entry strategy corresponds to its similary-named exit strategi
 3. Five possible Short MACD Over RSI strategies.
 * Current price above SMA 150 -> Market
 * Crosing the zero line upwards -> Limit
-* Not currently trailing -> If we have three negative downwards pyramid, activate trailing. Currently trailing ->  if the current candle is bigger than the previous and are both negative, deactivate trailing. Not currently trailing -> If wee need to sell by our trailing rules -> sell.
+* Not currently trailing -> If we have three negative downwards pyramid, activate trailing. Currently trailing ->  if the current candle is bigger than the previous and are both negative, deactivate trailing. Not currently trailing -> If we need to sell by our trailing rules -> sell.
 * Not currently trailing -> If we have three positive upwards pyramid, activate trailing. Currently trailing -> if the current candle is not bigger than the previous one and are positive, deactivate trailing. Not currently trailing -> If we need to sell by our own trailing rules -> sell.
 * Saftety net.
 
 ## Project structure
 We have 6 packages in our project:
-1. codeExecution
-3. data
-4. positions
-5. singleton Helpers
-6. strategies
-7. utils
-
-and one Main.java file that...
+1. codeExecution - The code runner. Expects user input, creates the investment manager. Basically starts the bot.
+2. data - Holds the real time data, which is the main object that holds the candles, calculate indicators more. the package also has account balance which manages the account.
+3. positions - Holds the position handler - which handles the current position and listen on the exit strategies. Selling instructions is the class that has the information we need for selling.
+4. singleton Helpers - Helper package that contains singleton classes that we use in our project.
+5. strategies - holds the main logic of the bot. Has the entry and exit strategies of rsi, long macd, short macd and useful constants.
+6. utils - Contains common utility functions and time constants.
 
 ## How to run
 In order to run the bot, you need to press "help" to view all the possible commands the bots offers.
@@ -61,17 +59,12 @@ In order to run the bot, you need to press "help" to view all the possible comma
 * apikey- your api key
 * secretkey - your secretkey.
 
-
-
-
-
-
-
 ## Creators
 [Yonathan Wolloch](https://github.com/yonathan95)
 
 [Uri Bek](https://github.com/urib94)
 
 [Omri Attal](https://github.com/omriattal)
+
 
 
