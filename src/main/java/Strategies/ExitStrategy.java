@@ -2,9 +2,11 @@ package Strategies;
 
 import Data.RealTimeData;
 import Positions.SellingInstructions;
+import Utils.Trailer;
 
+import javax.sound.midi.Track;
 import java.math.BigDecimal;
 
 public interface ExitStrategy {
-    SellingInstructions run(RealTimeData realTimeData, boolean isTrailing);
+    SellingInstructions run(RealTimeData realTimeData);
 }

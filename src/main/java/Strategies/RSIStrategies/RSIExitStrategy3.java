@@ -18,7 +18,7 @@ public class RSIExitStrategy3 implements ExitStrategy {
 	 * @param realTimeData
 	 * @return the percentage of quantity to sell, null otherwise.
 	 */
-	public SellingInstructions run(RealTimeData realTimeData, boolean isTrailing) {
+	public SellingInstructions run(RealTimeData realTimeData) {
 		if (firstTime) {
 			rsiValueBefore = realTimeData.getRsiCloseValue(); // last closed candle rsi value
 			firstTime = false;
@@ -29,12 +29,12 @@ public class RSIExitStrategy3 implements ExitStrategy {
 		}
 		if (lostValueOf15(rsiValueBefore,rsiValue)) {
 			System.out.println("Exiting with RSI exit strategy 3. Returning 100(1)");
-			return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT, RSIConstants.RSI_EXIT_OPTION_3_SELLING_PERCENTAGE, Config.ZERO);
+			return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT, RSIConstants.RSI_EXIT_OPTION_3_SELLING_PERCENTAGE);
 
 		}
 		if (rsiValueTwoBefore != -1.0 && lostValueOf15(rsiValueTwoBefore,rsiValue)) {
 			System.out.println("Exiting with RSI exit strategy 3. Returning 100(2)");
-			return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT, RSIConstants.RSI_EXIT_OPTION_3_SELLING_PERCENTAGE, Config.ZERO);
+			return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT, RSIConstants.RSI_EXIT_OPTION_3_SELLING_PERCENTAGE);
 		}
 		return null;
 	}

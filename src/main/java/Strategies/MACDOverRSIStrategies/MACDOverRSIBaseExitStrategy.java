@@ -3,8 +3,9 @@ package Strategies.MACDOverRSIStrategies;
 import Data.RealTimeData;
 import Strategies.ExitStrategy;
 
-public abstract class MACDOverRSIBaseExitStrategy implements ExitStrategy {
+import java.math.BigDecimal;
 
+public abstract class MACDOverRSIBaseExitStrategy implements ExitStrategy {
 
     public boolean currentCandleBiggerThanPrev(RealTimeData realTimeData) {
         double now = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()-1);

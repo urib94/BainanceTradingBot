@@ -9,6 +9,7 @@ import SingletonHelpers.TelegramMessenger;
 import Strategies.ExitStrategy;
 import Strategies.MACDOverRSIStrategies.MACDOverRSIBaseEntryStrategy;
 import Strategies.MACDOverRSIStrategies.MACDOverRSIConstants;
+import Utils.Trailer;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.*;
 import com.binance.client.api.model.trade.Order;
@@ -24,6 +25,7 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
     private int leverage = MACDOverRSIConstants.DEFAULT_LEVERAGE;
     private  BigDecimal requestedBuyingAmount = MACDOverRSIConstants.DEFAULT_BUYING_AMOUNT;
     private AccountBalance accountBalance;
+    private boolean bought = false;
 
     public MACDOverRSILongEntryStrategy(){
         accountBalance = AccountBalance.getAccountBalance();
@@ -39,31 +41,40 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
         boolean currentPriceAboveSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(realTimeData.getCurrentPrice()) < Config.ZERO;
         if (currentPriceAboveSMA && notInPosition && noOpenOrders) {
             boolean rule1 = realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.UP,RealTimeData.CandleType.CLOSE,Config.ZERO);
-            if (rule1) return buyAndCreatePositionHandler(realTimeData,symbol);
+            if (rule1){
+                if (bought)return null;
+                return buyAndCreatePositionHandler(realTimeData,symbol);
+            }
             else {
                 boolean macdValueBelowZero = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()) < 0;
-                if (macdValueBelowZero && decliningPyramid(realTimeData, DecliningType.NEGATIVE)) return buyAndCreatePositionHandler(realTimeData,symbol);
+                if (macdValueBelowZero && decliningPyramid(realTimeData, DecliningType.NEGATIVE)){
+                    if (bought)return null;
+                    return buyAndCreatePositionHandler(realTimeData,symbol);
+                }
             }
+            bought = false;
         }
         return null;
     }
 
     private PositionHandler buyAndCreatePositionHandler(RealTimeData realTimeData, String symbol) {//TODO: maybe change market later.
+        bought = true;
         TelegramMessenger.sendToTelegram("buying long: " + new Date(System.currentTimeMillis()));
         try{
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             syncRequestClient.changeInitialLeverage(symbol,leverage);
+            BigDecimal currentPrice = realTimeData.getCurrentPrice();
             String buyingQty = Utils.Utils.getBuyingQtyAsString(realTimeData, symbol,leverage,requestedBuyingAmount);
             Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
-                    buyingQty,realTimeData.getCurrentPrice().toString(),null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+                    buyingQty,currentPrice.toString(),null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
             TelegramMessenger.sendToTelegram("buying long: buyOrder: "+ buyOrder.toString() + new Date(System.currentTimeMillis()));
             System.out.println("hist: " + realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()));
             ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
-            //exitStrategies.add(new MACDOverRSILongExitStrategy1());
+            exitStrategies.add(new MACDOverRSILongExitStrategy1());
             exitStrategies.add(new MACDOverRSILongExitStrategy2());
-            exitStrategies.add(new MACDOverRSILongExitStrategy3());
-            exitStrategies.add(new MACDOverRSILongExitStrategy4());
-            //exitStrategies.add(new MACDOverRSILongExitStrategy5());
+            exitStrategies.add(new MACDOverRSILongExitStrategy3(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.LONG)));
+            exitStrategies.add(new MACDOverRSILongExitStrategy4(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.LONG)));
+            exitStrategies.add(new MACDOverRSILongExitStrategy5(new Trailer(currentPrice, MACDOverRSIConstants.CONSTANT_TRAILING_PERCENTAGE, PositionSide.LONG)));
             return new PositionHandler(buyOrder ,exitStrategies);
         }catch (Exception exception){
             exception.printStackTrace();

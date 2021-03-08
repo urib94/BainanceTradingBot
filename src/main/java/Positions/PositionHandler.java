@@ -10,6 +10,7 @@ import Strategies.RSIStrategies.RSIExitStrategy2;
 import Strategies.RSIStrategies.RSIExitStrategy3;
 import Strategies.RSIStrategies.RSIExitStrategy4;
 import Utils.Utils;
+import Utils.Trailer;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.*;
 import com.binance.client.api.model.trade.Order;
@@ -32,22 +33,16 @@ public class PositionHandler implements Serializable {
     private String status = Config.NEW;
     private final ArrayList<ExitStrategy> exitStrategies;
     private Long baseTime = 0L;
-    private boolean isTrailing = false;
     private boolean rebuying = true;
-    private Order trailingOrder = null;
-    private Order constantLongTrailingOrder = null;
-    private Order constantShortTrailingOrder = null;
     private boolean selling = false;
-    private BigDecimal highestPrice;
+    private boolean terminated = false;
 
-
-    public PositionHandler(Order order, ArrayList<ExitStrategy> _exitStrategies){//TODO: trying something
+    public PositionHandler(Order order, ArrayList<ExitStrategy> _exitStrategies){
         clientOrderId = order.getClientOrderId();
         orderID = order.getOrderId();
         symbol = order.getSymbol().toLowerCase();
         exitStrategies = _exitStrategies;
         orderPrice = order.getPrice();
-        highestPrice = order.getPrice();
     }
 
     public PositionHandler(BigDecimal qty){//TODO: trying something
@@ -68,10 +63,10 @@ public class PositionHandler implements Serializable {
         return isActive && selling && (!status.equals(Config.NEW)) && (!rebuying) && ((qty.compareTo(BigDecimal.valueOf(0.0)) == 0));}
 
     public synchronized void run(RealTimeData realTimeData) {//TODO: adjust to long and short and trailing as exit method
+        selling = false;
         for (ExitStrategy exitStrategy : exitStrategies) {
-            SellingInstructions sellingInstructions = exitStrategy.run(realTimeData, isTrailing);
-            if (sellingInstructions != null) {
-                if (sellingInstructions.isStopTrailing()) stopTrailing();
+            SellingInstructions sellingInstructions = exitStrategy.run(realTimeData);
+            if ( (! selling) && sellingInstructions != null) {
                 closePosition(sellingInstructions, realTimeData);
             }
         }
@@ -79,10 +74,6 @@ public class PositionHandler implements Serializable {
 
     public synchronized void update(RealTimeData realTimeData, CandlestickInterval interval) {
         rebuying = false;
-        BigDecimal currentPrice = realTimeData.getCurrentPrice();
-        if (currentPrice.compareTo(highestPrice) > 0){
-            highestPrice = currentPrice;
-        }
         Position position = AccountBalance.getAccountBalance().getPosition(symbol);
         if (orderID != null) {
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
@@ -116,8 +107,7 @@ public class PositionHandler implements Serializable {
         }
     }
 
-    private void rebuyOrder(RealTimeData realTimeData, Order order) {
-        TelegramMessenger.sendToTelegram("buying again price : " + realTimeData.getCurrentPrice().toString() + new Date(System.currentTimeMillis()));
+    private synchronized void rebuyOrder(RealTimeData realTimeData, Order order) {
         rebuying = true;
         try{
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
@@ -144,15 +134,17 @@ public class PositionHandler implements Serializable {
     }
 
     public synchronized void terminate(){
-        TelegramMessenger.sendToTelegram("Position closed!" + "         time: " + new Date(System.currentTimeMillis()));
-        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-        syncRequestClient.cancelAllOpenOrder(Config.SYMBOL);
+        if ( ! terminated){
+            terminated = true;
+            TelegramMessenger.sendToTelegram("Position closed!" + "         time: " + new Date(System.currentTimeMillis()));
+            SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+            syncRequestClient.cancelAllOpenOrder(Config.SYMBOL);
+        }
     }
 
     private void closePosition(SellingInstructions sellingInstructions, RealTimeData realTimeData){
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         String sellingQty = Utils.fixQuantity(BinanceInfo.formatQty(percentageOfQuantity(sellingInstructions.getSellingQtyPercentage()), symbol));
-        TelegramMessenger.sendToTelegram("Closing position that cost:  " + orderPrice.toString() +" ," + new Date(System.currentTimeMillis()));
         switch (sellingInstructions.getType()) {
 
             case STAY_IN_POSITION:
@@ -160,34 +152,23 @@ public class PositionHandler implements Serializable {
 
             case SELL_LIMIT:
                 try {
-                    Order sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
+                    syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-                    Order orderCheck = syncRequestClient.getOrder(sellingOrder.getSymbol(), sellingOrder.getOrderId(), sellingOrder.getClientOrderId());
                     TelegramMessenger.sendToTelegram("Selling price:  " + realTimeData.getCurrentPrice().toString() +" ," + new Date(System.currentTimeMillis()));
                 } catch (Exception exception) { exception.printStackTrace();}
                 break;
 
             case SELL_MARKET:
                 try {
-                    Order sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.MARKET, null,
+                    syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.MARKET, null,
                             sellingQty, null, Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
                 } catch (Exception exception) { exception.printStackTrace();}
                 break;
 
-            case SELL_WITH_TRAILING:
-                isTrailing = true;
-                closeTrailingOrder(TrailingType.TEMPORARY);
-                try {
-                    String trailingPrice = BinanceInfo.formatPrice(calculateSellingTrailingPrice(realTimeData.getCurrentPrice(), sellingInstructions.getTrailingPercentage(), TrailingType.TEMPORARY), symbol);
-                    trailingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
-                            sellingQty, trailingPrice, Config.REDUCE_ONLY, null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-                    TelegramMessenger.sendToTelegram("Selling price:  " + trailingPrice +" ," + new Date(System.currentTimeMillis()));
-                } catch (Exception exception) { exception.printStackTrace();}
-                break;
 
             case CLOSE_SHORT_LIMIT:
                 try {
-                    Order buyingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
+                    syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                     TelegramMessenger.sendToTelegram("Selling price:  " + realTimeData.getCurrentPrice().toString() +" ," + new Date(System.currentTimeMillis()));
                 } catch (Exception exception) { exception.printStackTrace();}
@@ -195,39 +176,11 @@ public class PositionHandler implements Serializable {
 
             case CLOSE_SHORT_MARKET:
                 try {
-                    Order buyingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.MARKET, null,
+                    syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.MARKET, null,
                             sellingQty, null, Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
                 } catch (Exception exception) { exception.printStackTrace();}
                 break;
 
-            case CLOSE_SHORT_WITH_TRAILING:
-                isTrailing = true;
-                closeTrailingOrder(TrailingType.TEMPORARY);
-                try {
-                    String trailingPrice = BinanceInfo.formatPrice(calculateBuyingTrailingPrice(realTimeData.getCurrentPrice(), sellingInstructions.getTrailingPercentage(), TrailingType.TEMPORARY), symbol);
-                    trailingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
-                            sellingQty, trailingPrice, Config.REDUCE_ONLY, null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-                    TelegramMessenger.sendToTelegram("Selling price:  " + trailingPrice +" ," + new Date(System.currentTimeMillis()));
-                } catch (Exception exception) { exception.printStackTrace();}
-                break;
-
-            case TRAILING_LONG_STOP_LOSS:
-                closeTrailingOrder(TrailingType.CONSTANT_LONG);
-                try {
-                    String trailingPrice = BinanceInfo.formatPrice(calculateSellingTrailingPrice(realTimeData.getCurrentPrice(), sellingInstructions.getTrailingPercentage(), TrailingType.CONSTANT_LONG), symbol);
-                    constantLongTrailingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
-                            sellingQty, trailingPrice, Config.REDUCE_ONLY, null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-                } catch (Exception exception) { exception.printStackTrace();}
-                break;
-
-            case TRAILING_SHORT_STOP_LOSS:
-                closeTrailingOrder(TrailingType.CONSTANT_SHORT);
-                try {
-                    String trailingPrice = BinanceInfo.formatPrice(calculateBuyingTrailingPrice(realTimeData.getCurrentPrice(), sellingInstructions.getTrailingPercentage(), TrailingType.CONSTANT_SHORT), symbol);
-                    constantShortTrailingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
-                            sellingQty, trailingPrice, Config.REDUCE_ONLY, null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-                } catch (Exception exception) { exception.printStackTrace();}
-                break;
 
             default:
 
@@ -235,63 +188,11 @@ public class PositionHandler implements Serializable {
         selling = true;
     }
 
-    private void stopTrailing() {
-        closeTrailingOrder(TrailingType.TEMPORARY);
-        isTrailing = false;
-    }
-
-    private void closeTrailingOrder(TrailingType type) {
-        Order currentTrailingOrder;
-        if (type == TrailingType.TEMPORARY){
-            currentTrailingOrder = trailingOrder;
-        }
-        else if (type == TrailingType.CONSTANT_LONG){
-            currentTrailingOrder = constantLongTrailingOrder;
-        }
-        else{
-            currentTrailingOrder = constantShortTrailingOrder;
-        }
-        if (currentTrailingOrder != null){
-            SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-            syncRequestClient.cancelOrder(currentTrailingOrder.getSymbol(), currentTrailingOrder.getOrderId(), currentTrailingOrder.getClientOrderId());
-        }
-
-    }
-
-    private BigDecimal calculateBuyingTrailingPrice(BigDecimal currentPrice, double trailingPercentage, TrailingType type) {
-        double currentTrailingPercentage = trailingPercentage;
-        if (type == TrailingType.CONSTANT_LONG || type == TrailingType.CONSTANT_SHORT){
-            currentTrailingPercentage = MACDOverRSIConstants.CONSTANT_TRAILING_PERCENTAGE;
-        }
-        return currentPrice.add((currentPrice.multiply(BigDecimal.valueOf(currentTrailingPercentage)).multiply(BigDecimal.valueOf(1.0/100))));
-    }
-
-    private BigDecimal calculateSellingTrailingPrice(BigDecimal currentPrice, double trailingPercentage, TrailingType type) {
-        double currentTrailingPercentage = trailingPercentage;
-        if (type == TrailingType.CONSTANT_LONG || type == TrailingType.CONSTANT_SHORT){
-            currentTrailingPercentage = MACDOverRSIConstants.CONSTANT_TRAILING_PERCENTAGE;
-        }
-        return currentPrice.subtract((currentPrice.multiply(BigDecimal.valueOf(currentTrailingPercentage)).multiply(BigDecimal.valueOf(1.0/100))));
-    }
-
-    //todo: ADD MARKET AND LIMIT YA PUBLIC
     public enum ClosePositionTypes{
         STAY_IN_POSITION,
         SELL_MARKET,
         SELL_LIMIT,
-        SELL_WITH_TRAILING,
         CLOSE_SHORT_MARKET,
-        CLOSE_SHORT_LIMIT,
-        CLOSE_SHORT_WITH_TRAILING,
-        TRAILING_LONG_STOP_LOSS,
-        TRAILING_SHORT_STOP_LOSS,
-        DEFEND_SHORT,
-        DEFEND_LONG;
-    }
-
-    public enum TrailingType{
-        CONSTANT_SHORT,
-        CONSTANT_LONG,
-        TEMPORARY;
+        CLOSE_SHORT_LIMIT;
     }
 }
