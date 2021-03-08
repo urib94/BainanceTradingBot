@@ -1,6 +1,8 @@
 # Cryptocurrency Trading Bot
 
 ## Overview
+The first Machine-Dance traiding bot!
+
 This is a bot written in Java that buys and sells cryptocurrency using Binance's API, while also displays user information.
 This project incorporate multiple threads, use of WebSocket and Rest APIs and object-oriented programming.
 It required research on cryptocurrency strategies and their employment in Java with Binance's API.
@@ -26,14 +28,14 @@ Metholodgy - each entry strategy corresponds to its similary-named exit strategi
 3. Five possible Long MACD Over RSI strategies.
 * Current price below SMA 150 -> Market
 * Crossing the zero line downwards -> Limit
-* Not currently trailing -> If we have three positive candles and downwards pyramid, activate trailing. Currently trailing -> two positive candles pyramid, deactivate trailing. Currently trailing -> If we need to sell by our trailing rules -> sell. 
+* Not currently trailing -> If we have three positive candles downwards pyramid, activate trailing. Currently trailing -> two positive candles pyramid, deactivate trailing. Currently trailing -> If we need to sell by our trailing rules -> sell. 
 * Not currently trailing -> If we have three negative downwards pyramid, activate trailing. Not currenly trailing -> three negative candle values and the current candle is not bigger than the prev, deactivate trailing. Not Currently trailing -> If we need to sell by trailing rules -> sell.
 * Safety net.
 5. Five possible Short MACD Over RSI strategies.
 * Current price above SMA 150 -> Market
 * Crosing the zero line upwards -> Limit
-* 
-*
+* Not currently trailing -> If we have three negative downwards pyramid, activate trailing. Currently trailing ->  if the current candle is bigger than the previous and are both negative, deactivate trailing. Not currently trailing -> If wee need to sell by our trailing rules -> sell.
+* Not currently trailing -> If we have three positive upwards pyramid, activate trailing. Currently trailing -> if the current candle is not bigger than the previous one and are positive, deactivate trailing. Not currently trailing -> If we need to sell by our own trailing rules -> sell.
 * Saftety net.
 
 ## Project Structure
@@ -45,7 +47,7 @@ We have 6 packages in our project:
 5. strategies
 6. utils
 
-and one Main.java file that..
+and one Main.java file that...
 
 ## How to run
 In order to run the bot, the user needs to press "help" to view all the possible commands the bots offers.
