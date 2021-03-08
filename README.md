@@ -5,7 +5,7 @@ The first Machine-Dance traiding bot!
 
 This is a bot written in Java that buys and sells cryptocurrency using Binance's API, while also displays user information.
 This project incorporate multiple threads, use of WebSocket and Rest APIs and object-oriented programming.
-It required research on cryptocurrency strategies and their employment in Java with Binance's API.
+It required research on crypto currency strategies and their employment in Java with Binance's API.
 
 ## Strategies
 The bot acquires the 500 most recent candles from Binance based on the symbol typed in by the user, and then runs on one or more from the following strategies.
@@ -48,7 +48,8 @@ We have 6 packages in our project:
 6. utils - Contains common utility functions and time constants.
 
 ## How to run
-In order to run the bot, you need to press "help" to view all the possible commands the bots offers.
+In order to run the bot, **you need to press "help" to view all the possible commands the bots offers.**
+#### Possible values:
 * symbol - binance legal symbol, for example: btcusdt
 * interval - the candlestick interval, possible values: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M
 * takeprofit - in percentage, for example, 0.5
