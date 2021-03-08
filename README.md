@@ -1,9 +1,9 @@
 # Cryptocurrency Trading Bot
 
 ## Overview
-The first Machine-Dance traiding bot!
+The first Machine-Dance cryptocurrency traiding bot!
 
-This is a bot written in Java that buys and sells cryptocurrency using Binance's API, while also displays user information.
+This is a bot that's written in Java that buys and sells cryptocurrency using Binance's API, managing user balances and dispalys information.
 This project incorporate multiple threads, use of WebSocket and Rest APIs and object-oriented programming.
 It required research on crypto currency strategies and their employment in Java with Binance's API.
 
