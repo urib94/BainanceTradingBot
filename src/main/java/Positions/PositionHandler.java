@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class PositionHandler implements Serializable {
     private String clientOrderId;
@@ -34,7 +35,7 @@ public class PositionHandler implements Serializable {
     private final ArrayList<ExitStrategy> exitStrategies;
     private Long baseTime = 0L;
     private boolean rebuying = true;
-    private boolean selling = false;
+    Order sellingOrder = null;
     private boolean terminated = false;
 
     public PositionHandler(Order order, ArrayList<ExitStrategy> _exitStrategies){
@@ -45,28 +46,13 @@ public class PositionHandler implements Serializable {
         orderPrice = order.getPrice();
     }
 
-    public PositionHandler(BigDecimal qty){//TODO: trying something
-        clientOrderId = null;
-        orderID = null;
-        symbol = Config.SYMBOL;
-        status = Config.FILLED;
-        isActive = true;
-        this.qty = qty;
-        exitStrategies = new ArrayList<>();
-        exitStrategies.add(new RSIExitStrategy1());
-        exitStrategies.add(new RSIExitStrategy2());
-        exitStrategies.add(new RSIExitStrategy3());
-        exitStrategies.add(new RSIExitStrategy4());
-    }
-
     public synchronized boolean isSoldOut(){
-        return isActive && selling && (!status.equals(Config.NEW)) && (!rebuying) && ((qty.compareTo(BigDecimal.valueOf(0.0)) == 0));}
+        return isActive && sellingOrder != null && (!status.equals(Config.NEW)) && (!rebuying) && ((qty.compareTo(BigDecimal.valueOf(0.0)) == 0));}
 
     public synchronized void run(RealTimeData realTimeData) {//TODO: adjust to long and short and trailing as exit method
-        selling = false;
         for (ExitStrategy exitStrategy : exitStrategies) {
             SellingInstructions sellingInstructions = exitStrategy.run(realTimeData);
-            if ( (! selling) && sellingInstructions != null) {
+            if ( sellingOrder == null && sellingInstructions != null) {
                 closePosition(sellingInstructions, realTimeData);
             }
         }
@@ -75,12 +61,14 @@ public class PositionHandler implements Serializable {
     public synchronized void update(RealTimeData realTimeData, CandlestickInterval interval) {
         rebuying = false;
         Position position = AccountBalance.getAccountBalance().getPosition(symbol);
-        if (orderID != null) {
-            SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-            Order order = syncRequestClient.getOrder(symbol, orderID, clientOrderId);
-            status = order.getStatus();
-            isActive(realTimeData, order,interval);
+        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+        List<Order> openOrders = syncRequestClient.getOpenOrders(symbol);
+        if (openOrders.size() == 0){
+            sellingOrder = null;
         }
+        Order order = syncRequestClient.getOrder(symbol, orderID, clientOrderId);
+        status = order.getStatus();
+        isActive(realTimeData, order,interval);
         qty = position.getPositionAmt();
     }
 
@@ -152,7 +140,7 @@ public class PositionHandler implements Serializable {
 
             case SELL_LIMIT:
                 try {
-                    syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
+                    sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                     TelegramMessenger.sendToTelegram("Selling price:  " + realTimeData.getCurrentPrice().toString() +" ," + new Date(System.currentTimeMillis()));
                 } catch (Exception exception) { exception.printStackTrace();}
@@ -160,7 +148,7 @@ public class PositionHandler implements Serializable {
 
             case SELL_MARKET:
                 try {
-                    syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.MARKET, null,
+                    sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.MARKET, null,
                             sellingQty, null, Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
                 } catch (Exception exception) { exception.printStackTrace();}
                 break;
@@ -168,7 +156,7 @@ public class PositionHandler implements Serializable {
 
             case CLOSE_SHORT_LIMIT:
                 try {
-                    syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
+                    sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                     TelegramMessenger.sendToTelegram("Selling price:  " + realTimeData.getCurrentPrice().toString() +" ," + new Date(System.currentTimeMillis()));
                 } catch (Exception exception) { exception.printStackTrace();}
@@ -176,7 +164,7 @@ public class PositionHandler implements Serializable {
 
             case CLOSE_SHORT_MARKET:
                 try {
-                    syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.MARKET, null,
+                    sellingOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.MARKET, null,
                             sellingQty, null, Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
                 } catch (Exception exception) { exception.printStackTrace();}
                 break;
@@ -185,7 +173,6 @@ public class PositionHandler implements Serializable {
             default:
 
         }
-        selling = true;
     }
 
     public enum ClosePositionTypes{

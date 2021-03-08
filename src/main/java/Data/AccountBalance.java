@@ -76,13 +76,13 @@ public class AccountBalance {
         assetsLock.writeLock().unlock();
     }
 
-    public PositionHandler manageOldPositions(String symbol) {
-        BigDecimal positionAmt = getPosition(symbol).getPositionAmt();
-        if (positionAmt.compareTo(BigDecimal.valueOf(0.0)) > Config.ZERO){
-            return new PositionHandler(positionAmt);//TODO: add default exit strategy
-        }
-        return null;
-    }
+//    public PositionHandler manageOldPositions(String symbol) {
+//        BigDecimal positionAmt = getPosition(symbol).getPositionAmt();
+//        if (positionAmt.compareTo(BigDecimal.valueOf(0.0)) > Config.ZERO){
+//            return new PositionHandler(positionAmt);//TODO: add default exit strategy
+//        }
+//        return null;
+//    }
 
     public List<Position> getOpenPositions() {
         List<Position> openPositions = new ArrayList<>();
