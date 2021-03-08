@@ -1,14 +1,8 @@
-import Data.*;
-import SingletonHelpers.BinanceInfo;
-import CodeExecution.RealTimeCommandOperator;
-import SingletonHelpers.RequestClient;
-import SingletonHelpers.TelegramMessenger;
-import Utils.Utils;
-import com.binance.client.api.SyncRequestClient;
-import com.binance.client.api.model.enums.*;
-import com.binance.client.api.model.trade.Order;
+import data.*;
+import singletonHelpers.BinanceInfo;
+import codeExecution.RealTimeCommandOperator;
+import singletonHelpers.TelegramMessenger;
 
-import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 public class Main {
