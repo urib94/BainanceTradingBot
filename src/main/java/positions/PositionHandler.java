@@ -60,7 +60,7 @@ public class PositionHandler implements Serializable {
     }
 
     private void isActive(RealTimeData realTimeData, Order order,CandlestickInterval interval) {
-        if (status.equals(Config.NEW)){
+        if ( !rebuying && status.equals(Config.NEW)){
             rebuyOrder(realTimeData, order);
         }
         else if (status.equals(Config.PARTIALLY_FILLED)){
