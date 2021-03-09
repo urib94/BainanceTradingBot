@@ -17,7 +17,7 @@ Metholodgy - each entry strategy corresponds to its similary-named exit strategi
 3. [Long MACD Over RSI](https://www.investopedia.com/terms/m/macd.asp) with 9 rsi values, fast bar: 15, slow bar: 24.
 * If the price is above SMA 150, we need or that macd over rsi value crossed zero upwards, or we have a three negative downwards pyramid.
 5. [Short MACD Over RSI](https://www.investopedia.com/terms/m/macd.asp)
-6. * If the price is below SMA 150, we need that macd over rsi value crossed zero downwards or that we have three positive upwards pyramid.
+* If the price is below SMA 150, we need that macd over rsi value crossed zero downwards or that we have three positive upwards pyramid.
 
 ### Exit strategies
 1. Four possible RSI Exit strategies.
@@ -47,18 +47,20 @@ We have 6 packages in our project:
 5. strategies - holds the main logic of the bot. Has the entry and exit strategies of rsi, long macd, short macd and useful constants.
 6. utils - Contains common utility functions and time constants.
 
+The Main.java files instantiate the necessary classes to boot and starts the code that's present in codeExecution.
+
 ## How to run
-In order to run the bot, **you need to press "help" to view all the possible commands the bots offers.**
+In order to run the bot, **you need to press "help" to view all the possible commands the bot offers.**
 #### Possible values:
-* symbol - binance legal symbol, for example: btcusdt
-* interval - the candlestick interval, possible values: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M
-* takeprofit - in percentage, for example, 0.5
-* stoploss - in percentage, for example, 0.01.
-* leverage - for example, 6.
-* request buying amount - in percentage, for example 10. 
-* entry strategy - rsi, macd long, macd short
-* apikey- your api key
-* secretkey - your secretkey.
+* [symbol] - binance legal symbol, for example: btcusdt
+* [interval] - the candlestick interval, possible values: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M
+* [takeprofit] - in percentage, for example, 0.5
+* [stoploss] - in percentage, for example, 0.01.
+* [leverage] - for example, 6.
+* [request buying amount] - in percentage, for example 10. 
+* [entry strategy] - rsi, macd long, macd short
+* [apikey]- your api key
+* [secretkey] - your secretkey.
 
 ## Creators
 [Yonathan Wolloch](https://github.com/yonathan95)
