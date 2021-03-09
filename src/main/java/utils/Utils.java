@@ -34,8 +34,8 @@ public class Utils {
 				ZoneId.systemDefault());
 	}
 
-	public static String getBuyingQtyAsString(RealTimeData realTimeData, String symbol, int leverage, BigDecimal requestedBuyingAmount) {
-		BigDecimal buyingQty = requestedBuyingAmount.multiply(BigDecimal.valueOf(leverage)).divide(realTimeData.getCurrentPrice(), MathContext.DECIMAL32);
+	public static String getBuyingQtyAsString(BigDecimal currentPrice , String symbol, int leverage, BigDecimal requestedBuyingAmount) {
+		BigDecimal buyingQty = requestedBuyingAmount.multiply(BigDecimal.valueOf(leverage)).divide(currentPrice, MathContext.DECIMAL32);
 		return fixQuantity(BinanceInfo.formatQty(buyingQty, symbol));
 	}
 

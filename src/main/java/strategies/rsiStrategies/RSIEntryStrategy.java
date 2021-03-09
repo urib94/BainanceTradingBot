@@ -53,7 +53,7 @@ public class RSIEntryStrategy implements EntryStrategy {
                 rsiValueToCheckForPosition3 = -1;
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
                 syncRequestClient.changeInitialLeverage(symbol,leverage);
-                String buyingQty = Utils.getBuyingQtyAsString(realTimeData,symbol,leverage,requestedBuyingAmount);
+                String buyingQty = Utils.getBuyingQtyAsString(realTimeData.getCurrentPrice(),symbol,leverage,requestedBuyingAmount);
                 try{
                     TelegramMessenger.sendToTelegram("buying long: " + new Date(System.currentTimeMillis()));
                     Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.MARKET, null,

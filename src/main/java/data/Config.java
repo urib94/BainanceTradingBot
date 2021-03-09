@@ -9,7 +9,7 @@ public class Config {
 	public static final double DOUBLE_ZERO = 0.0;
 	public static String API_KEY = "h4AdqbWrKlF5wOxWmbNTKLq7IpDReZOvVXeOujGwUfU0HjXdIejUmqKvoVLbcXJ6";
 	public static String SECRET_KEY = "7qqNLwB7ZXiZu2nBJhrdv7ARVpNDhImNA1Rj1oXR6eGjZFkGsRC9ayEO7HLYVm6w";
-	public static final int THREAD_NUM = 5;
+	public static final int THREAD_NUM = 6;
 	public static final String SYMBOL = "btcusdt";
 	public static final int CANDLE_NUM = 500;
 	public static final String NEW = "NEW";

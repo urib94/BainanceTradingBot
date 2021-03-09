@@ -176,4 +176,10 @@ public class Order {
                 .append("stopPrice", stopPrice).append("symbol", symbol).append("timeInForce", timeInForce)
                 .append("type", type).append("updateTime", updateTime).append("workingType", workingType).toString();
     }
+
+    public String toTelegram() {
+        return new ToStringBuilder(this, BinanceApiConstants.TO_STRING_BUILDER_STYLE)
+                .append("executedQty", executedQty).append("price", price).append("side", side)
+                .append("status", status).append("symbol", symbol).toString();
+    }
 }

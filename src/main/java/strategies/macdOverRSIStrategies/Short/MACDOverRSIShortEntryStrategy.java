@@ -7,6 +7,7 @@ import positions.PositionHandler;
 import singletonHelpers.RequestClient;
 import singletonHelpers.TelegramMessenger;
 import strategies.ExitStrategy;
+import strategies.macdOverRSIStrategies.Long.MACDOverRSILongExitStrategy6;
 import strategies.macdOverRSIStrategies.MACDOverRSIBaseEntryStrategy;
 import strategies.macdOverRSIStrategies.MACDOverRSIConstants;
 import utils.Trailer;
@@ -38,17 +39,19 @@ public class MACDOverRSIShortEntryStrategy extends MACDOverRSIBaseEntryStrategy 
 		boolean notInPosition = accountBalance.getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == Config.ZERO;
 		SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
 		boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
-		boolean currentPriceBelowSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(realTimeData.getCurrentPrice()) >= Config.ZERO;
-		if (currentPriceBelowSMA && notInPosition && noOpenOrders) {
+		BigDecimal currentPrice = realTimeData.getCurrentPrice();
+		boolean  currentPriceAboveLowerBollinger = BigDecimal.valueOf(realTimeData.getLowerBollingerAtIndex(MACDOverRSIConstants.LAST_INDEX)).compareTo(currentPrice) < Config.ZERO;
+		boolean currentPriceBelowSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(MACDOverRSIConstants.LAST_INDEX)).compareTo(currentPrice) >= Config.ZERO;
+		if (currentPriceAboveLowerBollinger && currentPriceBelowSMA && notInPosition && noOpenOrders) {
 			boolean rule1 = realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.DOWN, RealTimeData.CandleType.CLOSE, Config.ZERO);
 			if (rule1){
 				if (bought)return null;
-				return buyAndCreatePositionHandler(realTimeData, symbol);
+				return buyAndCreatePositionHandler(currentPrice, symbol);
 			}
 			else{
-				if (realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()) > Config.ZERO && decliningPyramid(realTimeData, DecliningType.POSITIVE)){
+				if (realTimeData.getMacdOverRsiValueAtIndex(MACDOverRSIConstants.LAST_INDEX) > Config.ZERO && decliningPyramid(realTimeData, DecliningType.POSITIVE)){
 					if (bought) return null;
-					return buyAndCreatePositionHandler(realTimeData, symbol);
+					return buyAndCreatePositionHandler(currentPrice, symbol);
 				}
 			}
 			bought = false;
@@ -58,24 +61,23 @@ public class MACDOverRSIShortEntryStrategy extends MACDOverRSIBaseEntryStrategy 
 
 
 	//todo: check short!
-	private PositionHandler buyAndCreatePositionHandler(RealTimeData realTimeData, String symbol) {
+	private PositionHandler buyAndCreatePositionHandler(BigDecimal currentPrice, String symbol) {
 		bought = true;
 		try{
 			TelegramMessenger.sendToTelegram("buying short: " + new Date(System.currentTimeMillis()));
 			SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
 			syncRequestClient.changeInitialLeverage(symbol,leverage);
-			BigDecimal currentPrice = realTimeData.getCurrentPrice();
-			String buyingQty = utils.Utils.getBuyingQtyAsString(realTimeData, symbol,leverage,requestedBuyingAmount);
+			String buyingQty = utils.Utils.getBuyingQtyAsString(currentPrice, symbol,leverage,requestedBuyingAmount);
 			Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
 					buyingQty,currentPrice.toString(),null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-			TelegramMessenger.sendToTelegram("buying long: buyOrder: "+ buyOrder.toString() + new Date(System.currentTimeMillis()));
+			TelegramMessenger.sendToTelegram("buying short: buyOrder: "+ buyOrder.toTelegram() + new Date(System.currentTimeMillis()));
 			ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
-			exitStrategies.add(new MACDOverRSIShortExitStrategy1());
+			//exitStrategies.add(new MACDOverRSIShortExitStrategy1());
 			exitStrategies.add(new MACDOverRSIShortExitStrategy2());
 			exitStrategies.add(new MACDOverRSIShortExitStrategy3(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.SHORT)));
 			exitStrategies.add(new MACDOverRSIShortExitStrategy4(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.SHORT)));
 			exitStrategies.add(new MACDOverRSIShortExitStrategy5(new Trailer(currentPrice, MACDOverRSIConstants.CONSTANT_TRAILING_PERCENTAGE, PositionSide.SHORT)));
-			TelegramMessenger.sendToTelegram("buying short: " + "buyOrder: "+ buyingQty + " " + new Date(System.currentTimeMillis()));
+			exitStrategies.add(new MACDOverRSIShortExitStrategy6());
 			return new PositionHandler(buyOrder ,exitStrategies);
 		}catch (Exception ignored){}
 		return null;

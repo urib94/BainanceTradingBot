@@ -10,6 +10,7 @@ import strategies.macdOverRSIStrategies.MACDOverRSIConstants;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.Date;
 
 public class MACDOverRSIShortExitStrategy1 extends MACDOverRSIBaseExitStrategy {
 
@@ -17,7 +18,7 @@ public class MACDOverRSIShortExitStrategy1 extends MACDOverRSIBaseExitStrategy {
 	public SellingInstructions run(RealTimeData realTimeData) {
 		boolean currentPriceAboveSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastCloseIndex())).compareTo(realTimeData.getCurrentPrice()) < Config.ZERO;
 		if (currentPriceAboveSMA) {
-			TelegramMessenger.sendToTelegram("exiting position with short exit 1" + "time: " + ZonedDateTime.now());
+			TelegramMessenger.sendToTelegram("exiting position with short exit 1" + "time: " + new Date(System.currentTimeMillis()));
 			return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_MARKET, MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);
 		}
 		return null;

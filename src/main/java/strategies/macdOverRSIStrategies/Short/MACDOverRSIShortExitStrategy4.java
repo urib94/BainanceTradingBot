@@ -25,7 +25,7 @@ public class MACDOverRSIShortExitStrategy4 extends MACDOverRSIBaseExitStrategy {
 		if (isTrailing) {
 			BigDecimal currentPrice = realTimeData.getCurrentPrice();
 			trailer.updateTrailer(currentPrice);
-			if (!currentCandleBiggerThanPrev(realTimeData) && positiveThreeHistograms(realTimeData)) {
+			if (changedDirectionAndPositiveThreeHistogram(realTimeData)) {
 				isTrailing = false;
 				return null;
 			}
@@ -35,7 +35,7 @@ public class MACDOverRSIShortExitStrategy4 extends MACDOverRSIBaseExitStrategy {
 						MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);
 			}
 		} else {
-			if (upwardsPyramid(realTimeData) && positiveThreeHistograms(realTimeData)) {
+			if (stayInTrackAndThreePositiveHistograms(realTimeData)) {
 				isTrailing = true;
 				trailer.setAbsoluteMaxPrice(realTimeData.getCurrentPrice());
 			}

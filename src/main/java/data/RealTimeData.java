@@ -3,6 +3,7 @@ package data;
 import org.ta4j.core.indicators.bollinger.BollingerBandsLowerIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsMiddleIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsUpperIndicator;
+import org.ta4j.core.indicators.statistics.StandardDeviationIndicator;
 import strategies.macdOverRSIStrategies.MACDOverRSIConstants;
 import strategies.rsiStrategies.RSIConstants;
 import com.binance.client.api.SyncRequestClient;
@@ -30,7 +31,12 @@ public class RealTimeData{
     private BigDecimal currentPrice;
     private RSIIndicator rsiIndicator;
     private MACDIndicator macdOverRsiIndicator;
+    private double macdOverRsiCloseValue;
     private SMAIndicator smaIndicator;
+    private BollingerBandsUpperIndicator bollingerBandsUpperIndicator;
+    private BollingerBandsLowerIndicator bollingerBandsLowerIndicator;
+    private BollingerBandsMiddleIndicator bollingerBandsMiddleIndicator;
+
 
     public RealTimeData(String symbol, CandlestickInterval interval){
         realTimeData = new BaseBarSeries();
@@ -39,7 +45,7 @@ public class RealTimeData{
         lastCandleOpenTime = candlestickBars.get(candlestickBars.size() - 1).getOpenTime();
         currentPrice = candlestickBars.get(candlestickBars.size() -1).getClose();
         fillRealTimeData(candlestickBars);
-        calculateIndicators();
+        calculateIndicators(true);
     }
 
     /**
@@ -51,11 +57,11 @@ public class RealTimeData{
      * @param event - the new Candlestick received from the subscribeCandleStickEvent.
      */
     public synchronized void updateData(CandlestickEvent event){
-        updateLastCandle(event);
-        calculateIndicators();
+        boolean isNewCandle = updateLastCandle(event);
+        calculateIndicators(isNewCandle);
     }
 
-    private void updateLastCandle(CandlestickEvent event) {
+    private synchronized boolean updateLastCandle(CandlestickEvent event) {
         currentPrice = event.getClose();
         boolean isNewCandle = !(event.getStartTime().doubleValue() == lastCandleOpenTime);
         ZonedDateTime closeTime = utils.Utils.getZonedDateTime(event.getCloseTime());
@@ -73,6 +79,7 @@ public class RealTimeData{
             realTimeData = realTimeData.getSubSeries(0, realTimeData.getEndIndex());
         }
         realTimeData.addBar(candleDuration, closeTime, open, high, low, close, volume);
+        return isNewCandle;
     }
 
     private void fillRealTimeData(List<Candlestick> candlestickBars){
@@ -89,11 +96,27 @@ public class RealTimeData{
         }
     }
 
-    private void calculateIndicators() {
-        rsiIndicator = calculateRSI(RSIConstants.RSI_CANDLE_NUM);
+    private synchronized void calculateIndicators(boolean isNewCandle) {
+        //rsiIndicator = calculateRSI(RSIConstants.RSI_CANDLE_NUM);
         macdOverRsiIndicator = calculateMacdOverRsi();
-        smaIndicator = new SMAIndicator(new ClosePriceIndicator(realTimeData), MACDOverRSIConstants.SMA_CANDLE_NUM);
+        macdOverRsiCloseValue = getMacdOverRsiValueAtIndex(MACDOverRSIConstants.LAST_CLOSE_INDEX);
+        if (isNewCandle){
+            smaIndicator = new SMAIndicator(new ClosePriceIndicator(realTimeData), MACDOverRSIConstants.SMA_CANDLE_NUM);
+            calculateBollingerBandsIndicators();
+        }
     }
+
+    public synchronized void calculateBollingerBandsIndicators(){
+        ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(realTimeData);
+        bollingerBandsMiddleIndicator = new BollingerBandsMiddleIndicator(closePriceIndicator);
+        bollingerBandsUpperIndicator = new BollingerBandsUpperIndicator(bollingerBandsMiddleIndicator, new StandardDeviationIndicator(closePriceIndicator, MACDOverRSIConstants.STANDARD_DEVIATION_CANDLES));
+        bollingerBandsLowerIndicator = new BollingerBandsLowerIndicator(bollingerBandsMiddleIndicator, new StandardDeviationIndicator(closePriceIndicator, MACDOverRSIConstants.STANDARD_DEVIATION_CANDLES));
+    }
+
+
+
+
+
 
     public synchronized double getMacdOverRsiSignalLineValueAtIndex(int index) {
         EMAIndicator signal = new EMAIndicator(macdOverRsiIndicator, MACDOverRSIConstants.SIGNAL_LENGTH);
@@ -108,6 +131,10 @@ public class RealTimeData{
         return getMacdOverRsiMacdLineValueAtIndex(index) - getMacdOverRsiSignalLineValueAtIndex(index);
     }
 
+    public double getMacdOverRsiCloseValue() {
+        return macdOverRsiCloseValue;
+    }
+
     public double getRsiOpenValue() {
         return rsiIndicator.getValue(realTimeData.getEndIndex()).doubleValue();
     }
@@ -120,13 +147,18 @@ public class RealTimeData{
         return rsiIndicator.getValue(index).doubleValue();
     }
 
+    public double getUpperBollingerAtIndex(int index){return bollingerBandsUpperIndicator.getValue(index).doubleValue();}
+
+    public double getLowerBollingerAtIndex(int index){return bollingerBandsLowerIndicator.getValue(index).doubleValue();}
+
     public synchronized double getSMAValueAtIndex(int index) {
         return smaIndicator.getValue(index).doubleValue();
     }
 
     private MACDIndicator calculateMacdOverRsi() {
-        RSIIndicator rsiIndicator14 = calculateRSI(MACDOverRSIConstants.RSI_CANDLE_NUM);
-        return new MACDIndicator(rsiIndicator14, MACDOverRSIConstants.FAST_BAR_COUNT, MACDOverRSIConstants.SLOW_BAR_COUNT);
+        //RSIIndicator rsiIndicator14 = calculateRSI(MACDOverRSIConstants.RSI_CANDLE_NUM);
+        ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(realTimeData);
+        return new MACDIndicator(/*rsiIndicator14*/closePriceIndicator, MACDOverRSIConstants.FAST_BAR_COUNT, MACDOverRSIConstants.SLOW_BAR_COUNT);
     }
 
     private RSIIndicator calculateRSI(int candleNum) {
@@ -134,7 +166,7 @@ public class RealTimeData{
         return new RSIIndicator(closePriceIndicator, candleNum);
     }
 
-    public boolean crossed(IndicatorType indicatorType, CrossType crossType, CandleType candleType, double threshold) {
+    public synchronized boolean crossed(IndicatorType indicatorType, CrossType crossType, CandleType candleType, double threshold) {
         switch (indicatorType) {
             case RSI:
                 return rsiCrossed(crossType,candleType,threshold);
@@ -157,13 +189,13 @@ public class RealTimeData{
         if (crossType == CrossType.UP) return rsiValueNow > threshold && rsiValuePrev <= threshold;
         return rsiValuePrev >= threshold && rsiValueNow < threshold;
     }
-    private boolean macdOverRsiCrossed(CrossType crossType,CandleType candleType, double threshold) {
+    private synchronized boolean macdOverRsiCrossed(CrossType crossType,CandleType candleType, double threshold) {
         double currentMacdOverRsiValue,prevMacdOverRsiValue;
         if (candleType == CandleType.OPEN) {
             currentMacdOverRsiValue = getMacdOverRsiValueAtIndex(getLastIndex());
-            prevMacdOverRsiValue  = getMacdOverRsiValueAtIndex(getLastIndex()-1);
+            prevMacdOverRsiValue  = macdOverRsiCloseValue;
         } else {
-            currentMacdOverRsiValue = getMacdOverRsiValueAtIndex(getLastCloseIndex());
+            currentMacdOverRsiValue = macdOverRsiCloseValue;
             prevMacdOverRsiValue = getMacdOverRsiValueAtIndex(getLastCloseIndex()-1);
         }
         if (crossType == CrossType.UP) return currentMacdOverRsiValue > threshold && prevMacdOverRsiValue <= threshold;
@@ -213,6 +245,6 @@ public class RealTimeData{
         UP,DOWN
     }
     public enum IndicatorType {
-        RSI,MACD_OVER_RSI, SMA
+        RSI,MACD_OVER_RSI, UpperBollinger, SMA
     }
 }

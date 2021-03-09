@@ -48,7 +48,6 @@ public class InvestmentManager implements Runnable{
                 if (positionHandler.isSoldOut()){
                     positionHandler.terminate();
                     positionHandlers.remove(positionHandler);
-                    TelegramMessenger.sendToTelegram("balance:  " + AccountBalance.getAccountBalance().getCoinBalance("usdt") +", " + new Date(System.currentTimeMillis()));
                 }
                 else{
                     positionHandler.run(realTimeData);

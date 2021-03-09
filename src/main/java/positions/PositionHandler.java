@@ -88,9 +88,9 @@ public class PositionHandler implements Serializable {
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             syncRequestClient.cancelAllOpenOrder(symbol);
             OrderSide side = stringToOrderSide(order.getSide());
-            Order buyOrder = syncRequestClient.postOrder(symbol, side, null, OrderType.LIMIT, TimeInForce.GTC,
+            Order buyOrder = syncRequestClient.postOrder(symbol, side, null, OrderType.MARKET, TimeInForce.GTC,
                     order.getOrigQty().toString(),realTimeData.getCurrentPrice().toString(),null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-            TelegramMessenger.sendToTelegram("bought again:  " + buyOrder +", " + new Date(System.currentTimeMillis()));
+            TelegramMessenger.sendToTelegram("bought again:  " + buyOrder.toTelegram() +", " + new Date(System.currentTimeMillis()));
             clientOrderId = buyOrder.getClientOrderId();
             orderID = buyOrder.getOrderId();
         }catch (Exception ignored){}
@@ -110,9 +110,9 @@ public class PositionHandler implements Serializable {
     public synchronized void terminate(){
         if ( ! terminated){
             terminated = true;
-            TelegramMessenger.sendToTelegram("Position closed!" + "         time: " + new Date(System.currentTimeMillis()));
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             syncRequestClient.cancelAllOpenOrder(Config.SYMBOL);
+            TelegramMessenger.sendToTelegram("Position closed!, balance:  " + AccountBalance.getAccountBalance().getCoinBalance("usdt") +", " + new Date(System.currentTimeMillis()));
         }
     }
 

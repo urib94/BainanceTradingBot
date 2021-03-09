@@ -35,21 +35,23 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
 
     @Override
     public synchronized PositionHandler run(RealTimeData realTimeData, String symbol) {
-        boolean notInPosition = accountBalance.getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == 0;
+        boolean notInPosition = accountBalance.getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == Config.ZERO;
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
-        boolean currentPriceAboveSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(realTimeData.getCurrentPrice()) < Config.ZERO;
-        if (currentPriceAboveSMA && notInPosition && noOpenOrders) {
+        BigDecimal currentPrice = realTimeData.getCurrentPrice();
+        boolean  currentPriceBelowUpperBollinger = BigDecimal.valueOf(realTimeData.getUpperBollingerAtIndex(MACDOverRSIConstants.LAST_INDEX)).compareTo(currentPrice) > Config.ZERO;
+        boolean currentPriceAboveSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(MACDOverRSIConstants.LAST_INDEX)).compareTo(currentPrice) < Config.ZERO;
+        if (currentPriceBelowUpperBollinger && currentPriceAboveSMA && notInPosition && noOpenOrders) {
             boolean rule1 = realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.UP,RealTimeData.CandleType.CLOSE,Config.ZERO);
             if (rule1){
                 if (bought)return null;
-                return buyAndCreatePositionHandler(realTimeData,symbol);
+                return buyAndCreatePositionHandler(currentPrice,symbol);
             }
             else {
-                boolean macdValueBelowZero = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()) < 0;
+                boolean macdValueBelowZero = realTimeData.getMacdOverRsiValueAtIndex(MACDOverRSIConstants.LAST_INDEX) < Config.ZERO;
                 if (macdValueBelowZero && decliningPyramid(realTimeData, DecliningType.NEGATIVE)){
                     if (bought)return null;
-                    return buyAndCreatePositionHandler(realTimeData,symbol);
+                    return buyAndCreatePositionHandler(currentPrice,symbol);
                 }
             }
             bought = false;
@@ -57,23 +59,23 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
         return null;
     }
 
-    private PositionHandler buyAndCreatePositionHandler(RealTimeData realTimeData, String symbol) {//TODO: maybe change market later.
+    private PositionHandler buyAndCreatePositionHandler(BigDecimal currentPrice, String symbol) {//TODO: maybe change market later.
         bought = true;
         TelegramMessenger.sendToTelegram("buying long: " + new Date(System.currentTimeMillis()));
         try{
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             syncRequestClient.changeInitialLeverage(symbol,leverage);
-            BigDecimal currentPrice = realTimeData.getCurrentPrice();
-            String buyingQty = utils.Utils.getBuyingQtyAsString(realTimeData, symbol,leverage,requestedBuyingAmount);
+            String buyingQty = utils.Utils.getBuyingQtyAsString(currentPrice, symbol,leverage,requestedBuyingAmount);
             Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
                     buyingQty,currentPrice.toString(),null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
-            TelegramMessenger.sendToTelegram("buying long: buyOrder: "+ buyOrder.toString() + new Date(System.currentTimeMillis()));
+            TelegramMessenger.sendToTelegram("buying long: buyOrder: "+ buyOrder.toTelegram() + new Date(System.currentTimeMillis()));
             ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
-            exitStrategies.add(new MACDOverRSILongExitStrategy1());
+            //exitStrategies.add(new MACDOverRSILongExitStrategy1());
             exitStrategies.add(new MACDOverRSILongExitStrategy2());
             exitStrategies.add(new MACDOverRSILongExitStrategy3(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.LONG)));
             exitStrategies.add(new MACDOverRSILongExitStrategy4(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.LONG)));
             exitStrategies.add(new MACDOverRSILongExitStrategy5(new Trailer(currentPrice, MACDOverRSIConstants.CONSTANT_TRAILING_PERCENTAGE, PositionSide.LONG)));
+            exitStrategies.add(new MACDOverRSILongExitStrategy6());
             return new PositionHandler(buyOrder ,exitStrategies);
         }catch (Exception exception){
             exception.printStackTrace();
