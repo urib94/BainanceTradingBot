@@ -3,10 +3,6 @@ package utils;
 import data.RealTimeData;
 import singletonHelpers.BinanceInfo;
 import com.binance.client.api.model.enums.CandlestickInterval;
-import org.ta4j.core.BaseBarSeries;
-import org.ta4j.core.Indicator;
-import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
-import org.ta4j.core.num.Num;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -38,15 +34,6 @@ public class Utils {
 				ZoneId.systemDefault());
 	}
 
-	public static ClosePriceIndicator diffByElementBetweenIndicators(Indicator<Num> indicator1, Indicator<Num> indicator2, int length) {
-		BaseBarSeries baseBarSeries = new BaseBarSeries();
-		long timestamp = 1L;
-		for (int i = 0; i < length; i++) {
-			Double currentDiff = (indicator1.getValue(i).minus(indicator2.getValue(i))).doubleValue();
-			baseBarSeries.addBar(Duration.ofMillis(7L),getZonedDateTime(timestamp++),1,2,3,currentDiff,4,5);
-		}
-		return new ClosePriceIndicator(baseBarSeries);
-	}
 	public static String getBuyingQtyAsString(RealTimeData realTimeData, String symbol, int leverage, BigDecimal requestedBuyingAmount) {
 		BigDecimal buyingQty = requestedBuyingAmount.multiply(BigDecimal.valueOf(leverage)).divide(realTimeData.getCurrentPrice(), MathContext.DECIMAL32);
 		return fixQuantity(BinanceInfo.formatQty(buyingQty, symbol));

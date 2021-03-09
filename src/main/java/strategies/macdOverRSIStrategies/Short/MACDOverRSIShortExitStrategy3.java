@@ -14,7 +14,7 @@ import java.util.Date;
 public class MACDOverRSIShortExitStrategy3 extends MACDOverRSIBaseExitStrategy {
 
 	private boolean isTrailing = false;
-	private Trailer trailer;
+	private final Trailer trailer;
 
 	public MACDOverRSIShortExitStrategy3(Trailer trailer){
 		this.trailer = trailer;
@@ -37,7 +37,7 @@ public class MACDOverRSIShortExitStrategy3 extends MACDOverRSIBaseExitStrategy {
 		} else {
 			if (downwardsPyramid(realTimeData) && negativeThreeHistograms(realTimeData)) {
 				 isTrailing = true;
-				 trailer.setHighestPrice(realTimeData.getCurrentPrice());
+				 trailer.setAbsoluteMaxPrice(realTimeData.getCurrentPrice());
 			}
 		}
 		return null;

@@ -25,16 +25,6 @@ public class RSIEntryStrategy implements EntryStrategy {
     private int time_passed_from_position_2 = 0;
     double rsiValueToCheckForPosition3 = -1;
 
-    public RSIEntryStrategy(double stopLossPercentage, int leverage, BigDecimal requestedBuyingAmount) {
-        this.stopLossPercentage = stopLossPercentage;
-        this.leverage = leverage;
-        this.requestedBuyingAmount = requestedBuyingAmount;
-    }
-
-    public RSIEntryStrategy(){//TODO:complete default values constructor
-
-    }
-
     public synchronized PositionHandler run(RealTimeData realTimeData,String symbol) {
         if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
             if (realTimeData.crossed(RealTimeData.IndicatorType.RSI,RealTimeData.CrossType.DOWN, RealTimeData.CandleType.CLOSE, RSIConstants.RSI_ENTRY_THRESHOLD_1)) {
@@ -69,10 +59,10 @@ public class RSIEntryStrategy implements EntryStrategy {
                     Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.MARKET, null,
                             buyingQty,null,null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);//TODO: check if buying with market price is ok.
                     String takeProfitPrice = Utils.getTakeProfitPriceAsString(realTimeData, symbol,takeProfitPercentage);
-                    Order takeProfitOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.TAKE_PROFIT, TimeInForce.GTC,
+                    syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.TAKE_PROFIT, TimeInForce.GTC,
                             buyingQty,takeProfitPrice,null,null, takeProfitPrice,null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                     String stopLossPrice = Utils.getStopLossPriceAsString(realTimeData, symbol, stopLossPercentage);
-                    Order stopLossOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP, TimeInForce.GTC,
+                    syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.STOP, TimeInForce.GTC,
                             buyingQty,stopLossPrice,null,null, stopLossPrice,null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                     TelegramMessenger.sendToTelegram("Buy order: " + buyOrder + " " + new Date(System.currentTimeMillis()));
                     ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();

@@ -10,11 +10,6 @@ public class RSIExitStrategy3 implements ExitStrategy {
 	private double rsiValueBefore;
 	private boolean firstTime = true;
 
-	/**
-	 * Checks if the current open RSI Indicator value is below 15 than the previous closed one or the previous previous closed one.
-	 * @param realTimeData
-	 * @return the percentage of quantity to sell, null otherwise.
-	 */
 	public SellingInstructions run(RealTimeData realTimeData) {
 		if (firstTime) {
 			rsiValueBefore = realTimeData.getRsiCloseValue(); // last closed candle rsi value

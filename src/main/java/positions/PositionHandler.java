@@ -18,23 +18,21 @@ import java.util.Date;
 public class PositionHandler implements Serializable {
     private String clientOrderId;
     private Long orderID;
-    private BigDecimal orderPrice;
     private BigDecimal qty = BigDecimal.valueOf(0.0);
     private final String symbol;
-    private boolean isActive = false;
+    private volatile boolean isActive = false;
     private String status = Config.NEW;
     private final ArrayList<ExitStrategy> exitStrategies;
     private Long baseTime = 0L;
-    private boolean rebuying = true;
-    private boolean isSelling = false;
-    private boolean terminated = false;
+    private volatile boolean rebuying = true;
+    private volatile boolean isSelling = false;
+    private volatile boolean terminated = false;
 
     public PositionHandler(Order order, ArrayList<ExitStrategy> _exitStrategies){
         clientOrderId = order.getClientOrderId();
         orderID = order.getOrderId();
         symbol = order.getSymbol().toLowerCase();
         exitStrategies = _exitStrategies;
-        orderPrice = order.getPrice();
     }
 
     public synchronized boolean isSoldOut(){
@@ -92,11 +90,10 @@ public class PositionHandler implements Serializable {
             OrderSide side = stringToOrderSide(order.getSide());
             Order buyOrder = syncRequestClient.postOrder(symbol, side, null, OrderType.LIMIT, TimeInForce.GTC,
                     order.getOrigQty().toString(),realTimeData.getCurrentPrice().toString(),null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+            TelegramMessenger.sendToTelegram("bought again:  " + buyOrder +", " + new Date(System.currentTimeMillis()));
             clientOrderId = buyOrder.getClientOrderId();
             orderID = buyOrder.getOrderId();
-        }catch (Exception exception){
-            exception.printStackTrace();
-        }
+        }catch (Exception ignored){}
     }
 
     private OrderSide stringToOrderSide(String side) {
@@ -132,14 +129,15 @@ public class PositionHandler implements Serializable {
                     syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                     TelegramMessenger.sendToTelegram("Selling price:  " + realTimeData.getCurrentPrice().toString() +" ," + new Date(System.currentTimeMillis()));
-                } catch (Exception exception) { exception.printStackTrace();}
+                } catch (Exception ignored) {}
                 break;
 
             case SELL_MARKET:
                 try {
                     syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.MARKET, null,
                             sellingQty, null, Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
-                } catch (Exception exception) { exception.printStackTrace();}
+                    TelegramMessenger.sendToTelegram("Selling price:  " + realTimeData.getCurrentPrice().toString() +" ," + new Date(System.currentTimeMillis()));
+                } catch (Exception ignored) {}
                 break;
 
 
@@ -148,14 +146,15 @@ public class PositionHandler implements Serializable {
                     syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, realTimeData.getCurrentPrice().toString(), Config.REDUCE_ONLY, null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
                     TelegramMessenger.sendToTelegram("Selling price:  " + realTimeData.getCurrentPrice().toString() +" ," + new Date(System.currentTimeMillis()));
-                } catch (Exception exception) { exception.printStackTrace();}
+                } catch (Exception ignored) {}
                 break;
 
             case CLOSE_SHORT_MARKET:
                 try {
                     syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.MARKET, null,
                             sellingQty, null, Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
-                } catch (Exception exception) { exception.printStackTrace();}
+                    TelegramMessenger.sendToTelegram("Selling price:  " + realTimeData.getCurrentPrice().toString() +" ," + new Date(System.currentTimeMillis()));
+                } catch (Exception ignored) {}
                 break;
 
 
@@ -169,6 +168,6 @@ public class PositionHandler implements Serializable {
         SELL_MARKET,
         SELL_LIMIT,
         CLOSE_SHORT_MARKET,
-        CLOSE_SHORT_LIMIT;
+        CLOSE_SHORT_LIMIT
     }
 }

@@ -19,9 +19,6 @@ public class TelegramMessenger {
             URL url = new URL(urlString);
             URLConnection conn = url.openConnection();
             InputStream is = new BufferedInputStream(conn.getInputStream());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println("sent");
+        } catch (Exception ignored) {}
     }
 }

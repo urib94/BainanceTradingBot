@@ -1,5 +1,8 @@
 package data;
 
+import org.ta4j.core.indicators.bollinger.BollingerBandsLowerIndicator;
+import org.ta4j.core.indicators.bollinger.BollingerBandsMiddleIndicator;
+import org.ta4j.core.indicators.bollinger.BollingerBandsUpperIndicator;
 import strategies.macdOverRSIStrategies.MACDOverRSIConstants;
 import strategies.rsiStrategies.RSIConstants;
 import com.binance.client.api.SyncRequestClient;
@@ -22,16 +25,12 @@ import java.util.List;
 //* For us, in realTimeData, the last candle is always open. The previous ones are closed.
 public class RealTimeData{
 
-    private Long lastCandleOpenTime = 0L;
+    private Long lastCandleOpenTime;
     private BaseBarSeries realTimeData;
     private BigDecimal currentPrice;
     private RSIIndicator rsiIndicator;
     private MACDIndicator macdOverRsiIndicator;
     private SMAIndicator smaIndicator;
-
-
-
-
 
     public RealTimeData(String symbol, CandlestickInterval interval){
         realTimeData = new BaseBarSeries();
@@ -46,7 +45,7 @@ public class RealTimeData{
     /**
      * Receives the current candlestick - usually an open one.
      * The function updateData updates realTimeData in the following way: if the candle received is closed => push to the end
-     * of realTimeData and erase the first. If the candle is open - delete the last one from realtimedata and push the new one.
+     * of realTimeData and erase the first. If the candle is open - delete the last one from real time data and push the new one.
      * Calculates the RSIIndicators in either case - to get the most accurate data.
      * to realTimeData
      * @param event - the new Candlestick received from the subscribeCandleStickEvent.
@@ -54,9 +53,6 @@ public class RealTimeData{
     public synchronized void updateData(CandlestickEvent event){
         updateLastCandle(event);
         calculateIndicators();
-//        System.out.println("macd: " + getMacdOverRsiMacdLineValueAtIndex(getLastCloseIndex()) + " time: " + System.currentTimeMillis());
-//        System.out.println("signal: " + getMacdOverRsiSignalLineValueAtIndex(getLastCloseIndex()) + " time: " + System.currentTimeMillis());
-//        System.out.println("hist: " + getMacdOverRsiValueAtIndex(getLastCloseIndex()) + " time: " + System.currentTimeMillis());
     }
 
     private void updateLastCandle(CandlestickEvent event) {

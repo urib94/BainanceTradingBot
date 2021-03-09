@@ -15,24 +15,6 @@ public class InputMessage {
     private EntryStrategy entryStrategy;
     private String apiKey;
     private String secretKey;
-    private Long startTime;
-    private Long endTime;
-    private Long clientId;
-
-    public Long getClientId() {
-        return clientId;
-    }
-
-    private Integer tradesLimit;
-
-
-
-
-
-
-    public String getSymbol() {
-        return symbol;
-    }
 
     public void initialize(String input) {//TODO: complete
         String [] messageParts = input.split(", ");
@@ -93,15 +75,17 @@ public class InputMessage {
                 System.out.println("Optional commands:\n" +
                         "cancel all orders, [symbol]\n" +
                         "close all positions\n" +
-                        "activate strategy, [symbol], [interval], [entrystrategy], [takeprofit], [stoploss], [leverage], [request buying ammount]\n" +
-                        "activate strategy default, [symbol], [interval], [entrystrategy]\n" +
+                        "activate strategy, [symbol], [interval], [entryStrategy], [takeProfit], [stopLoss], [leverage], [request buying amount]\n" +
+                        "activate strategy default, [symbol], [interval], [entryStrategy]\n" +
                         "deactivate strategy, [symbol], [interval]\n" +
                         "get last trades, [symbol]\n" +
                         "get open positions\n" +
                         "get open orders, [symbol]\n" +
                         "get current balance, [symbol]\n" +
-                        "login, [apikey], [secretkey]\n" +
-                        "buy now, [symbol]\n"
+                        "login, [apiKey], [secretKey]\n" +
+                        "buy now, [symbol]\n"+
+                        "\n entryStrategy options: rsi, macd long, macd short" +
+                        "\n interval options: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h ,8h, 12h, 1d, 3d, 1w, 1M"
                 );
                 break;
 
@@ -126,16 +110,8 @@ public class InputMessage {
         }
     }
 
-    public Long getStartTime() {
-        return startTime;
-    }
-
-    public Long getEndTime() {
-        return endTime;
-    }
-
-    public Integer getTradesLimit() {
-        return tradesLimit;
+    public String getSymbol() {
+        return symbol;
     }
 
     public String getOperation() {

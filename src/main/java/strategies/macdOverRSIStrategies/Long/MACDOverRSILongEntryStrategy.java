@@ -24,8 +24,8 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
     private double stopLossPercentage = MACDOverRSIConstants.DEFAULT_STOP_LOSS_PERCENTAGE;
     private int leverage = MACDOverRSIConstants.DEFAULT_LEVERAGE;
     private  BigDecimal requestedBuyingAmount = MACDOverRSIConstants.DEFAULT_BUYING_AMOUNT;
-    private AccountBalance accountBalance;
-    private boolean bought = false;
+    private final AccountBalance accountBalance;
+    private volatile boolean bought = false;
 
     public MACDOverRSILongEntryStrategy(){
         accountBalance = AccountBalance.getAccountBalance();
@@ -68,7 +68,6 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
             Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
                     buyingQty,currentPrice.toString(),null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
             TelegramMessenger.sendToTelegram("buying long: buyOrder: "+ buyOrder.toString() + new Date(System.currentTimeMillis()));
-            System.out.println("hist: " + realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()));
             ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
             exitStrategies.add(new MACDOverRSILongExitStrategy1());
             exitStrategies.add(new MACDOverRSILongExitStrategy2());

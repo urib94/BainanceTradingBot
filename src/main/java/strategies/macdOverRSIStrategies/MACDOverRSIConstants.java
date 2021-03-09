@@ -17,8 +17,4 @@ public class MACDOverRSIConstants {
     public static final double CONSTANT_TRAILING_PERCENTAGE = 0.3;
     public static final double LONG_EXIT2_OPEN_THRESHOLD = -0.3;
     public static final double SHORT_EXIT2_OPEN_THRESHOLD = 0.3;
-    public static final String LEVERAGED_COIN = "btc";
-    public static final String BORROWING_AMOUNT = "15";
-    public static final String BASE_COIN = "usdt";
-    public static final String BASE_COIN_AMOUNT = "30";
 }

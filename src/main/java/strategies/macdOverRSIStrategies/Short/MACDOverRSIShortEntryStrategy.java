@@ -24,8 +24,8 @@ public class MACDOverRSIShortEntryStrategy extends MACDOverRSIBaseEntryStrategy 
 	private double stopLossPercentage = MACDOverRSIConstants.DEFAULT_STOP_LOSS_PERCENTAGE;
 	private int leverage = MACDOverRSIConstants.DEFAULT_LEVERAGE;
 	private  BigDecimal requestedBuyingAmount = MACDOverRSIConstants.DEFAULT_BUYING_AMOUNT;
-	private AccountBalance accountBalance;
-	private boolean bought = false;
+	private final AccountBalance accountBalance;
+	private volatile boolean bought = false;
 
 
 	public MACDOverRSIShortEntryStrategy(){
@@ -68,6 +68,7 @@ public class MACDOverRSIShortEntryStrategy extends MACDOverRSIBaseEntryStrategy 
 			String buyingQty = utils.Utils.getBuyingQtyAsString(realTimeData, symbol,leverage,requestedBuyingAmount);
 			Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
 					buyingQty,currentPrice.toString(),null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+			TelegramMessenger.sendToTelegram("buying long: buyOrder: "+ buyOrder.toString() + new Date(System.currentTimeMillis()));
 			ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
 			exitStrategies.add(new MACDOverRSIShortExitStrategy1());
 			exitStrategies.add(new MACDOverRSIShortExitStrategy2());
@@ -76,8 +77,7 @@ public class MACDOverRSIShortEntryStrategy extends MACDOverRSIBaseEntryStrategy 
 			exitStrategies.add(new MACDOverRSIShortExitStrategy5(new Trailer(currentPrice, MACDOverRSIConstants.CONSTANT_TRAILING_PERCENTAGE, PositionSide.SHORT)));
 			TelegramMessenger.sendToTelegram("buying short: " + "buyOrder: "+ buyingQty + " " + new Date(System.currentTimeMillis()));
 			return new PositionHandler(buyOrder ,exitStrategies);
-		}catch (Exception exception){
-			exception.printStackTrace();}
+		}catch (Exception ignored){}
 		return null;
 	}
 

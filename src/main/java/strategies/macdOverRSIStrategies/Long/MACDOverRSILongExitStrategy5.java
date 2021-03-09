@@ -14,7 +14,7 @@ import java.util.Date;
 public class MACDOverRSILongExitStrategy5 extends MACDOverRSIBaseExitStrategy {
 
     private boolean isTrailing = false;
-    private Trailer trailer;
+    private final Trailer trailer;
 
     public MACDOverRSILongExitStrategy5(Trailer trailer){
         this.trailer = trailer;
@@ -23,14 +23,14 @@ public class MACDOverRSILongExitStrategy5 extends MACDOverRSIBaseExitStrategy {
     public SellingInstructions run(RealTimeData realTimeData) {
         BigDecimal currentPrice = realTimeData.getCurrentPrice();
         if (! isTrailing){
-            trailer.setHighestPrice(currentPrice);
+            trailer.setAbsoluteMaxPrice(currentPrice);
             isTrailing = true;
         }
         else{
             trailer.updateTrailer(currentPrice);
             if (trailer.needToSell(currentPrice)){
                 TelegramMessenger.sendToTelegram("trailing position with long exit 5: " + new Date(System.currentTimeMillis()));
-                return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT, MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);
+                return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_MARKET, MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);
             }
         }
         return null;
