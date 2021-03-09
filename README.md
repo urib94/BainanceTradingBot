@@ -17,7 +17,7 @@ Metholodgy - each entry strategy corresponds to its similary-named exit strategi
 3. [Long MACD Over RSI](https://www.investopedia.com/terms/m/macd.asp) with 9 rsi values, fast bar: 15, slow bar: 24.
 * If the price is above SMA 150, we need or that macd over rsi value crossed zero upwards, or we have a three negative downwards pyramid.
 5. [Short MACD Over RSI](https://www.investopedia.com/terms/m/macd.asp)
-6. * If the price is below SMA 150, we need that macd over rsi value crossed zero downwards or that we have three positive upwards pyramid.
+* If the price is below SMA 150, we need that macd over rsi value crossed zero downwards or that we have three positive upwards pyramid.
 
 ### Exit strategies
 1. Four possible RSI Exit strategies.
@@ -46,6 +46,7 @@ We have 6 packages in our project:
 4. singleton Helpers - Helper package that contains singleton classes that we use in our project.
 5. strategies - holds the main logic of the bot. Has the entry and exit strategies of rsi, long macd, short macd and useful constants.
 6. utils - Contains common utility functions and time constants.
+The Main.java files instantiate the necessary classes to boot and starts the code that's present in codeExecution.
 
 ## How to run
 In order to run the bot, **you need to press "help" to view all the possible commands the bot offers.**
