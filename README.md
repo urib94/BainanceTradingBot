@@ -48,17 +48,17 @@ We have 6 packages in our project:
 6. utils - Contains common utility functions and time constants.
 
 ## How to run
-In order to run the bot, **you need to press "help" to view all the possible commands the bots offers.**
+In order to run the bot, **you need to press "help" to view all the possible commands the bot offers.**
 #### Possible values:
-* symbol - binance legal symbol, for example: btcusdt
-* interval - the candlestick interval, possible values: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M
-* takeprofit - in percentage, for example, 0.5
-* stoploss - in percentage, for example, 0.01.
-* leverage - for example, 6.
-* request buying amount - in percentage, for example 10. 
-* entry strategy - rsi, macd long, macd short
-* apikey- your api key
-* secretkey - your secretkey.
+* [symbol] - binance legal symbol, for example: btcusdt
+* [interval] - the candlestick interval, possible values: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M
+* [takeprofit] - in percentage, for example, 0.5
+* [stoploss] - in percentage, for example, 0.01.
+* [leverage] - for example, 6.
+* [request buying amount] - in percentage, for example 10. 
+* [entry strategy] - rsi, macd long, macd short
+* [apikey]- your api key
+* [secretkey] - your secretkey.
 
 ## Creators
 [Yonathan Wolloch](https://github.com/yonathan95)
