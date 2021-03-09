@@ -46,6 +46,7 @@ We have 6 packages in our project:
 4. singleton Helpers - Helper package that contains singleton classes that we use in our project.
 5. strategies - holds the main logic of the bot. Has the entry and exit strategies of rsi, long macd, short macd and useful constants.
 6. utils - Contains common utility functions and time constants.
+
 The Main.java files instantiate the necessary classes to boot and starts the code that's present in codeExecution.
 
 ## How to run
