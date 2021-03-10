@@ -88,8 +88,8 @@ public class PositionHandler implements Serializable {
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             syncRequestClient.cancelAllOpenOrder(symbol);
             OrderSide side = stringToOrderSide(order.getSide());
-            Order buyOrder = syncRequestClient.postOrder(symbol, side, null, OrderType.MARKET, TimeInForce.GTC,
-                    order.getOrigQty().toString(),realTimeData.getCurrentPrice().toString(),null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
+            Order buyOrder = syncRequestClient.postOrder(symbol, side, null, OrderType.MARKET, null,
+                    order.getOrigQty().toString(),null,null,null, null, null, WorkingType.MARK_PRICE, NewOrderRespType.RESULT);
             TelegramMessenger.sendToTelegram("bought again:  " + buyOrder.toTelegram() +", " + new Date(System.currentTimeMillis()));
             clientOrderId = buyOrder.getClientOrderId();
             orderID = buyOrder.getOrderId();

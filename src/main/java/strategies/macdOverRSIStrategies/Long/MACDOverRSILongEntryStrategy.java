@@ -39,8 +39,9 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
         BigDecimal currentPrice = realTimeData.getCurrentPrice();
-        boolean  currentPriceBelowUpperBollinger = BigDecimal.valueOf(realTimeData.getUpperBollingerAtIndex(MACDOverRSIConstants.LAST_INDEX)).compareTo(currentPrice) > Config.ZERO;
+        boolean  currentPriceBelowUpperBollinger = true;//BigDecimal.valueOf(realTimeData.getUpperBollingerAtIndex(MACDOverRSIConstants.LAST_INDEX)).compareTo(currentPrice) > Config.ZERO;
         boolean currentPriceAboveSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(MACDOverRSIConstants.LAST_INDEX)).compareTo(currentPrice) < Config.ZERO;
+        System.out.println(currentPrice.toString() + new Date(System.currentTimeMillis()));
         if (currentPriceBelowUpperBollinger && currentPriceAboveSMA && notInPosition && noOpenOrders) {
             boolean rule1 = realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.UP,RealTimeData.CandleType.CLOSE,Config.ZERO);
             if (rule1){
@@ -75,7 +76,7 @@ public class MACDOverRSILongEntryStrategy extends MACDOverRSIBaseEntryStrategy {
             exitStrategies.add(new MACDOverRSILongExitStrategy3(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.LONG)));
             exitStrategies.add(new MACDOverRSILongExitStrategy4(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.LONG)));
             exitStrategies.add(new MACDOverRSILongExitStrategy5(new Trailer(currentPrice, MACDOverRSIConstants.CONSTANT_TRAILING_PERCENTAGE, PositionSide.LONG)));
-            exitStrategies.add(new MACDOverRSILongExitStrategy6());
+            //exitStrategies.add(new MACDOverRSILongExitStrategy6());
             return new PositionHandler(buyOrder ,exitStrategies);
         }catch (Exception exception){
             exception.printStackTrace();

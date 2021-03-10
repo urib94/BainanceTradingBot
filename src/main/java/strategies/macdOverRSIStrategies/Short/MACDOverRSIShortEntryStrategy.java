@@ -40,7 +40,7 @@ public class MACDOverRSIShortEntryStrategy extends MACDOverRSIBaseEntryStrategy 
 		SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
 		boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
 		BigDecimal currentPrice = realTimeData.getCurrentPrice();
-		boolean  currentPriceAboveLowerBollinger = BigDecimal.valueOf(realTimeData.getLowerBollingerAtIndex(MACDOverRSIConstants.LAST_INDEX)).compareTo(currentPrice) < Config.ZERO;
+		boolean  currentPriceAboveLowerBollinger = true;//BigDecimal.valueOf(realTimeData.getLowerBollingerAtIndex(MACDOverRSIConstants.LAST_INDEX)).compareTo(currentPrice) < Config.ZERO;
 		boolean currentPriceBelowSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(MACDOverRSIConstants.LAST_INDEX)).compareTo(currentPrice) >= Config.ZERO;
 		if (currentPriceAboveLowerBollinger && currentPriceBelowSMA && notInPosition && noOpenOrders) {
 			boolean rule1 = realTimeData.crossed(RealTimeData.IndicatorType.MACD_OVER_RSI, RealTimeData.CrossType.DOWN, RealTimeData.CandleType.CLOSE, Config.ZERO);
@@ -77,7 +77,7 @@ public class MACDOverRSIShortEntryStrategy extends MACDOverRSIBaseEntryStrategy 
 			exitStrategies.add(new MACDOverRSIShortExitStrategy3(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.SHORT)));
 			exitStrategies.add(new MACDOverRSIShortExitStrategy4(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.SHORT)));
 			exitStrategies.add(new MACDOverRSIShortExitStrategy5(new Trailer(currentPrice, MACDOverRSIConstants.CONSTANT_TRAILING_PERCENTAGE, PositionSide.SHORT)));
-			exitStrategies.add(new MACDOverRSIShortExitStrategy6());
+			//exitStrategies.add(new MACDOverRSIShortExitStrategy6());
 			return new PositionHandler(buyOrder ,exitStrategies);
 		}catch (Exception ignored){}
 		return null;
