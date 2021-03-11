@@ -3,10 +3,8 @@ package data;
 import org.ta4j.core.indicators.bollinger.BollingerBandsLowerIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsMiddleIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsUpperIndicator;
-import org.ta4j.core.indicators.statistics.MeanDeviationIndicator;
 import org.ta4j.core.indicators.statistics.StandardDeviationIndicator;
 import strategies.macdOverRSIStrategies.MACDOverRSIConstants;
-import strategies.rsiStrategies.RSIConstants;
 import com.binance.client.api.SyncRequestClient;
 import com.binance.client.api.model.enums.CandlestickInterval;
 import com.binance.client.api.model.event.CandlestickEvent;
@@ -156,9 +154,8 @@ public class RealTimeData{
     }
 
     private MACDIndicator calculateMacdOverRsi() {
-        ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(realTimeData);
-        //RSIIndicator rsiIndicator14 = calculateRSI(MACDOverRSIConstants.RSI_CANDLE_NUM);
-        return new MACDIndicator(/*rsiIndicator14*/closePriceIndicator, MACDOverRSIConstants.FAST_BAR_COUNT, MACDOverRSIConstants.SLOW_BAR_COUNT);
+        RSIIndicator rsiIndicator9 = calculateRSI(MACDOverRSIConstants.RSI_CANDLE_NUM);
+        return new MACDIndicator(rsiIndicator9, MACDOverRSIConstants.FAST_BAR_COUNT, MACDOverRSIConstants.SLOW_BAR_COUNT);
     }
 
     private RSIIndicator calculateRSI(int candleNum) {
