@@ -18,7 +18,7 @@ public class MACDOverRSIShortExitStrategy2 extends MACDOverRSIBaseExitStrategy {
 //		boolean closedCrossedZero = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.UP, DataHolder.CandleType.CLOSE, Config.ZERO);
 		boolean openCrossed03 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.UP, DataHolder.CandleType.OPEN, MACDOverRSIConstants.SHORT_EXIT2_OPEN_THRESHOLD);
 		if (openCrossed03) {
-			TelegramMessenger.sendToTelegram("exiting position with long exit 2" + "time: " + new Date(System.currentTimeMillis()));
+			TelegramMessenger.sendToTelegram("exiting position with short exit 2" + "time: " + new Date(System.currentTimeMillis()));
 			return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_LIMIT, MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);
 		}
 		return null;

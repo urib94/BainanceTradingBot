@@ -62,7 +62,7 @@ public class RealTimeData{
     public synchronized DataHolder updateData(CandlestickEvent event){
         boolean isNewCandle = updateLastCandle(event);
         counter += 1;
-        if (! isNewCandle && counter != 55) return null;
+        if (! isNewCandle && counter != 40) return null;
         counter = 0;
         calculateIndicators();
         return new DataHolder(currentPrice, rsiIndicator, macdOverRsiIndicator, macdOverRsiCloseValue, smaIndicator, realTimeData.getEndIndex());

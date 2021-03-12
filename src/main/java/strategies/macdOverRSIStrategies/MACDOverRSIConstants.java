@@ -9,7 +9,7 @@ public class MACDOverRSIConstants {
     public static final int SLOW_BAR_COUNT = 24;
     public static final double DEFAULT_TAKE_PROFIT_PERCENTAGE = 0.0;//TODO: change to real values
     public static final double DEFAULT_STOP_LOSS_PERCENTAGE = 0.0;//TODO: change to real values
-    public static final int DEFAULT_LEVERAGE = 6;//TODO: change to real values
+    public static final int DEFAULT_LEVERAGE = 60;//TODO: change to real values
     public static final BigDecimal DEFAULT_BUYING_AMOUNT = BigDecimal.valueOf(10);//TODO: change to real values
     public static final int SIGNAL_LENGTH = 9;
     public static final int RSI_CANDLE_NUM = 9;
