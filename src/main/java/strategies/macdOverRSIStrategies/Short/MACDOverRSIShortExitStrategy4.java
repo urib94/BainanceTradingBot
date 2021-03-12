@@ -14,33 +14,28 @@ import java.util.Date;
 
 public class MACDOverRSIShortExitStrategy4 extends MACDOverRSIBaseExitStrategy {
 
-	private boolean isTrailing = false;
-	private final Trailer trailer;
+    private boolean isTrailing = false;
+    private final Trailer trailer;
 
-	public MACDOverRSIShortExitStrategy4(Trailer trailer){
-		this.trailer = trailer;
-	}
+    public MACDOverRSIShortExitStrategy4(Trailer trailer){
+        this.trailer = trailer;
+    }
 
-	@Override
-	public SellingInstructions run(DataHolder realTimeData) {
-		if (isTrailing) {
-			BigDecimal currentPrice = realTimeData.getCurrentPrice();
-			trailer.updateTrailer(currentPrice);
-			if (changedDirectionAndPositiveThreeHistogram(realTimeData)) {
-				isTrailing = false;
-				return null;
-			}
-			if (trailer.needToSell(currentPrice)){
-				TelegramMessenger.sendToTelegram("trailing position with short exit 4" + "time: " + new Date(System.currentTimeMillis()));
-				return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_LIMIT,
-						MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);
-			}
-		} else {
-			if (stayInTrackAndThreePositiveHistograms(realTimeData)) {
-				isTrailing = true;
-				trailer.setAbsoluteMaxPrice(realTimeData.getCurrentPrice());
-			}
-		}
-		return null;
-	}
+    @Override
+    public SellingInstructions run(DataHolder realTimeData) {
+        BigDecimal currentPrice = realTimeData.getCurrentPrice();
+        if (! isTrailing){
+            trailer.setAbsoluteMaxPrice(currentPrice);
+            isTrailing = true;
+        }
+        else{
+            trailer.updateTrailer(currentPrice);
+            if (trailer.needToSell(currentPrice)){
+                TelegramMessenger.sendToTelegram("trailing position with short exit 5: " + new Date(System.currentTimeMillis()));
+                return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_MARKET, MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);
+            }
+        }
+        return null;
+    }
 }
+

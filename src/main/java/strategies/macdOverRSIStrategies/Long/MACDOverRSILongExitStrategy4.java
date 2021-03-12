@@ -14,34 +14,27 @@ import java.util.Date;
 
 public class MACDOverRSILongExitStrategy4 extends MACDOverRSIBaseExitStrategy {
 
-	private boolean isTrailing = false;
-	private final Trailer trailer;
+    private boolean isTrailing = false;
+    private final Trailer trailer;
 
-	public MACDOverRSILongExitStrategy4(Trailer trailer){
-		this.trailer = trailer;
-	}
+    public MACDOverRSILongExitStrategy4(Trailer trailer){
+        this.trailer = trailer;
+    }
+    @Override
+    public SellingInstructions run(DataHolder realTimeData) {
+        BigDecimal currentPrice = realTimeData.getCurrentPrice();
+        if (! isTrailing){
+            trailer.setAbsoluteMaxPrice(currentPrice);
+            isTrailing = true;
+        }
+        else{
+            trailer.updateTrailer(currentPrice);
+            if (trailer.needToSell(currentPrice)){
+                TelegramMessenger.sendToTelegram("selling position with long exit 5: " + new Date(System.currentTimeMillis()));
+                return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_MARKET, MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);
+            }
+        }
+        return null;
+    }
 
-	@Override
-	public SellingInstructions run(DataHolder realTimeData) {
-		if (isTrailing) {
-			BigDecimal currentPrice = realTimeData.getCurrentPrice();
-			trailer.updateTrailer(currentPrice);
-			if (changedDirectionAndNegativeThreeHistogram(realTimeData)){
-				isTrailing = false;
-				return null;
-			}
-			if (trailer.needToSell(currentPrice)){
-				TelegramMessenger.sendToTelegram("trailing position with long exit 4" + "time: " + new Date(System.currentTimeMillis()));
-				return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT,
-						MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);
-			}
-		} else {
-			if (stayInTrackAndThreeNegativeHistograms(realTimeData)) {
-					trailer.setAbsoluteMaxPrice(realTimeData.getCurrentPrice());
-				isTrailing = true;
-			}
-
-		}
-		return null;
-	}
 }

@@ -1,9 +1,14 @@
 package data;
 
+import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.indicators.EMAIndicator;
 import org.ta4j.core.indicators.MACDIndicator;
 import org.ta4j.core.indicators.RSIIndicator;
 import org.ta4j.core.indicators.SMAIndicator;
+import org.ta4j.core.indicators.bollinger.BollingerBandsLowerIndicator;
+import org.ta4j.core.indicators.bollinger.BollingerBandsMiddleIndicator;
+import org.ta4j.core.indicators.bollinger.BollingerBandsUpperIndicator;
+import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import strategies.macdOverRSIStrategies.MACDOverRSIConstants;
 
 import java.math.BigDecimal;
@@ -12,18 +17,31 @@ public class DataHolder {
     private BigDecimal currentPrice;
     private RSIIndicator rsiIndicator;
     private MACDIndicator macdOverRsiIndicator;
-    private double macdOverRsiCloseValue;
     private SMAIndicator smaIndicator;
+    private BollingerBandsUpperIndicator bollingerBandsUpperIndicator;
+    private BollingerBandsLowerIndicator bollingerBandsLowerIndicator;
+    private ClosePriceIndicator closePriceIndicator;
+    private double macdOverRsiCloseValue;
     private int endIndex;
 
-    public DataHolder(BigDecimal currentPrice, RSIIndicator rsiIndicator, MACDIndicator macdOverRsiIndicator, double macdOverRsiCloseValue, SMAIndicator smaIndicator, int endIndex) {
+    public DataHolder(ClosePriceIndicator closePriceIndicator, BigDecimal currentPrice, RSIIndicator rsiIndicator, MACDIndicator macdOverRsiIndicator, BollingerBandsUpperIndicator bollingerBandsUpperIndicator,
+                      BollingerBandsLowerIndicator bollingerBandsLowerIndicator, SMAIndicator smaIndicator, int endIndex) {
         this.currentPrice = currentPrice;
         this.rsiIndicator = rsiIndicator;
         this.macdOverRsiIndicator = macdOverRsiIndicator;
-        this.macdOverRsiCloseValue = macdOverRsiCloseValue;
         this.smaIndicator = smaIndicator;
         this.endIndex = endIndex;
+        this.macdOverRsiCloseValue = getMacdOverRsiValueAtIndex(endIndex-1);
+        this.bollingerBandsUpperIndicator = bollingerBandsUpperIndicator;
+        this.bollingerBandsLowerIndicator = bollingerBandsLowerIndicator;
+        this.closePriceIndicator = closePriceIndicator;
     }
+
+    public double getClosePriceAtIndex(int index){return closePriceIndicator.getValue(index).doubleValue();}
+
+    public double getUpperBollingerAtIndex(int index){return bollingerBandsUpperIndicator.getValue(index).doubleValue();}
+
+    public double getLowerBollingerAtIndex(int index){return bollingerBandsLowerIndicator.getValue(index).doubleValue();}
 
     public double getMacdOverRsiSignalLineValueAtIndex(int index) {
         EMAIndicator signal = new EMAIndicator(macdOverRsiIndicator, MACDOverRSIConstants.SIGNAL_LENGTH);
@@ -85,11 +103,11 @@ public class DataHolder {
     private boolean macdOverRsiCrossed(CrossType crossType, CandleType candleType, double threshold) {
         double currentMacdOverRsiValue,prevMacdOverRsiValue;
         if (candleType == CandleType.OPEN) {
-            currentMacdOverRsiValue = getMacdOverRsiValueAtIndex(getLastIndex());
+            currentMacdOverRsiValue = getMacdOverRsiValueAtIndex(endIndex);
             prevMacdOverRsiValue  = macdOverRsiCloseValue;
         } else {
             currentMacdOverRsiValue = macdOverRsiCloseValue;
-            prevMacdOverRsiValue = getMacdOverRsiValueAtIndex(getLastCloseIndex()-1);
+            prevMacdOverRsiValue = getMacdOverRsiValueAtIndex(endIndex - 2);
         }
         System.out.println("current macd: "  + currentMacdOverRsiValue);
         System.out.println("prev macd: "  + prevMacdOverRsiValue);
@@ -97,21 +115,21 @@ public class DataHolder {
         return prevMacdOverRsiValue >= threshold && currentMacdOverRsiValue < threshold;
     }
 
-    public boolean above(RealTimeData.IndicatorType indicatorType, RealTimeData.CandleType type, int threshold) {
-        if (indicatorType == RealTimeData.IndicatorType.RSI) {
-            if (type == RealTimeData.CandleType.OPEN) {
+    public boolean above(IndicatorType indicatorType, CandleType type, int threshold) {
+        if (indicatorType == IndicatorType.RSI) {
+            if (type == CandleType.OPEN) {
                 return getRsiOpenValue() > threshold;
             } else {
                 return getRsiCloseValue() > threshold;
             }
-        } else if(indicatorType == RealTimeData.IndicatorType.MACD_OVER_RSI) {
-            if (type == RealTimeData.CandleType.OPEN) {
+        } else if(indicatorType == IndicatorType.MACD_OVER_RSI) {
+            if (type == CandleType.OPEN) {
                 return getMacdOverRsiValueAtIndex(getLastIndex()) > threshold;
             } else {
                 return  getMacdOverRsiValueAtIndex(getLastCloseIndex()) > threshold;
             }
         } else {
-            if (type == RealTimeData.CandleType.OPEN) {
+            if (type == CandleType.OPEN) {
                 return getSMAValueAtIndex(getLastIndex())>threshold;
             } else {
                 return getSMAValueAtIndex(getLastCloseIndex()) > threshold;
@@ -125,15 +143,26 @@ public class DataHolder {
 
     public int getLastCloseIndex(){return endIndex-1;}
 
+    public boolean candleType(CandleType type) {
+        double curr = getClosePriceAtIndex(endIndex);
+        double prev = getClosePriceAtIndex(endIndex);
+
+        if (type == CandleType.BEARISH){
+            return curr < prev;
+        }
+        else{
+            return curr > prev;
+        }
+    }
 
     public enum CandleType {
-        OPEN,CLOSE
+        OPEN,CLOSE,BEARISH,BULLISH;
     }
 
     public enum CrossType {
         UP,DOWN
     }
     public enum IndicatorType {
-        RSI,MACD_OVER_RSI, UpperBollinger, SMA
+        RSI,MACD_OVER_RSI, UpperBollinger, SMA, CLOSE_PRICE
     }
 }
