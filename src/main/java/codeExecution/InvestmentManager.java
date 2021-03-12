@@ -7,8 +7,8 @@ import data.*;
 import positions.PositionHandler;
 import singletonHelpers.TelegramMessenger;
 import strategies.EntryStrategy;
-import com.binance.client.api.SubscriptionClient;
-import com.binance.client.api.model.enums.*;
+import com.binance.client.SubscriptionClient;
+import com.binance.client.model.enums.*;
 import singletonHelpers.ExecService;
 import singletonHelpers.SubClient;
 
@@ -41,22 +41,24 @@ public class InvestmentManager implements Runnable{
 //        }
 
         subscriptionClient.subscribeCandlestickEvent(symbol, interval, ((event) -> iterationExecutorService.execute(()->{
-            realTimeData.updateData(event);
-            AccountBalance.getAccountBalance().updateBalance();
-            for (PositionHandler positionHandler :positionHandlers){
-                positionHandler.update(realTimeData, interval);
-                if (positionHandler.isSoldOut()){
-                    positionHandler.terminate();
-                    positionHandlers.remove(positionHandler);
+            DataHolder dataHolder = realTimeData.updateData(event);
+            if (dataHolder != null){
+                AccountBalance.getAccountBalance().updateBalance(symbol, Config.BASE_COIN);
+                for (PositionHandler positionHandler :positionHandlers){
+                    positionHandler.update(dataHolder, interval);
+                    if (positionHandler.isSoldOut()){
+                        positionHandler.terminate();
+                        positionHandlers.remove(positionHandler);
+                    }
+                    else{
+                        positionHandler.run(dataHolder);
+                    }
                 }
-                else{
-                    positionHandler.run(realTimeData);
-                }
-            }
-            for (EntryStrategy entryStrategy: entryStrategies){
-                PositionHandler positionHandler = entryStrategy.run(realTimeData, symbol);
-                if (positionHandler != null){
-                    positionHandlers.add(positionHandler);
+                for (EntryStrategy entryStrategy: entryStrategies){
+                    PositionHandler positionHandler = entryStrategy.run(dataHolder, symbol);
+                    if (positionHandler != null){
+                        positionHandlers.add(positionHandler);
+                    }
                 }
             }
         })), System.out::println);

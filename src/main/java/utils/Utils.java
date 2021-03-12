@@ -1,8 +1,9 @@
 package utils;
 
+import data.DataHolder;
 import data.RealTimeData;
 import singletonHelpers.BinanceInfo;
-import com.binance.client.api.model.enums.CandlestickInterval;
+import com.binance.client.model.enums.CandlestickInterval;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -39,12 +40,12 @@ public class Utils {
 		return fixQuantity(BinanceInfo.formatQty(buyingQty, symbol));
 	}
 
-	public static String getTakeProfitPriceAsString(RealTimeData realTimeData, String symbol, double takeProfitPercentage) {
+	public static String getTakeProfitPriceAsString(DataHolder realTimeData, String symbol, double takeProfitPercentage) {
 		BigDecimal takeProfitPrice = realTimeData.getCurrentPrice().add((realTimeData.getCurrentPrice().multiply(BigDecimal.valueOf(takeProfitPercentage))));
 		return BinanceInfo.formatPrice(takeProfitPrice, symbol);
 	}
 
-	public static String getStopLossPriceAsString(RealTimeData realTimeData, String symbol, double stopLossPercentage) {
+	public static String getStopLossPriceAsString(DataHolder realTimeData, String symbol, double stopLossPercentage) {
 		BigDecimal stopLossPrice = realTimeData.getCurrentPrice().subtract(realTimeData.getCurrentPrice().multiply(BigDecimal.valueOf(stopLossPercentage)));
 		return BinanceInfo.formatPrice(stopLossPrice, symbol);
 	}

@@ -1,8 +1,8 @@
 package singletonHelpers;
 
 import data.Config;
-import com.binance.client.api.RequestOptions;
-import com.binance.client.api.SyncRequestClient;
+import com.binance.client.RequestOptions;
+import com.binance.client.SyncRequestClient;
 
 public class RequestClient {
 	private  SyncRequestClient syncRequestClient;

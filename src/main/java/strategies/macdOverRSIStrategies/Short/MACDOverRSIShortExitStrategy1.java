@@ -1,6 +1,7 @@
 package strategies.macdOverRSIStrategies.Short;
 
 import data.Config;
+import data.DataHolder;
 import data.RealTimeData;
 import positions.PositionHandler;
 import positions.SellingInstructions;
@@ -15,7 +16,7 @@ import java.util.Date;
 public class MACDOverRSIShortExitStrategy1 extends MACDOverRSIBaseExitStrategy {
 
 	@Override
-	public SellingInstructions run(RealTimeData realTimeData) {
+	public SellingInstructions run(DataHolder realTimeData) {
 		boolean currentPriceAboveSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastCloseIndex())).compareTo(realTimeData.getCurrentPrice()) < Config.ZERO;
 		if (currentPriceAboveSMA) {
 			TelegramMessenger.sendToTelegram("exiting position with short exit 1" + "time: " + new Date(System.currentTimeMillis()));

@@ -1,8 +1,8 @@
 package singletonHelpers;
 
-import com.binance.client.api.SyncRequestClient;
-import com.binance.client.api.model.market.ExchangeInfoEntry;
-import com.binance.client.api.model.market.ExchangeInformation;
+import com.binance.client.SyncRequestClient;
+import com.binance.client.model.market.ExchangeInfoEntry;
+import com.binance.client.model.market.ExchangeInformation;
 
 import java.math.BigDecimal;
 import java.util.HashMap;

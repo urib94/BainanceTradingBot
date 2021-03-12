@@ -1,6 +1,7 @@
 package strategies.macdOverRSIStrategies.Long;
 
 import data.Config;
+import data.DataHolder;
 import data.RealTimeData;
 import positions.PositionHandler;
 import positions.SellingInstructions;
@@ -14,7 +15,7 @@ import java.util.Date;
 public class MACDOverRSILongExitStrategy1 extends MACDOverRSIBaseExitStrategy {
 
 	@Override
-	public SellingInstructions run(RealTimeData realTimeData) {
+	public SellingInstructions run(DataHolder realTimeData) {
 		boolean currentPriceBelowSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(MACDOverRSIConstants.LAST_CLOSE_INDEX)).compareTo(realTimeData.getCurrentPrice()) > Config.ZERO;
 		if (currentPriceBelowSMA) {
 			TelegramMessenger.sendToTelegram("exiting position with long exit 1: " + new Date(System.currentTimeMillis()));

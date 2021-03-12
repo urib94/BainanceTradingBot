@@ -1,7 +1,7 @@
 package singletonHelpers;
 
 import data.Config;
-import com.binance.client.api.SubscriptionClient;
+import com.binance.client.SubscriptionClient;
 
 public class SubClient {
     private SubscriptionClient subscriptionClient;

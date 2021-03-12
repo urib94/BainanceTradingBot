@@ -3,11 +3,11 @@ package codeExecution;
 import data.AccountBalance;
 import data.Config;
 import singletonHelpers.RequestClient;
-import com.binance.client.api.SyncRequestClient;
-import com.binance.client.api.model.enums.*;
-import com.binance.client.api.model.trade.MyTrade;
-import com.binance.client.api.model.trade.Order;
-import com.binance.client.api.model.trade.Position;
+import com.binance.client.SyncRequestClient;
+import com.binance.client.model.enums.*;
+import com.binance.client.model.trade.MyTrade;
+import com.binance.client.model.trade.Order;
+import com.binance.client.model.trade.Position;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -33,19 +33,19 @@ public class RealTimeCommandOperator {
             syncRequestClient.cancelAllOpenOrder(message.getSymbol());
         });
 
-        commandsAndOps.put(RealTImeOperations.CLOSE_ALL_POSITIONS, (message) -> {
-            List<Position> openPositions = AccountBalance.getAccountBalance().getOpenPositions();
-            for (Position openPosition : openPositions) {
-                SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-                if (! openPosition.getPositionSide().equals("SHORT")) {
-                    syncRequestClient.postOrder(openPosition.getSymbol().toLowerCase(), OrderSide.SELL, null, OrderType.MARKET, null,
-                            openPosition.getPositionAmt().toString(), null, Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
-                } else {
-                    syncRequestClient.postOrder(openPosition.getSymbol().toLowerCase(), OrderSide.BUY, null, OrderType.MARKET, null,
-                            openPosition.getPositionAmt().toString(), null, Config.REDUCE_ONLY, null, null, null, null, NewOrderRespType.RESULT);
-                }
-            }
-        });
+//        commandsAndOps.put(RealTImeOperations.CLOSE_ALL_POSITIONS, (message) -> {
+//            List<Position> openPositions = AccountBalance.getAccountBalance().getOpenPositions();
+//            for (Position openPosition : openPositions) {
+//                SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+//                if (! openPosition.getPositionSide().equals("SHORT")) {
+//                    syncRequestClient.postOrder(openPosition.getSymbol().toLowerCase(), OrderSide.SELL, null, OrderType.MARKET, null,
+//                            openPosition.getPositionAmt().toString(), null, Config.REDUCE_ONLY, null, null, null,null,null, null, null, NewOrderRespType.RESULT);
+//                } else {
+//                    syncRequestClient.postOrder(openPosition.getSymbol().toLowerCase(), OrderSide.BUY, null, OrderType.MARKET, null,
+//                            openPosition.getPositionAmt().toString(), null, Config.REDUCE_ONLY, null, null, null,null,null, null, null, NewOrderRespType.RESULT);
+//                }
+//            }
+//        });
 
         commandsAndOps.put(RealTImeOperations.ACTIVATE_STRATEGY, (message) -> {
             Pair<String, CandlestickInterval> pair = new MutablePair<>(message.getSymbol(), message.getInterval());
@@ -90,7 +90,7 @@ public class RealTimeCommandOperator {
 
         commandsAndOps.put(RealTImeOperations.GET_LAST_TRADES, (message) -> {//TODO: complete
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-            List<MyTrade> myTrades = syncRequestClient.getAccountTrades(message.getSymbol(), "100");
+            List<MyTrade> myTrades = syncRequestClient.getAccountTrades(message.getSymbol(),null,null,null, 100);
             int index = 1;
             for (MyTrade trade : myTrades) {
                 System.out.println("Trade " + index + ": " + trade);
@@ -98,14 +98,14 @@ public class RealTimeCommandOperator {
             }
         });
 
-        commandsAndOps.put(RealTImeOperations.GET_OPEN_POSITIONS, (message) -> {
-            List<Position> openPositions = AccountBalance.getAccountBalance().getOpenPositions();
-            int index = 1;
-            for (Position openPosition : openPositions) {
-                System.out.println("Open position " + index + ": " + openPosition);
-                index++;
-            }
-        });
+//        commandsAndOps.put(RealTImeOperations.GET_OPEN_POSITIONS, (message) -> {
+//            List<Position> openPositions = AccountBalance.getAccountBalance().getOpenPositions();
+//            int index = 1;
+//            for (Position openPosition : openPositions) {
+//                System.out.println("Open position " + index + ": " + openPosition);
+//                index++;
+//            }
+//        });
 
         commandsAndOps.put(RealTImeOperations.GET_OPEN_ORDERS, (message) -> {
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
@@ -127,7 +127,7 @@ public class RealTimeCommandOperator {
         commandsAndOps.put(RealTImeOperations.BUY_NOW, (message) -> {
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             syncRequestClient.postOrder(message.getSymbol().toLowerCase(), OrderSide.BUY, null, OrderType.MARKET, null,
-                    "0.001", null, null, null, null, null, null, NewOrderRespType.RESULT);
+                    "0.001", null, null, null, null,null,null,null, null, null, NewOrderRespType.RESULT);
         });
     }
 

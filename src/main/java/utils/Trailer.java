@@ -1,6 +1,6 @@
 package utils;
 
-import com.binance.client.api.model.enums.PositionSide;
+import com.binance.client.model.enums.PositionSide;
 
 import java.math.BigDecimal;
 

@@ -1,5 +1,6 @@
 package strategies.macdOverRSIStrategies.Short;
 
+import data.DataHolder;
 import data.RealTimeData;
 import positions.PositionHandler;
 import positions.SellingInstructions;
@@ -21,7 +22,7 @@ public class MACDOverRSIShortExitStrategy5 extends MACDOverRSIBaseExitStrategy {
     }
 
     @Override
-    public SellingInstructions run(RealTimeData realTimeData) {
+    public SellingInstructions run(DataHolder realTimeData) {
         BigDecimal currentPrice = realTimeData.getCurrentPrice();
         if (! isTrailing){
             trailer.setAbsoluteMaxPrice(currentPrice);

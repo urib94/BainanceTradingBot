@@ -1,10 +1,9 @@
 package codeExecution;
 
 import strategies.EntryStrategy;
-import strategies.macdOverRSIStrategies.Long.MACDOverRSILongEntryStrategy;
-import strategies.macdOverRSIStrategies.Short.MACDOverRSIShortEntryStrategy;
+import strategies.macdOverRSIStrategies.MACDOverRSIEntryStrategy;
 import strategies.rsiStrategies.RSIEntryStrategy;
-import com.binance.client.api.model.enums.CandlestickInterval;
+import com.binance.client.model.enums.CandlestickInterval;
 
 import java.math.BigDecimal;
 
@@ -16,7 +15,7 @@ public class InputMessage {
     private String apiKey;
     private String secretKey;
 
-    public void initialize(String input) {//TODO: complete
+    public void initialize(String input) {
         String [] messageParts = input.split(", ");
         operation = messageParts[0];
         switch (operation) {
@@ -84,7 +83,7 @@ public class InputMessage {
                         "get current balance, [symbol]\n" +
                         "login, [apiKey], [secretKey]\n" +
                         "buy now, [symbol]\n"+
-                        "\n entryStrategy options: rsi, macd long, macd short" +
+                        "\n entryStrategy options: rsi, macd" +
                         "\n interval options: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h ,8h, 12h, 1d, 3d, 1w, 1M"
                 );
                 break;
@@ -99,11 +98,8 @@ public class InputMessage {
             case "rsi":
                 return new RSIEntryStrategy();
 
-            case "macd long":
-                return new MACDOverRSILongEntryStrategy();
-
-            case "macd short":
-                return new MACDOverRSIShortEntryStrategy();
+            case "macd":
+                return new MACDOverRSIEntryStrategy();
 
             default:
                 return null;

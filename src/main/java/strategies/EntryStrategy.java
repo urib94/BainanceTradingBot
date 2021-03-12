@@ -1,4 +1,5 @@
 package strategies;
+import data.DataHolder;
 import data.RealTimeData;
 import positions.PositionHandler;
 
@@ -9,7 +10,7 @@ public interface EntryStrategy{
      *
      * @return Position entry if purchased coins else null.
      */
-    PositionHandler run(RealTimeData realTimeData, String symbol);
+    PositionHandler run(DataHolder realTimeData, String symbol);
 
     void setTakeProfitPercentage(double takeProfitPercentage);
     void setStopLossPercentage(double stopLossPercentage);
