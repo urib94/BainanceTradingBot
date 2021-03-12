@@ -9,24 +9,27 @@ import org.ta4j.core.indicators.bollinger.BollingerBandsLowerIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsMiddleIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsUpperIndicator;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
+import org.ta4j.core.indicators.helpers.HighPriceIndicator;
+import org.ta4j.core.indicators.helpers.LowPriceIndicator;
 import strategies.macdOverRSIStrategies.MACDOverRSIConstants;
 
 import java.math.BigDecimal;
 
 public class DataHolder {
-    private BigDecimal currentPrice;
+    private double currentPrice;
     private RSIIndicator rsiIndicator;
     private MACDIndicator macdOverRsiIndicator;
     private SMAIndicator smaIndicator;
     private BollingerBandsUpperIndicator bollingerBandsUpperIndicator;
     private BollingerBandsLowerIndicator bollingerBandsLowerIndicator;
     private ClosePriceIndicator closePriceIndicator;
+    private HighPriceIndicator highPriceIndicator;
+    private LowPriceIndicator lowPriceIndicator;
     private double macdOverRsiCloseValue;
     private int endIndex;
 
-    public DataHolder(ClosePriceIndicator closePriceIndicator, BigDecimal currentPrice, RSIIndicator rsiIndicator, MACDIndicator macdOverRsiIndicator, BollingerBandsUpperIndicator bollingerBandsUpperIndicator,
+    public DataHolder(HighPriceIndicator highPriceIndicator, LowPriceIndicator lowPriceIndicator, ClosePriceIndicator closePriceIndicator, RSIIndicator rsiIndicator, MACDIndicator macdOverRsiIndicator, BollingerBandsUpperIndicator bollingerBandsUpperIndicator,
                       BollingerBandsLowerIndicator bollingerBandsLowerIndicator, SMAIndicator smaIndicator, int endIndex) {
-        this.currentPrice = currentPrice;
         this.rsiIndicator = rsiIndicator;
         this.macdOverRsiIndicator = macdOverRsiIndicator;
         this.smaIndicator = smaIndicator;
@@ -35,9 +38,17 @@ public class DataHolder {
         this.bollingerBandsUpperIndicator = bollingerBandsUpperIndicator;
         this.bollingerBandsLowerIndicator = bollingerBandsLowerIndicator;
         this.closePriceIndicator = closePriceIndicator;
+        currentPrice = getClosePriceAtIndex(endIndex);
+        this.highPriceIndicator = highPriceIndicator;
+        this.lowPriceIndicator = lowPriceIndicator;
     }
 
     public double getClosePriceAtIndex(int index){return closePriceIndicator.getValue(index).doubleValue();}
+
+    public double getHighPriceAtIndex(int index){return highPriceIndicator.getValue(index).doubleValue();}
+
+    public double getLowPriceAtIndex(int index){return lowPriceIndicator.getValue(index).doubleValue();}
+
 
     public double getUpperBollingerAtIndex(int index){return bollingerBandsUpperIndicator.getValue(index).doubleValue();}
 
@@ -137,7 +148,7 @@ public class DataHolder {
         }
     }
 
-    public synchronized BigDecimal getCurrentPrice() { return currentPrice;}
+    public synchronized double getCurrentPrice() { return currentPrice;}
 
     public int getLastIndex(){return endIndex;}
 

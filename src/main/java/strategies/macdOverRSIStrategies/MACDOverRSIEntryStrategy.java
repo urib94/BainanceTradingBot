@@ -25,7 +25,7 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
     double takeProfitPercentage = MACDOverRSIConstants.DEFAULT_TAKE_PROFIT_PERCENTAGE;
     private double stopLossPercentage = MACDOverRSIConstants.DEFAULT_STOP_LOSS_PERCENTAGE;
     private int leverage = MACDOverRSIConstants.DEFAULT_LEVERAGE;
-    private BigDecimal requestedBuyingAmount = MACDOverRSIConstants.DEFAULT_BUYING_AMOUNT;
+    private double requestedBuyingAmount = MACDOverRSIConstants.DEFAULT_BUYING_AMOUNT;
     private final AccountBalance accountBalance;
     private volatile boolean bought = false;
 
@@ -41,10 +41,10 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
             if (noOpenOrders){
-                BigDecimal currentPrice = realTimeData.getCurrentPrice();
-                boolean currentPriceAboveSMA = BigDecimal.valueOf(realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex())).compareTo(currentPrice) < Config.ZERO;
+                double currentPrice = realTimeData.getCurrentPrice();
+                boolean currentPriceAboveSMA = realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex()) < currentPrice;
                 if (currentPriceAboveSMA) {
-                    boolean  currentPriceBelowUpperBollinger = BigDecimal.valueOf(realTimeData.getUpperBollingerAtIndex(realTimeData.getLastIndex())).compareTo(currentPrice) > Config.ZERO;
+                    boolean  currentPriceBelowUpperBollinger = realTimeData.getUpperBollingerAtIndex(realTimeData.getLastIndex()) > currentPrice;
                     if (currentPriceBelowUpperBollinger){
                         boolean rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.UP,DataHolder.CandleType.CLOSE,Config.ZERO);
                         if (rule1){
@@ -62,7 +62,7 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                     bought = false;
                 }
                 else{
-                    boolean  currentPriceAboveLowerBollinger = BigDecimal.valueOf(realTimeData.getLowerBollingerAtIndex(realTimeData.getLastIndex())).compareTo(currentPrice) < Config.ZERO;
+                    boolean  currentPriceAboveLowerBollinger = realTimeData.getLowerBollingerAtIndex(realTimeData.getLastIndex()) < currentPrice;
                     if (currentPriceAboveLowerBollinger) {
                         boolean rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.DOWN, DataHolder.CandleType.CLOSE, Config.ZERO);
                         if (rule1){
@@ -84,7 +84,7 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
         return null;
     }
 
-    private PositionHandler buyAndCreatePositionHandler(BigDecimal currentPrice, String symbol, PositionSide positionSide) {//TODO: maybe change market later.
+    private PositionHandler buyAndCreatePositionHandler(double currentPrice, String symbol, PositionSide positionSide) {//TODO: maybe change market later.
         bought = true;
         if (positionSide == PositionSide.LONG) {
             TelegramMessenger.sendToTelegram("buying long: " + new Date(System.currentTimeMillis()));
@@ -93,7 +93,7 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                 syncRequestClient.changeInitialLeverage(symbol,leverage);
                 String buyingQty = utils.Utils.getBuyingQtyAsString(currentPrice, symbol,leverage,requestedBuyingAmount);
                 Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
-                        buyingQty,currentPrice.toString(),null,null, null,null,null, null, WorkingType.MARK_PRICE, null, NewOrderRespType.RESULT);
+                        buyingQty, String.valueOf(currentPrice),null,null, null,null,null, null, WorkingType.MARK_PRICE, null, NewOrderRespType.RESULT);
                 TelegramMessenger.sendToTelegram("buying long: buyOrder: "+ buyOrder + new Date(System.currentTimeMillis()));
                 ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
                 exitStrategies.add(new MACDOverRSILongExitStrategy1());
@@ -111,7 +111,7 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                 syncRequestClient.changeInitialLeverage(symbol,leverage);
                 String buyingQty = utils.Utils.getBuyingQtyAsString(currentPrice, symbol,leverage,requestedBuyingAmount);
                 Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
-                        buyingQty,currentPrice.toString(),null,null, null,null,null,null, null, WorkingType.MARK_PRICE.toString(), NewOrderRespType.RESULT);
+                        buyingQty, String.valueOf(currentPrice),null,null, null,null,null,null, null, WorkingType.MARK_PRICE.toString(), NewOrderRespType.RESULT);
                 TelegramMessenger.sendToTelegram("buying short: buyOrder: "+ buyOrder + new Date(System.currentTimeMillis()));
                 ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
                 exitStrategies.add(new MACDOverRSIShortExitStrategy1());
@@ -142,7 +142,7 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
     }
 
     @Override
-    public void setRequestedBuyingAmount(BigDecimal requestedBuyingAmount) {
+    public void setRequestedBuyingAmount(double requestedBuyingAmount) {
         this.requestedBuyingAmount = requestedBuyingAmount;
     }
 

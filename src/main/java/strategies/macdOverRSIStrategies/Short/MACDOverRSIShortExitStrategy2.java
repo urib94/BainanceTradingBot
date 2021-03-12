@@ -24,15 +24,17 @@ public class MACDOverRSIShortExitStrategy2 extends MACDOverRSIBaseExitStrategy {
 	@Override
 	public SellingInstructions run(DataHolder realTimeData) {
 		if (isTrailing) {
-			BigDecimal currentPrice = realTimeData.getCurrentPrice();
-			trailer.updateTrailer(currentPrice);
+			double currentPrice = realTimeData.getCurrentPrice();
+			trailer.updateTrailer(realTimeData.getLowPriceAtIndex(realTimeData.getLastIndex()));
 			if(stayInTrackAndThreeNegativeHistograms(realTimeData)) {
 				isTrailing = false;
-				TelegramMessenger.sendToTelegram("stop trailing position with short exit 3" + "time: " + new Date(System.currentTimeMillis()));
+				TelegramMessenger.sendToTelegram("stop trailing position with short exit 2" + "time: " + new Date(System.currentTimeMillis()));
 				return null;
 			}
-			if (trailer.needToSell(currentPrice)){
-				TelegramMessenger.sendToTelegram("selling position with short exit 3" + "time: " + new Date(System.currentTimeMillis()));
+			boolean currentPriceAboveLowerBollinger = currentPrice > realTimeData.getLowerBollingerAtIndex(realTimeData.getLastIndex());
+			boolean prevAboveLowerBollinger = realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()) > realTimeData.getLowerBollingerAtIndex(realTimeData.getLastCloseIndex());
+			if (trailer.needToSell(currentPrice) && prevAboveLowerBollinger && currentPriceAboveLowerBollinger){
+				TelegramMessenger.sendToTelegram("selling position with short exit 2" + "time: " + new Date(System.currentTimeMillis()));
 				return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_LIMIT,
 						MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);
 			}
@@ -40,7 +42,7 @@ public class MACDOverRSIShortExitStrategy2 extends MACDOverRSIBaseExitStrategy {
 			if (changedDirectionAndNegativeThreeHistogram(realTimeData)) {
 				 isTrailing = true;
 				 trailer.setAbsoluteMaxPrice(realTimeData.getCurrentPrice());
-				 TelegramMessenger.sendToTelegram("trailing position with short exit 3" + "time: " + new Date(System.currentTimeMillis()));
+				 TelegramMessenger.sendToTelegram("trailing position with short exit 2" + "time: " + new Date(System.currentTimeMillis()));
 			}
 		}
 		return null;

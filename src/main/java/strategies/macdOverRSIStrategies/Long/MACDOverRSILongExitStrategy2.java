@@ -24,15 +24,17 @@ public class MACDOverRSILongExitStrategy2 extends MACDOverRSIBaseExitStrategy {
 	@Override
 	public SellingInstructions run(DataHolder realTimeData) {
 		if (isTrailing) {
-			BigDecimal currentPrice = realTimeData.getCurrentPrice();
+			double currentPrice = realTimeData.getCurrentPrice();
 			trailer.updateTrailer(currentPrice);
 			if (stayInTrackAndThreePositiveHistograms(realTimeData)){
 				isTrailing = false;
-				TelegramMessenger.sendToTelegram("stop trailing position with long exit 3" + "time: " + new Date(System.currentTimeMillis()));
+				TelegramMessenger.sendToTelegram("stop trailing position with long exit 2" + "time: " + new Date(System.currentTimeMillis()));
 				return null;
 			}
-			if (trailer.needToSell(currentPrice)){
-				TelegramMessenger.sendToTelegram("selling position with long exit 3" + "time: " + new Date(System.currentTimeMillis()));
+			boolean currentPriceBelowUpperBollinger = currentPrice < realTimeData.getUpperBollingerAtIndex(realTimeData.getLastIndex());
+			boolean prevBelowUpperBollinger = realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()) < realTimeData.getUpperBollingerAtIndex(realTimeData.getLastCloseIndex());
+			if (trailer.needToSell(currentPrice) && currentPriceBelowUpperBollinger && prevBelowUpperBollinger){
+				TelegramMessenger.sendToTelegram("selling position with long exit 2" + "time: " + new Date(System.currentTimeMillis()));
 				return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT,
 						MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);
 			}
@@ -40,7 +42,7 @@ public class MACDOverRSILongExitStrategy2 extends MACDOverRSIBaseExitStrategy {
 			if (changedDirectionAndPositiveThreeHistogram(realTimeData)) {
 				trailer.setAbsoluteMaxPrice(realTimeData.getCurrentPrice());
 				isTrailing = true;
-				TelegramMessenger.sendToTelegram("start trailing position with long exit 3" + "time: " + new Date(System.currentTimeMillis()));
+				TelegramMessenger.sendToTelegram("start trailing position with long exit 2" + "time: " + new Date(System.currentTimeMillis()));
 			}
 		}
 		return null;

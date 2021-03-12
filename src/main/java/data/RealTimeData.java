@@ -3,6 +3,8 @@ package data;
 import org.ta4j.core.indicators.bollinger.BollingerBandsLowerIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsMiddleIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsUpperIndicator;
+import org.ta4j.core.indicators.helpers.HighPriceIndicator;
+import org.ta4j.core.indicators.helpers.LowPriceIndicator;
 import org.ta4j.core.indicators.statistics.MeanDeviationIndicator;
 import org.ta4j.core.indicators.statistics.StandardDeviationIndicator;
 import strategies.macdOverRSIStrategies.MACDOverRSIConstants;
@@ -37,6 +39,9 @@ public class RealTimeData{
     private BollingerBandsUpperIndicator bollingerBandsUpperIndicator;
     private BollingerBandsLowerIndicator bollingerBandsLowerIndicator;
     private ClosePriceIndicator closePriceIndicator;
+    private HighPriceIndicator highPriceIndicator;
+    private LowPriceIndicator lowPriceIndicator;
+
 
     public RealTimeData(String symbol, CandlestickInterval interval){
         realTimeData = new BaseBarSeries();
@@ -63,7 +68,7 @@ public class RealTimeData{
         if (! isNewCandle && counter != 20) return null;
         counter = 0;
         calculateIndicators();
-        return new DataHolder(closePriceIndicator, currentPrice, rsiIndicator, macdOverRsiIndicator, bollingerBandsUpperIndicator, bollingerBandsLowerIndicator, smaIndicator, realTimeData.getEndIndex());
+        return new DataHolder(highPriceIndicator, lowPriceIndicator, closePriceIndicator, rsiIndicator, macdOverRsiIndicator, bollingerBandsUpperIndicator, bollingerBandsLowerIndicator, smaIndicator, realTimeData.getEndIndex());
     }
 
     private boolean updateLastCandle(CandlestickEvent event) {
@@ -103,6 +108,8 @@ public class RealTimeData{
 
     private void calculateIndicators() {
         //rsiIndicator = calculateRSI(RSIConstants.RSI_CANDLE_NUM);
+        highPriceIndicator = new HighPriceIndicator(realTimeData);
+        lowPriceIndicator = new LowPriceIndicator(realTimeData);
         macdOverRsiIndicator = calculateMacdOverRsi();
         smaIndicator = new SMAIndicator(new ClosePriceIndicator(realTimeData), MACDOverRSIConstants.SMA_CANDLE_NUM);
         calculateBollingerBandsIndicators();

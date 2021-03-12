@@ -42,13 +42,13 @@ public class BinanceInfo {
         return symbolInformation.get(symbol);
     }
 
-    public static String formatQty(BigDecimal buyingQty, String symbol){
+    public static String formatQty(double buyingQty, String symbol){
         String formatter = "%." + symbolInformation.get(symbol).getQuantityPrecision().toString() + "f";
-        return String.format(formatter, Math.abs(buyingQty.doubleValue()));
+        return String.format(formatter, Math.abs(buyingQty));
     }
 
-    public static String formatPrice(BigDecimal price, String symbol){
-        return String.format("%." + symbolInformation.get(symbol).getPricePrecision().toString() + "f", price.doubleValue());
+    public static String formatPrice(double price, String symbol){
+        return String.format("%." + symbolInformation.get(symbol).getPricePrecision().toString() + "f", price);
     }
 
 }

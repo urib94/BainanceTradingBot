@@ -20,7 +20,7 @@ public class RSIEntryStrategy implements EntryStrategy {
     double takeProfitPercentage = RSIConstants.DEFAULT_TAKE_PROFIT_PERCENTAGE;
     private double stopLossPercentage = RSIConstants.DEFAULT_STOP_LOSS_PERCENTAGE;
     private int leverage = RSIConstants.DEFAULT_LEVERAGE;
-    private  BigDecimal requestedBuyingAmount = RSIConstants.DEFAULT_BUYING_AMOUNT;
+    private  double requestedBuyingAmount = RSIConstants.DEFAULT_BUYING_AMOUNT;
     private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_ONE;
     private int time_passed_from_position_2 = 0;
     double rsiValueToCheckForPosition3 = -1;
@@ -89,7 +89,7 @@ public class RSIEntryStrategy implements EntryStrategy {
         this.leverage = leverage;
     }
 
-    public void setRequestedBuyingAmount(BigDecimal requestedBuyingAmount) {
+    public void setRequestedBuyingAmount(double requestedBuyingAmount) {
         this.requestedBuyingAmount = requestedBuyingAmount;
     }
 }

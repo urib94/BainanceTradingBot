@@ -22,15 +22,15 @@ public class MACDOverRSILongExitStrategy4 extends MACDOverRSIBaseExitStrategy {
     }
     @Override
     public SellingInstructions run(DataHolder realTimeData) {
-        BigDecimal currentPrice = realTimeData.getCurrentPrice();
+        double currentPrice = realTimeData.getCurrentPrice();
         if (! isTrailing){
-            trailer.setAbsoluteMaxPrice(currentPrice);
+            trailer.setAbsoluteMaxPrice(realTimeData.getHighPriceAtIndex(realTimeData.getLastIndex()));
             isTrailing = true;
         }
         else{
-            trailer.updateTrailer(currentPrice);
+            trailer.updateTrailer(realTimeData.getHighPriceAtIndex(realTimeData.getLastIndex()));
             if (trailer.needToSell(currentPrice)){
-                TelegramMessenger.sendToTelegram("selling position with long exit 5: " + new Date(System.currentTimeMillis()));
+                TelegramMessenger.sendToTelegram("selling position with long exit 4: " + new Date(System.currentTimeMillis()));
                 return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_MARKET, MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);
             }
         }

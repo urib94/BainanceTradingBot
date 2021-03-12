@@ -46,7 +46,7 @@ public class InputMessage {
                 entryStrategy.setTakeProfitPercentage(Double.parseDouble(messageParts[4]));
                 entryStrategy.setStopLossPercentage(Double.parseDouble(messageParts[5]));
                 entryStrategy.setLeverage(Integer.parseInt(messageParts[6]));
-                entryStrategy.setRequestedBuyingAmount(BigDecimal.valueOf(Double.parseDouble(messageParts[7])));
+                entryStrategy.setRequestedBuyingAmount(Double.parseDouble(messageParts[7]));
             }
                 break;
 

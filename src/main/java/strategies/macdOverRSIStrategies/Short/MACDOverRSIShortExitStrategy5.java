@@ -22,7 +22,7 @@ public class MACDOverRSIShortExitStrategy5 extends MACDOverRSIBaseExitStrategy {
         @Override
         public SellingInstructions run (DataHolder realTimeData){
             if (isTrailing) {
-                BigDecimal currentPrice = realTimeData.getCurrentPrice();
+                double currentPrice = realTimeData.getCurrentPrice();
                 trailer.updateTrailer(currentPrice);
                 boolean currentPriceCrossedLowerBollingerDown = realTimeData.crossed(DataHolder.IndicatorType.CLOSE_PRICE, DataHolder.CrossType.DOWN, DataHolder.CandleType.CLOSE, realTimeData.getLowerBollingerAtIndex(realTimeData.getLastCloseIndex()));
                 if (currentPriceCrossedLowerBollingerDown) {
