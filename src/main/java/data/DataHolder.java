@@ -117,8 +117,6 @@ public class DataHolder {
             currentMacdOverRsiValue = macdOverRsiCloseValue;
             prevMacdOverRsiValue = getMacdOverRsiValueAtIndex(endIndex - 2);
         }
-        System.out.println("current macd: "  + currentMacdOverRsiValue);
-        System.out.println("prev macd: "  + prevMacdOverRsiValue);
         if (crossType == CrossType.UP) return currentMacdOverRsiValue > threshold && prevMacdOverRsiValue <= threshold;
         return prevMacdOverRsiValue >= threshold && currentMacdOverRsiValue < threshold;
     }

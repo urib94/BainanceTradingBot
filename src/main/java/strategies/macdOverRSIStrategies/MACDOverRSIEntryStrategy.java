@@ -53,8 +53,10 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                     else {
                         if (decliningPyramid(realTimeData, DecliningType.POSITIVE)){
                             if (bought)return null;
+                            System.out.println("here");
                             return buyAndCreatePositionHandler(currentPrice,symbol, PositionSide.LONG);
                         }
+                        System.out.println("here2");
                     }
                 }
                 else{
@@ -64,10 +66,12 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                         return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.SHORT);
                     }
                     else{
-                        if (decliningPyramid(realTimeData, DecliningType.POSITIVE)){
+                        if (decliningPyramid(realTimeData, DecliningType.NEGATIVE)){
                             if (bought) return null;
+                            System.out.println("here3");
                             return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.SHORT);
                         }
+                        System.out.println("here4");
                     }
                 }
                 bought = false;
@@ -144,6 +148,7 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
         double currentMacdOverRsiValue = realTimeData.getMacdOverRsiCloseValue();
         double prevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex() -1);
         double prevPrevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex() -2);
+
         if (type == DecliningType.POSITIVE){
             rule1 = currentMacdOverRsiValue > prevMacdOverRsiValue;
             rule2 = prevMacdOverRsiValue > prevPrevMacdOverRsiValue;

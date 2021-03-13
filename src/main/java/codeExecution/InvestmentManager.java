@@ -43,8 +43,6 @@ public class InvestmentManager implements Runnable{
         subscriptionClient.subscribeCandlestickEvent(symbol, interval, ((event) -> iterationExecutorService.execute(()->{
             DataHolder dataHolder = realTimeData.updateData(event);
             if (dataHolder != null){
-                System.out.println("current: " + dataHolder.getSarValueAtIndex(dataHolder.getLastIndex()));
-                System.out.println("[prev]: " + dataHolder.getSarValueAtIndex(dataHolder.getLastCloseIndex()));
                 AccountBalance.getAccountBalance().updateBalance(symbol, Config.BASE_COIN);
                 for (PositionHandler positionHandler :positionHandlers){
                     positionHandler.update(dataHolder, interval);
