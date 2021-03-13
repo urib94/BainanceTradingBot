@@ -44,38 +44,30 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                 double currentPrice = realTimeData.getCurrentPrice();
                 boolean currentPriceAboveSar = realTimeData.getSarValueAtIndex(realTimeData.getLastIndex()) < currentPrice;
                 if (currentPriceAboveSar) {
-                    boolean  currentPriceBelowUpperBollinger = realTimeData.getUpperBollingerAtIndex(realTimeData.getLastIndex()) > currentPrice;
-                    if (currentPriceBelowUpperBollinger){
-                        boolean rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.UP,DataHolder.CandleType.CLOSE,Config.ZERO);
-                        if (rule1){
+                    boolean rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.UP,DataHolder.CandleType.CLOSE,Config.ZERO);
+                    if (rule1){
+                        if (bought)return null;
+                        return buyAndCreatePositionHandler(currentPrice,symbol, PositionSide.LONG);
+                    }
+                    else {
+                        if (decliningPyramid(realTimeData, DecliningType.POSITIVE)){
                             if (bought)return null;
                             return buyAndCreatePositionHandler(currentPrice,symbol, PositionSide.LONG);
-                        }
-                        else {
-                            boolean macdValueBelowZero = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()) < Config.ZERO;
-                            if (macdValueBelowZero && decliningPyramid(realTimeData, DecliningType.NEGATIVE)){
-                                if (bought)return null;
-                                return buyAndCreatePositionHandler(currentPrice,symbol, PositionSide.LONG);
-                            }
                         }
                     }
                     bought = false;
                 }
                 else{
-                    boolean  currentPriceAboveLowerBollinger = realTimeData.getLowerBollingerAtIndex(realTimeData.getLastIndex()) < currentPrice;
-                    if (currentPriceAboveLowerBollinger) {
-                        boolean rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.DOWN, DataHolder.CandleType.CLOSE, Config.ZERO);
-                        if (rule1){
-                            if (bought)return null;
+                    boolean rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.DOWN, DataHolder.CandleType.CLOSE, Config.ZERO);
+                    if (rule1){
+                        if (bought)return null;
+                        return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.SHORT);
+                    }
+                    else{
+                        if (decliningPyramid(realTimeData, DecliningType.POSITIVE)){
+                            if (bought) return null;
                             return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.SHORT);
                         }
-                        else{
-                            if (realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()) > Config.ZERO && decliningPyramid(realTimeData, DecliningType.POSITIVE)){
-                                if (bought) return null;
-                                return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.SHORT);
-                            }
-                        }
-                        bought = false;
                     }
                     bought = false;
                 }
@@ -152,7 +144,7 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
         double currentMacdOverRsiValue = realTimeData.getMacdOverRsiCloseValue();
         double prevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex() -1);
         double prevPrevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex() -2);
-        if (type == DecliningType.NEGATIVE){
+        if (type == DecliningType.POSITIVE){
             rule1 = currentMacdOverRsiValue > prevMacdOverRsiValue;
             rule2 = prevMacdOverRsiValue > prevPrevMacdOverRsiValue;
         }
