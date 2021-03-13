@@ -43,8 +43,9 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
             if (noOpenOrders){
                 double currentPrice = realTimeData.getCurrentPrice();
                 boolean currentPriceAboveSar = realTimeData.getSarValueAtIndex(realTimeData.getLastIndex()) < currentPrice;
+                boolean rule1;
                 if (currentPriceAboveSar) {
-                    boolean rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.UP,DataHolder.CandleType.CLOSE,Config.ZERO);
+                    rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.UP, DataHolder.CandleType.CLOSE, Config.ZERO);
                     if (rule1){
                         if (bought)return null;
                         return buyAndCreatePositionHandler(currentPrice,symbol, PositionSide.LONG);
@@ -55,10 +56,9 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                             return buyAndCreatePositionHandler(currentPrice,symbol, PositionSide.LONG);
                         }
                     }
-                    bought = false;
                 }
                 else{
-                    boolean rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.DOWN, DataHolder.CandleType.CLOSE, Config.ZERO);
+                    rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.DOWN, DataHolder.CandleType.CLOSE, Config.ZERO);
                     if (rule1){
                         if (bought)return null;
                         return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.SHORT);
@@ -69,8 +69,8 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                             return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.SHORT);
                         }
                     }
-                    bought = false;
                 }
+                bought = false;
             }
         }
         return null;
@@ -92,7 +92,7 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                 exitStrategies.add(new MACDOverRSILongExitStrategy2(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.LONG)));
                 exitStrategies.add(new MACDOverRSILongExitStrategy3(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.LONG)));
                 exitStrategies.add(new MACDOverRSILongExitStrategy4(new Trailer(currentPrice, MACDOverRSIConstants.CONSTANT_TRAILING_PERCENTAGE, PositionSide.LONG)));
-                exitStrategies.add(new MACDOverRSILongExitStrategy5(new Trailer(currentPrice, MACDOverRSIConstants.CONSTANT_TRAILING_PERCENTAGE, PositionSide.LONG)));
+                exitStrategies.add(new MACDOverRSILongExitStrategy5(new Trailer(currentPrice, MACDOverRSIConstants.PROFIT_TRAILING_PERCENTAGE, PositionSide.LONG)));
                 return new PositionHandler(buyOrder ,exitStrategies);
             }catch (Exception e){ e.printStackTrace();}
         }
@@ -110,7 +110,7 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                 exitStrategies.add(new MACDOverRSIShortExitStrategy2(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.SHORT)));
                 exitStrategies.add(new MACDOverRSIShortExitStrategy3(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.SHORT)));
                 exitStrategies.add(new MACDOverRSIShortExitStrategy4(new Trailer(currentPrice, MACDOverRSIConstants.CONSTANT_TRAILING_PERCENTAGE, PositionSide.SHORT)));
-                exitStrategies.add(new MACDOverRSIShortExitStrategy5(new Trailer(currentPrice, MACDOverRSIConstants.CONSTANT_TRAILING_PERCENTAGE, PositionSide.SHORT)));
+                exitStrategies.add(new MACDOverRSIShortExitStrategy5(new Trailer(currentPrice, MACDOverRSIConstants.PROFIT_TRAILING_PERCENTAGE, PositionSide.SHORT)));
                 return new PositionHandler(buyOrder ,exitStrategies);
             }catch (Exception e){e.printStackTrace();}
         }

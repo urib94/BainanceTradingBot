@@ -24,11 +24,16 @@ public class MACDOverRSIShortExitStrategy5 extends MACDOverRSIBaseExitStrategy {
             if (isTrailing) {
                 double currentPrice = realTimeData.getCurrentPrice();
                 trailer.updateTrailer(currentPrice);
-                boolean currentPriceCrossedLowerBollingerDown = realTimeData.crossed(DataHolder.IndicatorType.CLOSE_PRICE, DataHolder.CrossType.DOWN, DataHolder.CandleType.CLOSE, realTimeData.getLowerBollingerAtIndex(realTimeData.getLastCloseIndex()));
+                boolean currentPriceCrossedLowerBollingerDown = realTimeData.crossed(DataHolder.IndicatorType.CLOSE_PRICE, DataHolder.CrossType.DOWN, DataHolder.CandleType.OPEN, realTimeData.getLowerBollingerAtIndex(realTimeData.getLastCloseIndex()));
                 if (currentPriceCrossedLowerBollingerDown) {
                     isTrailing = false;
                     TelegramMessenger.sendToTelegram("stop trailing position with short exit 5" + "time: " + new Date(System.currentTimeMillis()));
                     return null;
+                }
+                if (changedDirection(realTimeData, DataHolder.CandleType.CLOSE)){
+                    TelegramMessenger.sendToTelegram("selling position with short exit 5 market" + "time: " + new Date(System.currentTimeMillis()));
+                    return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_MARKET,
+                            MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);
                 }
                 if (trailer.needToSell(currentPrice)) {
                     TelegramMessenger.sendToTelegram("trailing position with long exit 5" + "time: " + new Date(System.currentTimeMillis()));

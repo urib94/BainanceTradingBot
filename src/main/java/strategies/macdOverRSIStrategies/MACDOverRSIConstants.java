@@ -23,4 +23,5 @@ public class MACDOverRSIConstants {
     public static final Num SAR_START = PrecisionNum.valueOf(0.02);
     public static final Num MAX_VALUE = PrecisionNum.valueOf(0.02);
     public static final Num INCREMENT = PrecisionNum.valueOf(0.2);
+    public static final double PROFIT_TRAILING_PERCENTAGE = 0.25;
 }

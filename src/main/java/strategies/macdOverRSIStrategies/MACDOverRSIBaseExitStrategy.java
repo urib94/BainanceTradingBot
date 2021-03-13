@@ -9,6 +9,19 @@ import java.math.BigDecimal;
 
 public abstract class MACDOverRSIBaseExitStrategy implements ExitStrategy {
 
+    public boolean changedDirection(DataHolder realTimeData, DataHolder.CandleType type){
+        double now, prev;
+        if (type == DataHolder.CandleType.CLOSE){
+            now = realTimeData.getMacdOverRsiCloseValue();
+            prev = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex() -1);
+        }
+        else {
+            now = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex());
+            prev = realTimeData.getMacdOverRsiCloseValue();
+        }
+        return Math.abs(prev) >= Math.abs(now);
+    }
+
     public boolean changedDirectionAndPositiveThreeHistogram(DataHolder realTimeData){
         double now = realTimeData.getMacdOverRsiCloseValue();
         double prev = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex() -1);
