@@ -61,7 +61,7 @@ public class PositionHandler implements Serializable {
 
     private void isActive(DataHolder realTimeData, Order order,CandlestickInterval interval) {
         if (status.equals(Config.NEW)){
-            rebuyOrder(realTimeData, order);
+            rebuyOrder(order);
         }
         else if (status.equals(Config.PARTIALLY_FILLED)){
             Long updateTime = order.getUpdateTime();
@@ -82,7 +82,7 @@ public class PositionHandler implements Serializable {
         }
     }
 
-    private synchronized void rebuyOrder(DataHolder realTimeData, Order order) {
+    private synchronized void rebuyOrder(Order order) {
         rebuying = true;
         try{
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();

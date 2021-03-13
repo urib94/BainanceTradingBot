@@ -15,9 +15,8 @@ public class MACDOverRSILongExitStrategy1 extends MACDOverRSIBaseExitStrategy {
 
 	@Override
 	public SellingInstructions run(DataHolder realTimeData) {
-//		boolean closedCrossedZero = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.DOWN, DataHolder.CandleType.CLOSE, Config.ZERO);
-		boolean openCrossed03 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.DOWN, DataHolder.CandleType.OPEN, MACDOverRSIConstants.LONG_EXIT2_OPEN_THRESHOLD);
-		if (openCrossed03) {
+		boolean openCrossed = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.DOWN, DataHolder.CandleType.OPEN, MACDOverRSIConstants.LONG_EXIT2_OPEN_THRESHOLD);
+		if (openCrossed) {
 			TelegramMessenger.sendToTelegram("exiting position with long exit 1: " + new Date(System.currentTimeMillis()));
 			return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT, MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);
 		}
