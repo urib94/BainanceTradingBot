@@ -42,8 +42,8 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
             boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
             if (noOpenOrders){
                 double currentPrice = realTimeData.getCurrentPrice();
-                boolean currentPriceAboveSMA = realTimeData.getSMAValueAtIndex(realTimeData.getLastIndex()) < currentPrice;
-                if (currentPriceAboveSMA) {
+                boolean currentPriceAboveSar = realTimeData.getSarValueAtIndex(realTimeData.getLastIndex()) < currentPrice;
+                if (currentPriceAboveSar) {
                     boolean  currentPriceBelowUpperBollinger = realTimeData.getUpperBollingerAtIndex(realTimeData.getLastIndex()) > currentPrice;
                     if (currentPriceBelowUpperBollinger){
                         boolean rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.UP,DataHolder.CandleType.CLOSE,Config.ZERO);

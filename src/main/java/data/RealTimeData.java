@@ -1,5 +1,6 @@
 package data;
 
+import org.ta4j.core.indicators.ParabolicSarIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsLowerIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsMiddleIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsUpperIndicator;
@@ -14,14 +15,12 @@ import com.binance.client.model.enums.CandlestickInterval;
 import com.binance.client.model.event.CandlestickEvent;
 import com.binance.client.model.market.Candlestick;
 import org.ta4j.core.BaseBarSeries;
-import org.ta4j.core.indicators.EMAIndicator;
 import org.ta4j.core.indicators.MACDIndicator;
 import org.ta4j.core.indicators.RSIIndicator;
 import org.ta4j.core.indicators.SMAIndicator;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import singletonHelpers.RequestClient;
 
-import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -31,10 +30,9 @@ public class RealTimeData{
 
     private Long lastCandleOpenTime;
     private BaseBarSeries realTimeData;
-    private BigDecimal currentPrice;
     private RSIIndicator rsiIndicator;
     private MACDIndicator macdOverRsiIndicator;
-    private SMAIndicator smaIndicator;
+    private ParabolicSarIndicator sarIndicator;
     private int counter = 0;
     private BollingerBandsUpperIndicator bollingerBandsUpperIndicator;
     private BollingerBandsLowerIndicator bollingerBandsLowerIndicator;
@@ -48,7 +46,6 @@ public class RealTimeData{
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         List<Candlestick> candlestickBars = syncRequestClient.getCandlestick(symbol, interval, null, null, Config.CANDLE_NUM);
         lastCandleOpenTime = candlestickBars.get(candlestickBars.size() - 1).getOpenTime();
-        currentPrice = candlestickBars.get(candlestickBars.size() -1).getClose();
         fillRealTimeData(candlestickBars);
         calculateIndicators();
     }
@@ -68,11 +65,10 @@ public class RealTimeData{
         if (! isNewCandle && counter != 20) return null;
         counter = 0;
         calculateIndicators();
-        return new DataHolder(highPriceIndicator, lowPriceIndicator, closePriceIndicator, rsiIndicator, macdOverRsiIndicator, bollingerBandsUpperIndicator, bollingerBandsLowerIndicator, smaIndicator, realTimeData.getEndIndex());
+        return new DataHolder(highPriceIndicator, lowPriceIndicator, closePriceIndicator, rsiIndicator, macdOverRsiIndicator, bollingerBandsUpperIndicator, bollingerBandsLowerIndicator, sarIndicator, realTimeData.getEndIndex());
     }
 
     private boolean updateLastCandle(CandlestickEvent event) {
-        currentPrice = event.getClose();
         boolean isNewCandle = !(event.getStartTime().doubleValue() == lastCandleOpenTime);
         ZonedDateTime closeTime = utils.Utils.getZonedDateTime(event.getCloseTime());
         Duration candleDuration = Duration.ofMillis(event.getCloseTime() - event.getStartTime());
@@ -111,7 +107,7 @@ public class RealTimeData{
         highPriceIndicator = new HighPriceIndicator(realTimeData);
         lowPriceIndicator = new LowPriceIndicator(realTimeData);
         macdOverRsiIndicator = calculateMacdOverRsi();
-        smaIndicator = new SMAIndicator(new ClosePriceIndicator(realTimeData), MACDOverRSIConstants.SMA_CANDLE_NUM);
+        sarIndicator = new ParabolicSarIndicator(realTimeData,MACDOverRSIConstants.SAR_START, MACDOverRSIConstants.MAX_VALUE, MACDOverRSIConstants.INCREMENT);
         calculateBollingerBandsIndicators();
     }
 

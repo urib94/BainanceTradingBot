@@ -1,10 +1,7 @@
 package data;
 
 import org.ta4j.core.BaseBarSeries;
-import org.ta4j.core.indicators.EMAIndicator;
-import org.ta4j.core.indicators.MACDIndicator;
-import org.ta4j.core.indicators.RSIIndicator;
-import org.ta4j.core.indicators.SMAIndicator;
+import org.ta4j.core.indicators.*;
 import org.ta4j.core.indicators.bollinger.BollingerBandsLowerIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsMiddleIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsUpperIndicator;
@@ -19,7 +16,7 @@ public class DataHolder {
     private double currentPrice;
     private RSIIndicator rsiIndicator;
     private MACDIndicator macdOverRsiIndicator;
-    private SMAIndicator smaIndicator;
+    private ParabolicSarIndicator sarIndicator;
     private BollingerBandsUpperIndicator bollingerBandsUpperIndicator;
     private BollingerBandsLowerIndicator bollingerBandsLowerIndicator;
     private ClosePriceIndicator closePriceIndicator;
@@ -29,10 +26,10 @@ public class DataHolder {
     private int endIndex;
 
     public DataHolder(HighPriceIndicator highPriceIndicator, LowPriceIndicator lowPriceIndicator, ClosePriceIndicator closePriceIndicator, RSIIndicator rsiIndicator, MACDIndicator macdOverRsiIndicator, BollingerBandsUpperIndicator bollingerBandsUpperIndicator,
-                      BollingerBandsLowerIndicator bollingerBandsLowerIndicator, SMAIndicator smaIndicator, int endIndex) {
+                      BollingerBandsLowerIndicator bollingerBandsLowerIndicator, ParabolicSarIndicator sarIndicator, int endIndex) {
         this.rsiIndicator = rsiIndicator;
         this.macdOverRsiIndicator = macdOverRsiIndicator;
-        this.smaIndicator = smaIndicator;
+        this.sarIndicator = sarIndicator;
         this.endIndex = endIndex;
         this.macdOverRsiCloseValue = getMacdOverRsiValueAtIndex(endIndex-1);
         this.bollingerBandsUpperIndicator = bollingerBandsUpperIndicator;
@@ -83,8 +80,8 @@ public class DataHolder {
         return rsiIndicator.getValue(index).doubleValue();
     }
 
-    public  double getSMAValueAtIndex(int index) {
-        return smaIndicator.getValue(index).doubleValue();
+    public  double getSarValueAtIndex(int index) {
+        return sarIndicator.getValue(index).doubleValue();
     }
 
 
@@ -141,9 +138,9 @@ public class DataHolder {
             }
         } else {
             if (type == CandleType.OPEN) {
-                return getSMAValueAtIndex(getLastIndex())>threshold;
+                return getSarValueAtIndex(getLastIndex())>threshold;
             } else {
-                return getSMAValueAtIndex(getLastCloseIndex()) > threshold;
+                return getSarValueAtIndex(getLastCloseIndex()) > threshold;
             }
         }
     }
@@ -174,6 +171,6 @@ public class DataHolder {
         UP,DOWN
     }
     public enum IndicatorType {
-        RSI,MACD_OVER_RSI, UpperBollinger, SMA, CLOSE_PRICE
+        RSI,MACD_OVER_RSI, UpperBollinger, SAR, CLOSE_PRICE
     }
 }

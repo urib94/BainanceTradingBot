@@ -30,7 +30,8 @@ public class MACDOverRSIShortExitStrategy4 extends MACDOverRSIBaseExitStrategy {
         }
         else{
             trailer.updateTrailer(realTimeData.getLowPriceAtIndex(realTimeData.getLastIndex()));
-            if (trailer.needToSell(currentPrice)){
+            boolean currentPriceBelowLowerBollinger = currentPrice < realTimeData.getLowerBollingerAtIndex(realTimeData.getLastIndex());
+            if (trailer.needToSell(currentPrice) && currentPriceBelowLowerBollinger){
                 TelegramMessenger.sendToTelegram("selling position with short exit 4: " + new Date(System.currentTimeMillis()));
                 return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_MARKET, MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);
             }
