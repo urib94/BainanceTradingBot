@@ -1,16 +1,12 @@
 package data;
 
-import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.indicators.*;
 import org.ta4j.core.indicators.bollinger.BollingerBandsLowerIndicator;
-import org.ta4j.core.indicators.bollinger.BollingerBandsMiddleIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsUpperIndicator;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import org.ta4j.core.indicators.helpers.HighPriceIndicator;
 import org.ta4j.core.indicators.helpers.LowPriceIndicator;
 import strategies.macdOverRSIStrategies.MACDOverRSIConstants;
-
-import java.math.BigDecimal;
 
 public class DataHolder {
     private double currentPrice;

@@ -43,6 +43,7 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
             if (noOpenOrders){
                 double currentPrice = realTimeData.getCurrentPrice();
                 boolean currentPriceAboveSar = realTimeData.getSarValueAtIndex(realTimeData.getLastIndex()) < currentPrice;
+
                 boolean rule1;
                 if (currentPriceAboveSar) {
                     rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.UP, DataHolder.CandleType.CLOSE, Config.ZERO);
@@ -53,10 +54,8 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                     else {
                         if (decliningPyramid(realTimeData, DecliningType.POSITIVE)){
                             if (bought)return null;
-                            System.out.println("here");
                             return buyAndCreatePositionHandler(currentPrice,symbol, PositionSide.LONG);
                         }
-                        System.out.println("here2");
                     }
                 }
                 else{
@@ -68,10 +67,8 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                     else{
                         if (decliningPyramid(realTimeData, DecliningType.NEGATIVE)){
                             if (bought) return null;
-                            System.out.println("here3");
                             return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.SHORT);
                         }
-                        System.out.println("here4");
                     }
                 }
                 bought = false;
