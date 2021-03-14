@@ -147,7 +147,7 @@ public class DataHolder {
 
     public boolean candleType(CandleType type) {
         double curr = getClosePriceAtIndex(endIndex);
-        double prev = getClosePriceAtIndex(endIndex);
+        double prev = getClosePriceAtIndex(endIndex -1);
 
         if (type == CandleType.BEARISH){
             return curr < prev;

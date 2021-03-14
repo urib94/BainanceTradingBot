@@ -15,6 +15,7 @@ import strategies.macdOverRSIStrategies.Long.*;
 import strategies.macdOverRSIStrategies.Short.*;
 import utils.Trailer;
 
+import javax.xml.crypto.Data;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -49,12 +50,12 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                     rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.UP, DataHolder.CandleType.CLOSE, Config.ZERO);
                     if (rule1){
                         if (bought)return null;
-                        return buyAndCreatePositionHandler(currentPrice,symbol, PositionSide.LONG);
+                        return buyAndCreatePositionHandler(realTimeData, currentPrice,symbol, PositionSide.LONG);
                     }
                     else {
                         if (decliningPyramid(realTimeData, DecliningType.POSITIVE)){
                             if (bought)return null;
-                            return buyAndCreatePositionHandler(currentPrice,symbol, PositionSide.LONG);
+                            return buyAndCreatePositionHandler(realTimeData, currentPrice,symbol, PositionSide.LONG);
                         }
                     }
                 }
@@ -62,12 +63,12 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                     rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.DOWN, DataHolder.CandleType.CLOSE, Config.ZERO);
                     if (rule1){
                         if (bought)return null;
-                        return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.SHORT);
+                        return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT);
                     }
                     else{
                         if (decliningPyramid(realTimeData, DecliningType.NEGATIVE)){
                             if (bought) return null;
-                            return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.SHORT);
+                            return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT);
                         }
                     }
                 }
@@ -77,7 +78,7 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
         return null;
     }
 
-    private PositionHandler buyAndCreatePositionHandler(double currentPrice, String symbol, PositionSide positionSide) {//TODO: maybe change market later.
+    private PositionHandler buyAndCreatePositionHandler(DataHolder realTimeData, double currentPrice, String symbol, PositionSide positionSide) {//TODO: maybe change market later.
         bought = true;
         if (positionSide == PositionSide.LONG) {
             TelegramMessenger.sendToTelegram("buying long: " + new Date(System.currentTimeMillis()));
@@ -94,6 +95,7 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                 exitStrategies.add(new MACDOverRSILongExitStrategy3(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.LONG)));
                 exitStrategies.add(new MACDOverRSILongExitStrategy4(new Trailer(currentPrice, MACDOverRSIConstants.CONSTANT_TRAILING_PERCENTAGE, PositionSide.LONG)));
                 exitStrategies.add(new MACDOverRSILongExitStrategy5(new Trailer(currentPrice, MACDOverRSIConstants.PROFIT_TRAILING_PERCENTAGE, PositionSide.LONG)));
+                exitStrategies.add(new MACDOverRSILongExitStrategy6(realTimeData));
                 return new PositionHandler(buyOrder ,exitStrategies);
             }catch (Exception e){ e.printStackTrace();}
         }
@@ -112,6 +114,7 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                 exitStrategies.add(new MACDOverRSIShortExitStrategy3(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.SHORT)));
                 exitStrategies.add(new MACDOverRSIShortExitStrategy4(new Trailer(currentPrice, MACDOverRSIConstants.CONSTANT_TRAILING_PERCENTAGE, PositionSide.SHORT)));
                 exitStrategies.add(new MACDOverRSIShortExitStrategy5(new Trailer(currentPrice, MACDOverRSIConstants.PROFIT_TRAILING_PERCENTAGE, PositionSide.SHORT)));
+                exitStrategies.add(new MACDOverRSIShortExitStrategy6(realTimeData));
                 return new PositionHandler(buyOrder ,exitStrategies);
             }catch (Exception e){e.printStackTrace();}
         }
