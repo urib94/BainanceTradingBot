@@ -31,7 +31,8 @@ public class MACDOverRSIShortExitStrategy3 extends MACDOverRSIBaseExitStrategy {
 				TelegramMessenger.sendToTelegram("stop trailing position with short exit 3" + "time: " + new Date(System.currentTimeMillis()));
 				return null;
 			}
-			if (trailer.needToSell(currentPrice)){
+			boolean isBullish = realTimeData.getClosePriceAtIndex(realTimeData.getLastIndex()) > realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex());
+			if (isBullish && trailer.needToSell(currentPrice)){
 				TelegramMessenger.sendToTelegram("selling position with short exit 3" + "time: " + new Date(System.currentTimeMillis()));
 				return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_LIMIT,
 						MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);

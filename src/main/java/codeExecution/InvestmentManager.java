@@ -20,7 +20,6 @@ public class InvestmentManager implements Runnable{
     ConcurrentLinkedDeque<Future<?>> futures;
 
 
-
     public InvestmentManager(CandlestickInterval interval, String symbol, EntryStrategy entryStrategy) {
         this.interval = interval;
         this.symbol = symbol;

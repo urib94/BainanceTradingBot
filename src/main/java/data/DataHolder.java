@@ -12,7 +12,7 @@ public class DataHolder {
     private double currentPrice;
     private RSIIndicator rsiIndicator;
     private MACDIndicator macdOverRsiIndicator;
-    private ParabolicSarIndicator sarIndicator;
+    private SMAIndicator smaIndicator;
     private BollingerBandsUpperIndicator bollingerBandsUpperIndicator;
     private BollingerBandsLowerIndicator bollingerBandsLowerIndicator;
     private ClosePriceIndicator closePriceIndicator;
@@ -22,10 +22,10 @@ public class DataHolder {
     private int endIndex;
 
     public DataHolder(HighPriceIndicator highPriceIndicator, LowPriceIndicator lowPriceIndicator, ClosePriceIndicator closePriceIndicator, RSIIndicator rsiIndicator, MACDIndicator macdOverRsiIndicator, BollingerBandsUpperIndicator bollingerBandsUpperIndicator,
-                      BollingerBandsLowerIndicator bollingerBandsLowerIndicator, ParabolicSarIndicator sarIndicator, int endIndex) {
+                      BollingerBandsLowerIndicator bollingerBandsLowerIndicator, SMAIndicator smaIndicator, int endIndex) {
         this.rsiIndicator = rsiIndicator;
         this.macdOverRsiIndicator = macdOverRsiIndicator;
-        this.sarIndicator = sarIndicator;
+        this.smaIndicator = smaIndicator;
         this.endIndex = endIndex;
         this.macdOverRsiCloseValue = getMacdOverRsiValueAtIndex(endIndex-1);
         this.bollingerBandsUpperIndicator = bollingerBandsUpperIndicator;
@@ -76,8 +76,8 @@ public class DataHolder {
         return rsiIndicator.getValue(index).doubleValue();
     }
 
-    public  double getSarValueAtIndex(int index) {
-        return sarIndicator.getValue(index).doubleValue();
+    public  double getSmaValueAtIndex(int index) {
+        return smaIndicator.getValue(index).doubleValue();
     }
 
 
@@ -85,12 +85,31 @@ public class DataHolder {
         switch (indicatorType) {
             case RSI:
                 return rsiCrossed(crossType,candleType,threshold);
-            case MACD_OVER_RSI:
+
+                case MACD_OVER_RSI:
                 return macdOverRsiCrossed(crossType,candleType,threshold);
+
+            case CLOSE_PRICE:
+                return closePriceCrossed(crossType,candleType,threshold);
         }
         return true; // will not come to this!
 
     }
+
+    private boolean closePriceCrossed(CrossType crossType, CandleType candleType, double threshold) {
+        double curr,prev;
+        if (candleType == CandleType.OPEN) {
+            curr = getClosePriceAtIndex(endIndex);
+            prev = getClosePriceAtIndex(endIndex -1);
+        }
+        else {
+            curr = getClosePriceAtIndex(endIndex -1);
+            prev = getClosePriceAtIndex(endIndex -2);
+        }
+        if (crossType == CrossType.UP) return curr > threshold && prev <= threshold;
+        return prev >= threshold && curr < threshold;
+    }
+
     private boolean rsiCrossed(CrossType crossType, CandleType candleType, double threshold) {
         double rsiValueNow,rsiValuePrev;
         if (candleType == CandleType.OPEN) {
@@ -132,9 +151,9 @@ public class DataHolder {
             }
         } else {
             if (type == CandleType.OPEN) {
-                return getSarValueAtIndex(getLastIndex())>threshold;
+                return getSmaValueAtIndex(getLastIndex())>threshold;
             } else {
-                return getSarValueAtIndex(getLastCloseIndex()) > threshold;
+                return getSmaValueAtIndex(getLastCloseIndex()) > threshold;
             }
         }
     }
@@ -146,8 +165,8 @@ public class DataHolder {
     public int getLastCloseIndex(){return endIndex-1;}
 
     public boolean candleType(CandleType type) {
-        double curr = getClosePriceAtIndex(endIndex);
-        double prev = getClosePriceAtIndex(endIndex -1);
+        double curr = getClosePriceAtIndex(endIndex -1);
+        double prev = getClosePriceAtIndex(endIndex -2);
 
         if (type == CandleType.BEARISH){
             return curr < prev;

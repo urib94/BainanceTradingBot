@@ -33,7 +33,8 @@ public class MACDOverRSIShortExitStrategy2 extends MACDOverRSIBaseExitStrategy {
 			}
 			boolean currentPriceAboveLowerBollinger = currentPrice > realTimeData.getLowerBollingerAtIndex(realTimeData.getLastIndex());
 			boolean prevAboveLowerBollinger = realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()) > realTimeData.getLowerBollingerAtIndex(realTimeData.getLastCloseIndex());
-			if (trailer.needToSell(currentPrice) && prevAboveLowerBollinger && currentPriceAboveLowerBollinger){
+			boolean isBullish = realTimeData.getClosePriceAtIndex(realTimeData.getLastIndex()) > realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex());
+			if (isBullish && trailer.needToSell(currentPrice) && prevAboveLowerBollinger && currentPriceAboveLowerBollinger){
 				TelegramMessenger.sendToTelegram("selling position with short exit 2" + "time: " + new Date(System.currentTimeMillis()));
 				return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_LIMIT,
 						MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);

@@ -6,10 +6,8 @@ import org.ta4j.core.indicators.bollinger.BollingerBandsMiddleIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsUpperIndicator;
 import org.ta4j.core.indicators.helpers.HighPriceIndicator;
 import org.ta4j.core.indicators.helpers.LowPriceIndicator;
-import org.ta4j.core.indicators.statistics.MeanDeviationIndicator;
 import org.ta4j.core.indicators.statistics.StandardDeviationIndicator;
 import strategies.macdOverRSIStrategies.MACDOverRSIConstants;
-import strategies.rsiStrategies.RSIConstants;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.CandlestickInterval;
 import com.binance.client.model.event.CandlestickEvent;
@@ -32,7 +30,7 @@ public class RealTimeData{
     private BaseBarSeries realTimeData;
     private RSIIndicator rsiIndicator;
     private MACDIndicator macdOverRsiIndicator;
-    private ParabolicSarIndicator sarIndicator;
+    private SMAIndicator smaIndicator;
     private int counter = 0;
     private BollingerBandsUpperIndicator bollingerBandsUpperIndicator;
     private BollingerBandsLowerIndicator bollingerBandsLowerIndicator;
@@ -65,7 +63,7 @@ public class RealTimeData{
         if (! isNewCandle && counter != 20) return null;
         counter = 0;
         calculateIndicators();
-        return new DataHolder(highPriceIndicator, lowPriceIndicator, closePriceIndicator, rsiIndicator, macdOverRsiIndicator, bollingerBandsUpperIndicator, bollingerBandsLowerIndicator, sarIndicator, realTimeData.getEndIndex());
+        return new DataHolder(highPriceIndicator, lowPriceIndicator, closePriceIndicator, rsiIndicator, macdOverRsiIndicator, bollingerBandsUpperIndicator, bollingerBandsLowerIndicator, smaIndicator, realTimeData.getEndIndex());
     }
 
     private boolean updateLastCandle(CandlestickEvent event) {
@@ -104,28 +102,29 @@ public class RealTimeData{
 
     private void calculateIndicators() {
         //rsiIndicator = calculateRSI(RSIConstants.RSI_CANDLE_NUM);
-        highPriceIndicator = new HighPriceIndicator(realTimeData);
-        lowPriceIndicator = new LowPriceIndicator(realTimeData);
-        macdOverRsiIndicator = calculateMacdOverRsi();
-        sarIndicator = new ParabolicSarIndicator(realTimeData,MACDOverRSIConstants.SAR_START, MACDOverRSIConstants.MAX_VALUE, MACDOverRSIConstants.INCREMENT);
-        calculateBollingerBandsIndicators();
+        BaseBarSeries currData = new BaseBarSeries(realTimeData.getBarData());
+        highPriceIndicator = new HighPriceIndicator(currData);
+        lowPriceIndicator = new LowPriceIndicator(currData);
+        macdOverRsiIndicator = calculateMacdOverRsi(currData);
+        smaIndicator = new SMAIndicator(new ClosePriceIndicator(currData), MACDOverRSIConstants.SMA_CANDLES);
+        calculateBollingerBandsIndicators(currData);
     }
 
-    public synchronized void calculateBollingerBandsIndicators(){
-        closePriceIndicator = new ClosePriceIndicator(realTimeData);
+    public synchronized void calculateBollingerBandsIndicators(BaseBarSeries currData){
+        closePriceIndicator = new ClosePriceIndicator(currData);
         SMAIndicator smaIndicator = new SMAIndicator(closePriceIndicator, 20);
         BollingerBandsMiddleIndicator bollingerBandsMiddleIndicator = new BollingerBandsMiddleIndicator(smaIndicator);
         bollingerBandsUpperIndicator = new BollingerBandsUpperIndicator(bollingerBandsMiddleIndicator, new StandardDeviationIndicator(closePriceIndicator, MACDOverRSIConstants.STANDARD_DEVIATION_CANDLES), MACDOverRSIConstants.DEVIATION_MULTIPLIER);
         bollingerBandsLowerIndicator = new BollingerBandsLowerIndicator(bollingerBandsMiddleIndicator, new StandardDeviationIndicator(closePriceIndicator, MACDOverRSIConstants.STANDARD_DEVIATION_CANDLES), MACDOverRSIConstants.DEVIATION_MULTIPLIER);
     }
 
-    private MACDIndicator calculateMacdOverRsi() {
-        RSIIndicator rsiIndicator14 = calculateRSI(MACDOverRSIConstants.RSI_CANDLE_NUM);
+    private MACDIndicator calculateMacdOverRsi(BaseBarSeries currData) {
+        RSIIndicator rsiIndicator14 = calculateRSI(MACDOverRSIConstants.RSI_CANDLE_NUM, currData);
         return new MACDIndicator(rsiIndicator14, MACDOverRSIConstants.FAST_BAR_COUNT, MACDOverRSIConstants.SLOW_BAR_COUNT);
     }
 
-    private RSIIndicator calculateRSI(int candleNum) {
-        ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(realTimeData);
+    private RSIIndicator calculateRSI(int candleNum, BaseBarSeries currData) {
+        ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(currData);
         return new RSIIndicator(closePriceIndicator, candleNum);
     }
 }

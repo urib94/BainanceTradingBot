@@ -26,7 +26,7 @@ public class MACDOverRSILongExitStrategy5 extends MACDOverRSIBaseExitStrategy {
         if (isTrailing) {
             double currentPrice = realTimeData.getCurrentPrice();
             trailer.updateTrailer(currentPrice);
-            boolean currentPriceCrossedUpperBollingerUp = realTimeData.crossed(DataHolder.IndicatorType.CLOSE_PRICE, DataHolder.CrossType.UP, DataHolder.CandleType.OPEN, realTimeData.getUpperBollingerAtIndex(realTimeData.getLastCloseIndex()));
+            boolean currentPriceCrossedUpperBollingerUp = realTimeData.crossed(DataHolder.IndicatorType.CLOSE_PRICE, DataHolder.CrossType.UP, DataHolder.CandleType.CLOSE, realTimeData.getUpperBollingerAtIndex(realTimeData.getLastCloseIndex()));
             if (currentPriceCrossedUpperBollingerUp){
                 isTrailing = false;
                 trailer.setTrailingPercentage(MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE);
@@ -36,7 +36,8 @@ public class MACDOverRSILongExitStrategy5 extends MACDOverRSIBaseExitStrategy {
             if (changedDirection(realTimeData, DataHolder.CandleType.CLOSE)){
                 trailer.setTrailingPercentage(MACDOverRSIConstants.EXTREME_LOW_TRAILING_PERCENTAGE);
             }
-            if (trailer.needToSell(currentPrice)){
+            boolean isBearish = realTimeData.getClosePriceAtIndex(realTimeData.getLastIndex()) < realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex());
+            if (isBearish && trailer.needToSell(currentPrice) && currentPrice < realTimeData.getUpperBollingerAtIndex(realTimeData.getLastIndex())){
                 TelegramMessenger.sendToTelegram("selling position with long exit 5" + "time: " + new Date(System.currentTimeMillis()));
                 return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT,
                         MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);

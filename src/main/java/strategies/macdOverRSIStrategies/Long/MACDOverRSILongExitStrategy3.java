@@ -31,7 +31,8 @@ public class MACDOverRSILongExitStrategy3 extends MACDOverRSIBaseExitStrategy {
 				TelegramMessenger.sendToTelegram("stop trailing position with long exit 3" + "time: " + new Date(System.currentTimeMillis()));
 				return null;
 			}
-			if (trailer.needToSell(currentPrice)){
+			boolean isBearish = realTimeData.getClosePriceAtIndex(realTimeData.getLastIndex()) < realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex());
+			if (trailer.needToSell(currentPrice) && isBearish){
 				TelegramMessenger.sendToTelegram("trailing position with long exit 3" + "time: " + new Date(System.currentTimeMillis()));
 				return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT,
 						MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);

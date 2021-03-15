@@ -3,8 +3,11 @@ package strategies.macdOverRSIStrategies.Long;
 import data.DataHolder;
 import positions.PositionHandler;
 import positions.SellingInstructions;
+import singletonHelpers.TelegramMessenger;
 import strategies.macdOverRSIStrategies.MACDOverRSIBaseExitStrategy;
 import strategies.macdOverRSIStrategies.MACDOverRSIConstants;
+
+import java.util.Date;
 
 public class MACDOverRSILongExitStrategy6 extends MACDOverRSIBaseExitStrategy {
     private double prevClose;
@@ -21,14 +24,15 @@ public class MACDOverRSILongExitStrategy6 extends MACDOverRSIBaseExitStrategy {
 
     @Override
     public SellingInstructions run(DataHolder realTimeData) {
-        boolean candleChanged = prevClose == realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()) &&
-                prevHigh == realTimeData.getHighPriceAtIndex(realTimeData.getLastCloseIndex()) &&
-                prevLow == realTimeData.getLowPriceAtIndex(realTimeData.getLastCloseIndex());
+        boolean candleChanged = prevClose == realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()-1) &&
+                prevHigh == realTimeData.getHighPriceAtIndex(realTimeData.getLastCloseIndex()-1) &&
+                prevLow == realTimeData.getLowPriceAtIndex(realTimeData.getLastCloseIndex()-1);
         if (candleChanged){
             if (once){
                 once = false;
                 if (realTimeData.candleType(DataHolder.CandleType.BEARISH)){
-                    return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT, MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);
+                    TelegramMessenger.sendToTelegram("selling position with long exit 6" + "time: " + new Date(System.currentTimeMillis()));
+                    return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_MARKET, MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);
                 }
             }
         }

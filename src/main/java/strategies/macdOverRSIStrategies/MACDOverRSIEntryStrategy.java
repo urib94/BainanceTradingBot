@@ -43,17 +43,17 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
             boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
             if (noOpenOrders){
                 double currentPrice = realTimeData.getCurrentPrice();
-                boolean currentPriceAboveSar = realTimeData.getSarValueAtIndex(realTimeData.getLastIndex()) < currentPrice;
-
+                boolean currentPriceAboveSma = realTimeData.getSmaValueAtIndex(realTimeData.getLastIndex()) < currentPrice;
                 boolean rule1;
-                if (currentPriceAboveSar) {
+                if (currentPriceAboveSma) {
                     rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.UP, DataHolder.CandleType.CLOSE, Config.ZERO);
                     if (rule1){
                         if (bought)return null;
                         return buyAndCreatePositionHandler(realTimeData, currentPrice,symbol, PositionSide.LONG);
                     }
                     else {
-                        if (decliningPyramid(realTimeData, DecliningType.POSITIVE)){
+                        boolean histIsNegative = realTimeData.getMacdOverRsiMacdLineValueAtIndex(realTimeData.getLastIndex()) < 0;
+                        if (decliningPyramid(realTimeData, DecliningType.POSITIVE) && histIsNegative){
                             if (bought)return null;
                             return buyAndCreatePositionHandler(realTimeData, currentPrice,symbol, PositionSide.LONG);
                         }
@@ -66,7 +66,8 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                         return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT);
                     }
                     else{
-                        if (decliningPyramid(realTimeData, DecliningType.NEGATIVE)){
+                        boolean histIsPositive = realTimeData.getMacdOverRsiMacdLineValueAtIndex(realTimeData.getLastIndex()) > 0;
+                        if (decliningPyramid(realTimeData, DecliningType.NEGATIVE) && histIsPositive){
                             if (bought) return null;
                             return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT);
                         }
