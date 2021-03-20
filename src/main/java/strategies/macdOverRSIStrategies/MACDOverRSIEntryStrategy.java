@@ -23,12 +23,14 @@ import java.util.Date;
 public class MACDOverRSIEntryStrategy implements EntryStrategy {
 
 
-    double takeProfitPercentage = MACDOverRSIConstants.DEFAULT_TAKE_PROFIT_PERCENTAGE;
+    private double takeProfitPercentage = MACDOverRSIConstants.DEFAULT_TAKE_PROFIT_PERCENTAGE;
     private double stopLossPercentage = MACDOverRSIConstants.DEFAULT_STOP_LOSS_PERCENTAGE;
     private int leverage = MACDOverRSIConstants.DEFAULT_LEVERAGE;
     private double requestedBuyingAmount = MACDOverRSIConstants.DEFAULT_BUYING_AMOUNT;
     private final AccountBalance accountBalance;
     private volatile boolean bought = false;
+    private double positivePeek = 0;
+    private double negativePeek = 0;
 
     public MACDOverRSIEntryStrategy(){
         accountBalance = AccountBalance.getAccountBalance();
@@ -37,36 +39,38 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
 
     @Override
     public synchronized PositionHandler run(DataHolder realTimeData, String symbol) {
+        updatePeeks(realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()-1));
         boolean notInPosition = accountBalance.getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == Config.ZERO;
         if (notInPosition){
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
             if (noOpenOrders){
                 double currentPrice = realTimeData.getCurrentPrice();
-                boolean currentPriceAboveSma = realTimeData.getSmaValueAtIndex(realTimeData.getLastIndex()) < currentPrice;
+                boolean currentPriceAboveSma = true;//realTimeData.getSmaValueAtIndex(realTimeData.getLastIndex()) < currentPrice;
                 boolean rule1;
-                if (currentPriceAboveSma) {
+                if (negativePeek < -10.0) {
                     rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.UP, DataHolder.CandleType.CLOSE, Config.ZERO);
                     if (rule1){
                         if (bought)return null;
                         return buyAndCreatePositionHandler(realTimeData, currentPrice,symbol, PositionSide.LONG);
                     }
                     else {
-                        boolean histIsNegative = realTimeData.getMacdOverRsiMacdLineValueAtIndex(realTimeData.getLastIndex()) < 0;
+                        boolean histIsNegative = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()) < 0;
                         if (decliningPyramid(realTimeData, DecliningType.POSITIVE) && histIsNegative){
                             if (bought)return null;
                             return buyAndCreatePositionHandler(realTimeData, currentPrice,symbol, PositionSide.LONG);
                         }
                     }
                 }
-                else{
+                //else{
+                if (positivePeek > 10.0){
                     rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.DOWN, DataHolder.CandleType.CLOSE, Config.ZERO);
                     if (rule1){
                         if (bought)return null;
                         return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT);
                     }
                     else{
-                        boolean histIsPositive = realTimeData.getMacdOverRsiMacdLineValueAtIndex(realTimeData.getLastIndex()) > 0;
+                        boolean histIsPositive = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()) > 0;
                         if (decliningPyramid(realTimeData, DecliningType.NEGATIVE) && histIsPositive){
                             if (bought) return null;
                             return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT);
@@ -78,6 +82,7 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
         }
         return null;
     }
+
 
     private PositionHandler buyAndCreatePositionHandler(DataHolder realTimeData, double currentPrice, String symbol, PositionSide positionSide) {//TODO: maybe change market later.
         bought = true;
@@ -91,12 +96,12 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                         buyingQty, String.valueOf(currentPrice),null,null, null,null,null, null, WorkingType.MARK_PRICE, null, NewOrderRespType.RESULT);
                 TelegramMessenger.sendToTelegram("buying long: buyOrder: "+ buyOrder + new Date(System.currentTimeMillis()));
                 ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
-                exitStrategies.add(new MACDOverRSILongExitStrategy1());
+                exitStrategies.add(new MACDOverRSILongExitStrategy1(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.LONG)));
                 exitStrategies.add(new MACDOverRSILongExitStrategy2(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.LONG)));
                 exitStrategies.add(new MACDOverRSILongExitStrategy3(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.LONG)));
                 exitStrategies.add(new MACDOverRSILongExitStrategy4(new Trailer(currentPrice, MACDOverRSIConstants.CONSTANT_TRAILING_PERCENTAGE, PositionSide.LONG)));
                 exitStrategies.add(new MACDOverRSILongExitStrategy5(new Trailer(currentPrice, MACDOverRSIConstants.PROFIT_TRAILING_PERCENTAGE, PositionSide.LONG)));
-                exitStrategies.add(new MACDOverRSILongExitStrategy6(realTimeData));
+                //exitStrategies.add(new MACDOverRSILongExitStrategy6(realTimeData));
                 return new PositionHandler(buyOrder ,exitStrategies);
             }catch (Exception e){ e.printStackTrace();}
         }
@@ -110,12 +115,12 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
                         buyingQty, String.valueOf(currentPrice),null,null, null,null,null,null, null, WorkingType.MARK_PRICE.toString(), NewOrderRespType.RESULT);
                 TelegramMessenger.sendToTelegram("buying short: buyOrder: "+ buyOrder + new Date(System.currentTimeMillis()));
                 ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
-                exitStrategies.add(new MACDOverRSIShortExitStrategy1());
+                exitStrategies.add(new MACDOverRSIShortExitStrategy1(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.SHORT)));
                 exitStrategies.add(new MACDOverRSIShortExitStrategy2(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.SHORT)));
                 exitStrategies.add(new MACDOverRSIShortExitStrategy3(new Trailer(currentPrice, MACDOverRSIConstants.POSITIVE_TRAILING_PERCENTAGE, PositionSide.SHORT)));
                 exitStrategies.add(new MACDOverRSIShortExitStrategy4(new Trailer(currentPrice, MACDOverRSIConstants.CONSTANT_TRAILING_PERCENTAGE, PositionSide.SHORT)));
                 exitStrategies.add(new MACDOverRSIShortExitStrategy5(new Trailer(currentPrice, MACDOverRSIConstants.PROFIT_TRAILING_PERCENTAGE, PositionSide.SHORT)));
-                exitStrategies.add(new MACDOverRSIShortExitStrategy6(realTimeData));
+                //exitStrategies.add(new MACDOverRSIShortExitStrategy6(realTimeData));
                 return new PositionHandler(buyOrder ,exitStrategies);
             }catch (Exception e){e.printStackTrace();}
         }
@@ -159,6 +164,17 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
             rule2 = prevMacdOverRsiValue < prevPrevMacdOverRsiValue;
         }
         return rule1 && rule2;
+    }
+
+    private void updatePeeks(double macdOverRsiValueAtIndex) {
+        if (macdOverRsiValueAtIndex < 0){
+            positivePeek = 0;
+            if (macdOverRsiValueAtIndex < negativePeek) negativePeek = macdOverRsiValueAtIndex;
+        }
+        else{
+            negativePeek = 0;
+            if (macdOverRsiValueAtIndex > positivePeek) positivePeek = macdOverRsiValueAtIndex;
+        }
     }
 
     public enum DecliningType{

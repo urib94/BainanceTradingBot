@@ -1,6 +1,6 @@
 package data;
 
-import org.ta4j.core.indicators.ParabolicSarIndicator;
+import org.ta4j.core.indicators.*;
 import org.ta4j.core.indicators.bollinger.BollingerBandsLowerIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsMiddleIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsUpperIndicator;
@@ -13,9 +13,6 @@ import com.binance.client.model.enums.CandlestickInterval;
 import com.binance.client.model.event.CandlestickEvent;
 import com.binance.client.model.market.Candlestick;
 import org.ta4j.core.BaseBarSeries;
-import org.ta4j.core.indicators.MACDIndicator;
-import org.ta4j.core.indicators.RSIIndicator;
-import org.ta4j.core.indicators.SMAIndicator;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import singletonHelpers.RequestClient;
 
@@ -119,8 +116,10 @@ public class RealTimeData{
     }
 
     private MACDIndicator calculateMacdOverRsi(BaseBarSeries currData) {
-        RSIIndicator rsiIndicator14 = calculateRSI(MACDOverRSIConstants.RSI_CANDLE_NUM, currData);
-        return new MACDIndicator(rsiIndicator14, MACDOverRSIConstants.FAST_BAR_COUNT, MACDOverRSIConstants.SLOW_BAR_COUNT);
+        //RSIIndicator rsiIndicator14 = calculateRSI(MACDOverRSIConstants.RSI_CANDLE_NUM, currData);
+        CCICIndicator ccicIndicator = new CCICIndicator(currData, MACDOverRSIConstants.CCIC_CANDLES);
+        System.out.println("cc: " + ccicIndicator.getValue(currData.getEndIndex()-1));
+        return new MACDIndicator(ccicIndicator/*rsiIndicator14*/, MACDOverRSIConstants.FAST_BAR_COUNT, MACDOverRSIConstants.SLOW_BAR_COUNT);
     }
 
     private RSIIndicator calculateRSI(int candleNum, BaseBarSeries currData) {
