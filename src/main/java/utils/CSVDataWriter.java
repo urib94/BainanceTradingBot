@@ -1,5 +1,6 @@
 package utils;
 
+import com.alibaba.fastjson.JSONStreamAware;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.CandlestickInterval;
 import com.binance.client.model.market.Candlestick;
@@ -13,9 +14,14 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class CSVDataWriter {
     public static void writeDataAtOnce() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter symbol for retriving last 1500 candles");
+        String symbol= new String(scanner.next());
+
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         List<Candlestick> candlestickBars = syncRequestClient.getCandlestick("btcusdt", CandlestickInterval.ONE_MINUTE, null, null, 1500);
         // first create file object for file placed at location
@@ -29,6 +35,7 @@ public class CSVDataWriter {
 
             // create CSVWriter object filewriter object as parameter
             CSVWriter writer = new CSVWriter(outputFile);
+
 
             // create a List which contains String array
             List<String[]> data = new ArrayList<String[]>();
