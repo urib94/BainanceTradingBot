@@ -12,47 +12,70 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.security.Timestamp;
+import java.sql.Time;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.*;
 
 public class CSVDataWriter {
+
+
+
     public static void writeDataAtOnce() {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter symbol for retriving last 1500 candles");
-        String symbol= new String(scanner.next());
+            String[] symbols = {"btcusdt", "ethusdt", "trxusdt", "bnbusdt", "xrpusdt", "filusdt",
+                    "eosusdt", "hotusdt", "ltcusdt", "adausdt"};
+            String[] intervals = {"MONTHLY", "WEEKLY", "THREE_DAILY", "DAILY", "TWELVE_HOURLY", "EIGHT_HOURLY",
+                    "SIX_HOURLY", "FOUR_HOURLY", "TWO_HOURLY", "HOURLY", "HALF_HOURLY", "FIFTEEN_MINUTES", "FIVE_MINUTES", "THREE_MINUTES", "ONE_MINUTE"};
+            int[] time={1,1,1,1,3,4,5,7,13,25,50,100,300,500,1500};
+//        System.out.println("Enter symbol for retriving last 1500 candles");
+//        String symbol = new String(scanner.next());
+//        System.out.println("Enter the wonted candle interval");
+            //String interval = new String(scanner.next());
+            SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+        for (String symbol : symbols) {
+            System.out.println(symbol);
+            for (int j = 0; j < intervals.length; j++) {
+                CandlestickInterval candlestickInterval = IntevalMaker.makeCandlestickInterval(intervals[j]);
+                List<Candlestick> candlestickBars = syncRequestClient.getCandlestick(symbol,
+                        candlestickInterval, null, null, time[j]);
+                // first create file object for file placed at location
+                // specified by filepath
+//                    String pattern = "yyyy-MM-dd";
+//                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+//
+//                    LocalDate localDate = LocalDate.now();
+                String fileName = candlestickBars.get(time[j] - 1).getOpenTime().toString();
+                File file = new File("./Candles/" + symbol + "/" + intervals[j] + "/" + fileName);
+                try {
+                    // create FileWriter object with file as parameter
+                    FileWriter outputFile = new FileWriter(file);
 
-        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-        List<Candlestick> candlestickBars = syncRequestClient.getCandlestick("btcusdt", CandlestickInterval.ONE_MINUTE, null, null, 1500);
-        // first create file object for file placed at location
-        // specified by filepath
-        String fileName = candlestickBars.get(1499).getOpenTime().toString();
-        File file = new File("./Candles/" + fileName);
-
-        try {
-            // create FileWriter object with file as parameter
-            FileWriter outputFile = new FileWriter(file);
-
-            // create CSVWriter object filewriter object as parameter
-            CSVWriter writer = new CSVWriter(outputFile);
+                    // create CSVWriter object filewriter object as parameter
+                    CSVWriter writer = new CSVWriter(outputFile);
 
 
-            // create a List which contains String array
-            List<String[]> data = new ArrayList<String[]>();
-            data.add(new String[]{"openTime", "open", "high", "low",
-                    "close", "volume", "closeTime", "quoteAssetVolume", "numTrades", "takerBuyBaseAssetVolume", "takerBuyQuoteAssetVolume"});
-            for (Candlestick candlestick : candlestickBars){
-                data.add(candlestickToStringArray(candlestick));
+                    // create a List which contains String array
+                    List<String[]> data = new ArrayList<String[]>();
+                    data.add(new String[]{"openTime", "open", "high", "low",
+                            "close", "volume", "closeTime", "quoteAssetVolume", "numTrades", "takerBuyBaseAssetVolume", "takerBuyQuoteAssetVolume"});
+                    for (Candlestick candlestick : candlestickBars) {
+                        data.add(candlestickToStringArray(candlestick));
+                    }
+                    writer.writeAll(data);
+
+                    // closing writer connection
+                    writer.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
-            writer.writeAll(data);
-
-            // closing writer connection
-            writer.close();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
-}
+
+
+
+    }
 
     private static String[] candlestickToStringArray(Candlestick candlestick) {
         String[] strings = new String[11];
@@ -69,4 +92,12 @@ public class CSVDataWriter {
         strings[10] = candlestick.getTakerBuyQuoteAssetVolume().toString();
         return strings;
     }
+
+    public static void main(String[] args) {
+        CSVDataWriter.writeDataAtOnce();
+    }
 }
+
+
+
+

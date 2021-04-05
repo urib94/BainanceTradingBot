@@ -13,7 +13,7 @@ public class Main {
         BinanceInfo binanceInfo = BinanceInfo.getBinanceInfo(); //!Don't touch
         RealTimeCommandOperator realTimeCommandOperator = new RealTimeCommandOperator();
         TelegramMessenger.sendToTelegram("Start running with 10.00$: " + new Date(System.currentTimeMillis()));
-        CSVDataWriter.writeDataAtOnce();
+//        CSVDataWriter.writeDataAtOnce();
         try {
             realTimeCommandOperator.run();
         } catch (InterruptedException e) {
