@@ -1,6 +1,6 @@
 package strategies.rsiStrategies;
 import data.DataHolder;
-import data.RealTimeData;
+import positions.Instructions;
 import positions.PositionHandler;
 import positions.SellingInstructions;
 import strategies.ExitStrategy;
@@ -11,7 +11,7 @@ public class RSIExitStrategy3 implements ExitStrategy {
 	private double rsiValueBefore;
 	private boolean firstTime = true;
 
-	public SellingInstructions run(DataHolder realTimeData) {
+	public Instructions run(DataHolder realTimeData) {
 		if (firstTime) {
 			rsiValueBefore = realTimeData.getRsiCloseValue(); // last closed candle rsi value
 			firstTime = false;
@@ -39,5 +39,9 @@ public class RSIExitStrategy3 implements ExitStrategy {
 		double temp = rsiValueBefore;
 		rsiValueBefore = newValue;
 		rsiValueTwoBefore = temp;
+	}
+	@Override
+	public void updateExitStrategy() {
+
 	}
 }

@@ -9,7 +9,7 @@ public class MACDOverCCIWIthATRConstants {
     public static final double DEFAULT_BUYING_AMOUNT = 0.6;
     public static final int SIGNAL_LENGTH = 9;
 //    public static final int RSI_CANDLE_NUM = 9;
-    public static final double RSI_BB_StochRSI_EXIT_SELLING_PERCENTAGE = 100;
+    public static final double MACDOverCCIWIthATR_SELLING_PERCENTAGE = 100;
     public static final double POSITIVE_SKIPINGֹ_TRAILING_PERCENTAGE_BUY = 0.05;
     public static final double NEGATIVE_SKIPINGֹ_TRAILING_PERCENTAGE_BUY=-0.05;
 //    public static final double CONSTANT_TRAILING_PERCENTAGE = 0.1;

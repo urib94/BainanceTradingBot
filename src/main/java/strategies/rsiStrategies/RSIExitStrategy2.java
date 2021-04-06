@@ -1,7 +1,7 @@
 package strategies.rsiStrategies;
 
 import data.DataHolder;
-import data.RealTimeData;
+import positions.Instructions;
 import positions.PositionHandler;
 import positions.SellingInstructions;
 import strategies.ExitStrategy;
@@ -15,7 +15,7 @@ public class RSIExitStrategy2 implements ExitStrategy {
 	 * @param realTimeData
 	 * @return the percentage of quantity to sell, null otherwise.
 	 */
-	public SellingInstructions run(DataHolder realTimeData) {
+	public Instructions run(DataHolder realTimeData) {
 		if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
 			if (realTimeData.above(DataHolder.IndicatorType.RSI,DataHolder.CandleType.CLOSE, RSIConstants.RSI_EXIT_OPTION_2_OVER_THRESHOLD1)) {
 				System.out.println(this.getClass().getSimpleName() + "Switching to Position 2 ");
@@ -37,5 +37,9 @@ public class RSIExitStrategy2 implements ExitStrategy {
 			}
 		}
 		return null;
+	}
+	@Override
+	public void updateExitStrategy() {
+
 	}
 }

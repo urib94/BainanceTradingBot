@@ -1,22 +1,28 @@
 package strategies;
 
-import com.binance.client.model.enums.PositionSide;
 import data.DataHolder;
-import org.ta4j.core.BaseStrategy;
-import org.ta4j.core.Rule;
 import positions.DCAInstructions;
-import positions.PositionHandler;
+import positions.Instructions;
 
-public interface DCAStrategy {
-    boolean timeToDCA=false;
+public interface DCAStrategy  {
+    public boolean needToDCA =false;
     DCAInstructions DCA_INSTRUCTIONS = null;
 
+    public void setDidDCA(boolean valToSet);
+    public boolean getDidDCA ();
+    public void updateExitPrice(double qty,DataHolder realTimeData);
+    public void setNeedToDCA(DataHolder dataHolder);
+    public void setNeedToDCA(DataHolder dataHolder , double[] closePrices);
+    public double[] getexitPrices();
+    public void setNeedToDCA(boolean valToSet);
 
-    public void setTimeToDCA(DataHolder dataHolder);
+    public default boolean getNeedToDCA(){
+        return needToDCA;
+    }
 
     public DCAInstructions getDCAInstructions ();
     public void setDCAInstructions(DCAInstructions dcaInstructions);
 
 
-    DCAInstructions run(DataHolder realTimeData);
+    Instructions run(DataHolder realTimeData);
 }

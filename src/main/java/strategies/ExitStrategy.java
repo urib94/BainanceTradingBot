@@ -1,9 +1,10 @@
 package strategies;
 
 import data.DataHolder;
-import data.RealTimeData;
+import positions.Instructions;
 import positions.SellingInstructions;
 
 public interface ExitStrategy {
-    SellingInstructions run(DataHolder realTimeData);
+    public void updateExitStrategy();
+    Instructions run(DataHolder realTimeData);
 }

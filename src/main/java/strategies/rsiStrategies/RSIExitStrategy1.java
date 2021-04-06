@@ -1,6 +1,6 @@
 package strategies.rsiStrategies;
 import data.DataHolder;
-import data.RealTimeData;
+import positions.Instructions;
 import positions.PositionHandler;
 import positions.SellingInstructions;
 import strategies.ExitStrategy;
@@ -9,7 +9,7 @@ import strategies.PositionInStrategy;
 public class RSIExitStrategy1 implements ExitStrategy {
 	private PositionInStrategy positionInStrategy = PositionInStrategy.POSITION_ONE;
 
-	public SellingInstructions run(DataHolder realTimeData) {
+	public Instructions run(DataHolder realTimeData) {
 		if (positionInStrategy == PositionInStrategy.POSITION_ONE) {
 			if (realTimeData.above(DataHolder.IndicatorType.RSI,DataHolder.CandleType.CLOSE, RSIConstants.RSI_EXIT_OPTION_1_OVER_THRESHOLD1)
 					&& !(realTimeData.above(DataHolder.IndicatorType.RSI,DataHolder.CandleType.CLOSE, RSIConstants.RSI_EXIT_OPTION_2_OVER_THRESHOLD1))) {
@@ -31,5 +31,9 @@ public class RSIExitStrategy1 implements ExitStrategy {
 			}
 		}
 		return null;
+	}
+	@Override
+	public void updateExitStrategy() {
+
 	}
 }

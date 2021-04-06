@@ -1,6 +1,7 @@
 package strategies.macdOverRSIStrategies.Short;
 
 import data.DataHolder;
+import positions.Instructions;
 import positions.PositionHandler;
 import positions.SellingInstructions;
 import singletonHelpers.TelegramMessenger;
@@ -20,7 +21,7 @@ public class MACDOverRSIShortExitStrategy1 extends MACDOverRSIBaseExitStrategy {
 	}
 
 	@Override
-	public SellingInstructions run(DataHolder realTimeData) {
+	public Instructions run(DataHolder realTimeData) {
 //		boolean openCrossed = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.UP, DataHolder.CandleType.OPEN, MACDOverRSIConstants.SHORT_EXIT2_OPEN_THRESHOLD);
 //		if (openCrossed) {
 //			TelegramMessenger.sendToTelegram("exiting position with short exit 1" + "time: " + new Date(System.currentTimeMillis()));
@@ -51,5 +52,9 @@ public class MACDOverRSIShortExitStrategy1 extends MACDOverRSIBaseExitStrategy {
 			}
 		}
 		return null;
+	}
+	@Override
+	public void updateExitStrategy() {
+
 	}
 }

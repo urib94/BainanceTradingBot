@@ -1,6 +1,7 @@
 package strategies.macdOverRSIStrategies.Long;
 
 import data.DataHolder;
+import positions.Instructions;
 import positions.PositionHandler;
 import positions.SellingInstructions;
 import singletonHelpers.TelegramMessenger;
@@ -20,7 +21,7 @@ public class MACDOverRSILongExitStrategy1 extends MACDOverRSIBaseExitStrategy {
 	}
 
 	@Override
-	public SellingInstructions run(DataHolder realTimeData) {
+	public Instructions run(DataHolder realTimeData) {
 //		boolean openCrossed = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.DOWN, DataHolder.CandleType.OPEN, MACDOverRSIConstants.LONG_EXIT2_OPEN_THRESHOLD);
 //		if (openCrossed) {
 //			TelegramMessenger.sendToTelegram("exiting position with long exit 1: " + new Date(System.currentTimeMillis()));
@@ -51,5 +52,9 @@ public class MACDOverRSILongExitStrategy1 extends MACDOverRSIBaseExitStrategy {
 			}
 		}
 		return null;
+	}
+	@Override
+	public void updateExitStrategy() {
+
 	}
 }

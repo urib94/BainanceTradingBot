@@ -1,6 +1,6 @@
 package positions;
 
-public class DCAInstructions {
+public class DCAInstructions extends SellingInstructions {
     private PositionHandler.DCAType type;
     private double DCAAmount;
 
@@ -9,7 +9,7 @@ public class DCAInstructions {
         this.DCAAmount = buyingAmount;
     }
 
-    public PositionHandler.DCAType getType() {
+    public PositionHandler.DCAType getDCAType() {
         return type;
     }
 

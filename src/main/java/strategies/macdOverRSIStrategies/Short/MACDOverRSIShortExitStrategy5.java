@@ -1,6 +1,7 @@
 package strategies.macdOverRSIStrategies.Short;
 
 import data.DataHolder;
+import positions.Instructions;
 import positions.PositionHandler;
 import positions.SellingInstructions;
 import singletonHelpers.TelegramMessenger;
@@ -18,7 +19,7 @@ public class MACDOverRSIShortExitStrategy5 extends MACDOverRSIBaseExitStrategy {
         public MACDOverRSIShortExitStrategy5(TrailingExit trailingExit) { this.trailingExit = trailingExit;}
 
         @Override
-        public SellingInstructions run (DataHolder realTimeData){
+        public Instructions run (DataHolder realTimeData){
             if (isTrailing) {
                 double currentPrice = realTimeData.getCurrentPrice();
                 trailingExit.updateTrailer(currentPrice);
@@ -49,5 +50,9 @@ public class MACDOverRSIShortExitStrategy5 extends MACDOverRSIBaseExitStrategy {
             }
             return null;
         }
+    @Override
+    public void updateExitStrategy() {
+
+    }
 }
 
