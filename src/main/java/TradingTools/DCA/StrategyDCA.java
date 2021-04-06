@@ -14,13 +14,13 @@ public class StrategyDCA extends BaseDCA{
 
     public StrategyDCA(double step, double stepFactor, double initiallPrice, double maxDCACount, double initialAmount,
                        double amountFactor, PositionSide positionSide, DCAStrategy DCAStrategy,PositionHandler positionHandler) {
-        super(step, stepFactor, initiallPrice, maxDCACount, initialAmount, amountFactor, positionSide, positionHandler);
+        super(step, stepFactor, initiallPrice, maxDCACount, initialAmount, amountFactor, positionSide);
         this.DCAStrategy=DCAStrategy;
     }
 
     @Override
     public DCAInstructions run(DataHolder realTimeData) {
-        if(canBuy(realTimeData) ){
+        if(needToAdd(realTimeData) ){
             switch (positionSide){
                 //// TODO: 4/5/2021  includ position side BOTH
                 case SHORT:

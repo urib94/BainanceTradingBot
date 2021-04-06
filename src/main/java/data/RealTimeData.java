@@ -1,12 +1,11 @@
 package data;
 
 import org.ta4j.core.indicators.*;
-import org.ta4j.core.indicators.bollinger.BollingerBandsLowerIndicator;
-import org.ta4j.core.indicators.bollinger.BollingerBandsMiddleIndicator;
-import org.ta4j.core.indicators.bollinger.BollingerBandsUpperIndicator;
+import org.ta4j.core.indicators.bollinger.*;
 import org.ta4j.core.indicators.helpers.HighPriceIndicator;
 import org.ta4j.core.indicators.helpers.LowPriceIndicator;
 import org.ta4j.core.indicators.statistics.StandardDeviationIndicator;
+import strategies.MACDOverCCIWIthATR.MACDOverCCIWIthATRConstants;
 import strategies.macdOverRSIStrategies.MACDOverRSIConstants;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.CandlestickInterval;
@@ -27,13 +26,18 @@ public class RealTimeData{
     private BaseBarSeries realTimeData;
     private RSIIndicator rsiIndicator;
     private MACDIndicator macdOverRsiIndicator;
+    private MACDIndicator macdOverCCIIndicator;
     private SMAIndicator smaIndicator;
     private int counter = 0;
+    private BollingerBandWidthIndicator bollingerBandWidthIndicator;
     private BollingerBandsUpperIndicator bollingerBandsUpperIndicator;
     private BollingerBandsLowerIndicator bollingerBandsLowerIndicator;
+    private PercentBIndicator percentBIndicator;
     private ClosePriceIndicator closePriceIndicator;
     private HighPriceIndicator highPriceIndicator;
     private LowPriceIndicator lowPriceIndicator;
+    private ATRIndicator atrIndicator;
+
 
 
     public RealTimeData(String symbol, CandlestickInterval interval){
@@ -60,7 +64,8 @@ public class RealTimeData{
         if (! isNewCandle && counter != 20) return null;
         counter = 0;
         calculateIndicators();
-        return new DataHolder(highPriceIndicator, lowPriceIndicator, closePriceIndicator, rsiIndicator, macdOverRsiIndicator, bollingerBandsUpperIndicator, bollingerBandsLowerIndicator, smaIndicator, realTimeData.getEndIndex());
+        return new DataHolder(highPriceIndicator, lowPriceIndicator, closePriceIndicator, rsiIndicator, macdOverRsiIndicator, bollingerBandsUpperIndicator, bollingerBandsLowerIndicator,
+                smaIndicator,bollingerBandWidthIndicator, percentBIndicator, realTimeData.getEndIndex(),macdOverCCIIndicator,atrIndicator);
     }
 
     private boolean updateLastCandle(CandlestickEvent event) {
@@ -102,10 +107,13 @@ public class RealTimeData{
         BaseBarSeries currData = new BaseBarSeries(realTimeData.getBarData());
         highPriceIndicator = new HighPriceIndicator(currData);
         lowPriceIndicator = new LowPriceIndicator(currData);
+        macdOverCCIIndicator=calculateMacdOverRsi(currData);
         macdOverRsiIndicator = calculateMacdOverRsi(currData);
         smaIndicator = new SMAIndicator(new ClosePriceIndicator(currData), MACDOverRSIConstants.SMA_CANDLES);
         calculateBollingerBandsIndicators(currData);
+        atrIndicator=calculateATR(currData,MACDOverCCIWIthATRConstants.ATR_CANDLE_COUNT);
     }
+
 
     public synchronized void calculateBollingerBandsIndicators(BaseBarSeries currData){
         closePriceIndicator = new ClosePriceIndicator(currData);
@@ -113,8 +121,9 @@ public class RealTimeData{
         BollingerBandsMiddleIndicator bollingerBandsMiddleIndicator = new BollingerBandsMiddleIndicator(smaIndicator);
         bollingerBandsUpperIndicator = new BollingerBandsUpperIndicator(bollingerBandsMiddleIndicator, new StandardDeviationIndicator(closePriceIndicator, MACDOverRSIConstants.STANDARD_DEVIATION_CANDLES), MACDOverRSIConstants.DEVIATION_MULTIPLIER);
         bollingerBandsLowerIndicator = new BollingerBandsLowerIndicator(bollingerBandsMiddleIndicator, new StandardDeviationIndicator(closePriceIndicator, MACDOverRSIConstants.STANDARD_DEVIATION_CANDLES), MACDOverRSIConstants.DEVIATION_MULTIPLIER);
+        bollingerBandWidthIndicator= new BollingerBandWidthIndicator(bollingerBandsUpperIndicator,bollingerBandsMiddleIndicator,bollingerBandsLowerIndicator);
+        percentBIndicator=new PercentBIndicator(closePriceIndicator,20,2);
     }
-
     private MACDIndicator calculateMacdOverRsi(BaseBarSeries currData) {
         //RSIIndicator rsiIndicator14 = calculateRSI(MACDOverRSIConstants.RSI_CANDLE_NUM, currData);
         CCICIndicator ccicIndicator = new CCICIndicator(currData, MACDOverRSIConstants.CCIC_CANDLES);
@@ -122,8 +131,19 @@ public class RealTimeData{
         return new MACDIndicator(ccicIndicator/*rsiIndicator14*/, MACDOverRSIConstants.FAST_BAR_COUNT, MACDOverRSIConstants.SLOW_BAR_COUNT);
     }
 
-    private RSIIndicator calculateRSI(int candleNum, BaseBarSeries currData) {
+    private MACDIndicator calculateMacdOverCCI(BaseBarSeries currData) {
+        //RSIIndicator rsiIndicator14 = calculateRSI(MACDOverRSIConstants.RSI_CANDLE_NUM, currData);
+        CCICIndicator ccicIndicator = new CCICIndicator(currData, MACDOverCCIWIthATRConstants.CCIC_CANDLES);
+        System.out.println("cc: " + ccicIndicator.getValue(currData.getEndIndex() - 1));
+        return new MACDIndicator(ccicIndicator, MACDOverRSIConstants.FAST_BAR_COUNT, MACDOverRSIConstants.SLOW_BAR_COUNT);
+
+    }
+
+        private RSIIndicator calculateRSI(int candleNum, BaseBarSeries currData) {
         ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(currData);
         return new RSIIndicator(closePriceIndicator, candleNum);
+    }
+    private ATRIndicator calculateATR(BaseBarSeries currData, int candleNum){
+        return new ATRIndicator (currData,candleNum);
     }
 }

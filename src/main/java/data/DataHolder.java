@@ -1,28 +1,41 @@
 package data;
 
 import org.ta4j.core.indicators.*;
+import org.ta4j.core.indicators.bollinger.BollingerBandWidthIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsLowerIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsUpperIndicator;
+import org.ta4j.core.indicators.bollinger.PercentBIndicator;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import org.ta4j.core.indicators.helpers.HighPriceIndicator;
 import org.ta4j.core.indicators.helpers.LowPriceIndicator;
+import strategies.MACDOverCCIWIthATR.MACDOverCCIWIthATRConstants;
 import strategies.macdOverRSIStrategies.MACDOverRSIConstants;
 
 public class DataHolder {
     private double currentPrice;
     private RSIIndicator rsiIndicator;
     private MACDIndicator macdOverRsiIndicator;
+    private MACDIndicator macdOverCCIIndicator;
     private SMAIndicator smaIndicator;
     private BollingerBandsUpperIndicator bollingerBandsUpperIndicator;
     private BollingerBandsLowerIndicator bollingerBandsLowerIndicator;
+    private BollingerBandWidthIndicator bollingerBandWidthIndicator;
+    private ATRIndicator ATRIndicator;
+
+
+
+    private PercentBIndicator percentIndicator;
     private ClosePriceIndicator closePriceIndicator;
     private HighPriceIndicator highPriceIndicator;
     private LowPriceIndicator lowPriceIndicator;
     private double macdOverRsiCloseValue;
     private int endIndex;
 
+
+
     public DataHolder(HighPriceIndicator highPriceIndicator, LowPriceIndicator lowPriceIndicator, ClosePriceIndicator closePriceIndicator, RSIIndicator rsiIndicator, MACDIndicator macdOverRsiIndicator, BollingerBandsUpperIndicator bollingerBandsUpperIndicator,
-                      BollingerBandsLowerIndicator bollingerBandsLowerIndicator, SMAIndicator smaIndicator, int endIndex) {
+                      BollingerBandsLowerIndicator bollingerBandsLowerIndicator, SMAIndicator smaIndicator, BollingerBandWidthIndicator bollingerbandWidthIndicator, PercentBIndicator percentBIndicator, int endIndex
+                        , MACDIndicator macdOverCCIIndicator, ATRIndicator atrIndicator) {
         this.rsiIndicator = rsiIndicator;
         this.macdOverRsiIndicator = macdOverRsiIndicator;
         this.smaIndicator = smaIndicator;
@@ -30,10 +43,13 @@ public class DataHolder {
         this.macdOverRsiCloseValue = getMacdOverRsiValueAtIndex(endIndex-1);
         this.bollingerBandsUpperIndicator = bollingerBandsUpperIndicator;
         this.bollingerBandsLowerIndicator = bollingerBandsLowerIndicator;
+        this.bollingerBandWidthIndicator=bollingerbandWidthIndicator;
         this.closePriceIndicator = closePriceIndicator;
         currentPrice = getClosePriceAtIndex(endIndex);
         this.highPriceIndicator = highPriceIndicator;
         this.lowPriceIndicator = lowPriceIndicator;
+        this.macdOverCCIIndicator=macdOverCCIIndicator;
+        this.ATRIndicator=atrIndicator;
     }
 
     public double getClosePriceAtIndex(int index){return closePriceIndicator.getValue(index).doubleValue();}
@@ -46,6 +62,10 @@ public class DataHolder {
     public double getUpperBollingerAtIndex(int index){return bollingerBandsUpperIndicator.getValue(index).doubleValue();}
 
     public double getLowerBollingerAtIndex(int index){return bollingerBandsLowerIndicator.getValue(index).doubleValue();}
+
+    public double getBandWidthAtIndex(int index){return bollingerBandWidthIndicator.getValue(index).doubleValue();}
+
+    public double getPercentBIAtIndex(int index){return percentIndicator.getValue(index).doubleValue();}
 
     public double getMacdOverRsiSignalLineValueAtIndex(int index) {
         EMAIndicator signal = new EMAIndicator(macdOverRsiIndicator, MACDOverRSIConstants.SIGNAL_LENGTH);
@@ -60,10 +80,25 @@ public class DataHolder {
         return getMacdOverRsiMacdLineValueAtIndex(index) - getMacdOverRsiSignalLineValueAtIndex(index);
     }
 
+    public double getMacdOverCCIValueAtIndex(int index) {
+        return getMacdOverCCIMacdLineValueAtIndex(index) - getMacdOverCCISignalLineValueAtIndex(index);
+    }
+
+    private double getMacdOverCCIMacdLineValueAtIndex(int index) {
+        return macdOverRsiIndicator.getValue(index).doubleValue();
+    }
+
+    private double getMacdOverCCISignalLineValueAtIndex(int index) {
+        EMAIndicator signal = new EMAIndicator(macdOverRsiIndicator, MACDOverCCIWIthATRConstants.SIGNAL_LENGTH);
+        return signal.getValue(index).doubleValue();
+    }
     public double getMacdOverRsiCloseValue() {
         return macdOverRsiCloseValue;
     }
 
+    public double getATRValueAtIndex(int index){
+        return getATRIndicator().getValue(index).doubleValue();
+    }
     public double getRsiOpenValue() {
         return rsiIndicator.getValue(endIndex).doubleValue();
     }
@@ -80,17 +115,34 @@ public class DataHolder {
         return smaIndicator.getValue(index).doubleValue();
     }
 
+    public BollingerBandsLowerIndicator getBollingerBandsLowerIndicator() {
+        return bollingerBandsLowerIndicator;
+    }
+    public org.ta4j.core.indicators.ATRIndicator getATRIndicator() {
+        return ATRIndicator;
+    }
 
     public boolean crossed(IndicatorType indicatorType, CrossType crossType, CandleType candleType, double threshold) {
         switch (indicatorType) {
             case RSI:
                 return rsiCrossed(crossType,candleType,threshold);
 
-                case MACD_OVER_RSI:
+            case MACD_OVER_RSI:
                 return macdOverRsiCrossed(crossType,candleType,threshold);
+            case MACD_OVER_CCI:
+                return macdOverCCICrossed(crossType,candleType,threshold);
 
+            case BOllINGER_BANDS_UPPER_INDICATOR:
+                break;
+            case BOllINGER_BANDS_LOWER_INDICATOR:
+                break;
+            case BOllINGER_BANDS_WIDTH_INDICATOR:
+                break;
+            case SAR:
+                break;
             case CLOSE_PRICE:
                 return closePriceCrossed(crossType,candleType,threshold);
+
         }
         return true; // will not come to this!
 
@@ -135,6 +187,19 @@ public class DataHolder {
         if (crossType == CrossType.UP) return currentMacdOverRsiValue > threshold && prevMacdOverRsiValue <= threshold;
         return prevMacdOverRsiValue >= threshold && currentMacdOverRsiValue < threshold;
     }
+    private boolean macdOverCCICrossed(CrossType crossType, CandleType candleType, double threshold) {
+        double currentMacdOverRsiValue,prevMacdOverRsiValue;
+        if (candleType == CandleType.OPEN) {
+            currentMacdOverRsiValue = getMacdOverCCIValueAtIndex(endIndex);
+            prevMacdOverRsiValue  = getMacdOverCCIValueAtIndex(endIndex-1);
+        } else {
+            currentMacdOverRsiValue =getMacdOverCCIValueAtIndex(endIndex-1);
+            prevMacdOverRsiValue = getMacdOverCCIValueAtIndex(endIndex-2);
+        }
+        if (crossType == CrossType.UP) return currentMacdOverRsiValue > threshold && prevMacdOverRsiValue <= threshold;
+        return prevMacdOverRsiValue >= threshold && currentMacdOverRsiValue < threshold;
+    }
+
 
     public boolean above(IndicatorType indicatorType, CandleType type, int threshold) {
         if (indicatorType == IndicatorType.RSI) {
@@ -176,6 +241,26 @@ public class DataHolder {
         }
     }
 
+    public BollingerBandWidthIndicator getBollingerBandWidthIndicator() {
+        return bollingerBandWidthIndicator;
+    }
+
+    public void setBollingerBandWidthIndicator(BollingerBandWidthIndicator bollingerBandWidthIndicator) {
+        this.bollingerBandWidthIndicator = bollingerBandWidthIndicator;
+    }
+
+    public boolean bandWidthIsShrinking(int index){
+        return (getBandWidthAtIndex(index)<getBandWidthAtIndex(index-1));
+    }
+
+    public PercentBIndicator getPercentIndicator() {
+        return percentIndicator;
+    }
+
+    public void setPercentIndicator(PercentBIndicator percentIndicator) {
+        this.percentIndicator = percentIndicator;
+    }
+
     public enum CandleType {
         OPEN,CLOSE,BEARISH,BULLISH;
     }
@@ -184,6 +269,7 @@ public class DataHolder {
         UP,DOWN
     }
     public enum IndicatorType {
-        RSI,MACD_OVER_RSI, UpperBollinger, SAR, CLOSE_PRICE
+        RSI,MACD_OVER_RSI, BOllINGER_BANDS_UPPER_INDICATOR,BOllINGER_BANDS_LOWER_INDICATOR
+        , BOllINGER_BANDS_WIDTH_INDICATOR, SAR, CLOSE_PRICE,MACD_OVER_CCI,ATR
     }
 }

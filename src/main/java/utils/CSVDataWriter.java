@@ -1,21 +1,14 @@
 package utils;
 
-import com.alibaba.fastjson.JSONStreamAware;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.CandlestickInterval;
 import com.binance.client.model.market.Candlestick;
 import com.opencsv.CSVWriter;
-import data.Config;
 import singletonHelpers.RequestClient;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.security.Timestamp;
-import java.sql.Time;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.*;
 
 public class CSVDataWriter {
@@ -36,7 +29,7 @@ public class CSVDataWriter {
         for (String symbol : symbols) {
             System.out.println(symbol);
             for (int j = 0; j < intervals.length; j++) {
-                CandlestickInterval candlestickInterval = IntevalMaker.makeCandlestickInterval(intervals[j]);
+                CandlestickInterval candlestickInterval = IntervalMaker.makeCandlestickInterval(intervals[j]);
                 List<Candlestick> candlestickBars = syncRequestClient.getCandlestick(symbol,
                         candlestickInterval, null, null, time[j]);
                 // first create file object for file placed at location

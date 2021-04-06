@@ -1,5 +1,8 @@
-package strategies.macdOverRSIStrategies;
+package strategies.MACDOverCCIWIthATR;
 
+import TradingTools.DCA.BaseDCA;
+import TradingTools.Trailers.SkippingEntryTrailer;
+import TradingTools.Trailers.TrailingExit;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.*;
 import com.binance.client.model.trade.Order;
@@ -9,81 +12,82 @@ import data.DataHolder;
 import positions.PositionHandler;
 import singletonHelpers.RequestClient;
 import singletonHelpers.TelegramMessenger;
-import strategies.EntryStrategy;
 import strategies.ExitStrategy;
 import strategies.macdOverRSIStrategies.Long.*;
+import strategies.macdOverRSIStrategies.MACDOverRSIConstants;
 import strategies.macdOverRSIStrategies.Short.*;
-import TradingTools.Trailers.TrailingExit;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class MACDOverRSIEntryStrategy implements EntryStrategy {
-
-
-    private double takeProfitPercentage = MACDOverRSIConstants.DEFAULT_TAKE_PROFIT_PERCENTAGE;
-    private double stopLossPercentage = MACDOverRSIConstants.DEFAULT_STOP_LOSS_PERCENTAGE;
-    private int leverage = MACDOverRSIConstants.DEFAULT_LEVERAGE;
-    private double requestedBuyingAmount = MACDOverRSIConstants.DEFAULT_BUYING_AMOUNT;
-    private final AccountBalance accountBalance;
+public class MACDOverCCIWIthATRStrategy {
+    private double takeProfitPercentage = MACDOverCCIWIthATRConstants.DEFAULT_TAKE_PROFIT_PERCENTAGE;
+    private double stopLossPercentage = MACDOverCCIWIthATRConstants.DEFAULT_STOP_LOSS_PERCENTAGE;
+    private int leverage = MACDOverCCIWIthATRConstants.DEFAULT_LEVERAGE;
+    private double requestedBuyingAmount = MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT;
+    private final AccountBalance accountBalance = AccountBalance.getAccountBalance();
     private volatile boolean bought = false;
     private double positivePeek = 0;
     private double negativePeek = 0;
+    private SkippingEntryTrailer skippingEntryTrailer;
+    private BaseDCA baseDCA;
 
-    public MACDOverRSIEntryStrategy(){
-        accountBalance = AccountBalance.getAccountBalance();
-        System.out.println("macd");
-    }
 
-    @Override
     public synchronized PositionHandler run(DataHolder realTimeData, String symbol) {
-        updatePeeks(realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex()-1));
         boolean notInPosition = accountBalance.getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == Config.ZERO;
-        if (notInPosition){
+        if(notInPosition){
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+            skippingEntryTrailer=new SkippingEntryTrailer(realTimeData.getClosePriceAtIndex(-1),MACDOverCCIWIthATRConstants.NEGATIVE_SKIPINGֹ_TRAILING_PERCENTAGE_BUY,PositionSide.LONG);
             boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
             if (noOpenOrders){
-                double currentPrice = realTimeData.getCurrentPrice();
-                boolean currentPriceAboveSma = true;//realTimeData.getSmaValueAtIndex(realTimeData.getLastIndex()) < currentPrice;
-                boolean rule1;
-                if (negativePeek < -10.0) {
-                    rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.UP, DataHolder.CandleType.CLOSE, Config.ZERO);
-                    if (rule1){
-                        if (bought)return null;
-                        return buyAndCreatePositionHandler(realTimeData, currentPrice,symbol, PositionSide.LONG);
-                    }
-                    else {
-                        boolean histIsNegative = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()) < 0;
-                        if (decliningPyramid(realTimeData, DecliningType.POSITIVE) && histIsNegative){
-                            if (bought)return null;
-                            return buyAndCreatePositionHandler(realTimeData, currentPrice,symbol, PositionSide.LONG);
+                if (candleIndicateLong(realTimeData)){
+                    if (realTimeData.getPercentBIAtIndex(realTimeData.getLastCloseIndex())<Config.DOUBLE_ZERO) {
+                        skippingEntryTrailer.updateTrailer(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()));
+                        if (skippingEntryTrailer.needToEnter(realTimeData.getCurrentPrice())) {
+                            double[] DCAPrices = new double[]{realTimeData.getCurrentPrice() - (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.ATR1),
+                                    realTimeData.getCurrentPrice() - (realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.ATR2, realTimeData.getCurrentPrice() - (realTimeData.getLastCloseIndex() * MACDOverCCIWIthATRConstants.ATR3)};
+                            baseDCA = new BaseDCA(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()), MACDOverCCIWIthATRConstants.MAX_DCA,
+                                    MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT, MACDOverCCIWIthATRConstants.AMOUNT_FACTOR, PositionSide.LONG, DCAPrices);
+                            buyAndCreatePositionHandler(realTimeData, realTimeData.getCurrentPrice(), symbol, PositionSide.LONG, baseDCA);
                         }
                     }
-                }
-                //else{
-                if (positivePeek > 10.0){
-                    rule1 = realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_RSI, DataHolder.CrossType.DOWN, DataHolder.CandleType.CLOSE, Config.ZERO);
-                    if (rule1){
-                        if (bought)return null;
-                        return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT);
-                    }
-                    else{
-                        boolean histIsPositive = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastIndex()) > 0;
-                        if (decliningPyramid(realTimeData, DecliningType.NEGATIVE) && histIsPositive){
-                            if (bought) return null;
-                            return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT);
+//                    else if (realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_CCI, DataHolder.CrossType.UP, DataHolder.CandleType.CLOSE,Config.DOUBLE_ZERO)) {
+//
+//
+//                    }
+                }else if (candleIndicateShort(realTimeData)){
+                    if(realTimeData.getPercentBIAtIndex(realTimeData.getLastCloseIndex())>Config.DOUBLE_ONE){
+                        skippingEntryTrailer.updateTrailer(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()));
+                        if (skippingEntryTrailer.needToEnter(realTimeData.getCurrentPrice())) {
+                            double[] DCAPrices = new double[]{realTimeData.getCurrentPrice() + (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.ATR1),
+                                    realTimeData.getCurrentPrice() + (realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.ATR2, realTimeData.getCurrentPrice() + (realTimeData.getLastCloseIndex() * MACDOverCCIWIthATRConstants.ATR3)};
+                            baseDCA = new BaseDCA(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()), MACDOverCCIWIthATRConstants.MAX_DCA,
+                                    MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT, MACDOverCCIWIthATRConstants.AMOUNT_FACTOR, PositionSide.SHORT, DCAPrices);
+                            buyAndCreatePositionHandler(realTimeData, realTimeData.getCurrentPrice(), symbol, PositionSide.SHORT, baseDCA);
                         }
+
                     }
                 }
-                bought = false;
+//                else if (realTimeData.crossed(DataHolder.IndicatorType.MACD_OVER_CCI, DataHolder.CrossType.UP, DataHolder.CandleType.CLOSE,Config.DOUBLE_ONE)){
+//
+//                }
             }
-        }
+                }
         return null;
     }
+    public boolean candleIndicateLong(DataHolder realTimeData){
+        double currentMacdOverRsiValue = realTimeData.getMacdOverCCIValueAtIndex(realTimeData.getLastCloseIndex());
+        double prevMacdOverRsiValue = realTimeData.getMacdOverCCIValueAtIndex(realTimeData.getLastCloseIndex()-1);
+        return currentMacdOverRsiValue > prevMacdOverRsiValue;
+    }
 
-
-    private PositionHandler buyAndCreatePositionHandler(DataHolder realTimeData, double currentPrice, String symbol, PositionSide positionSide) {//TODO: maybe change market later.
+    public boolean candleIndicateShort(DataHolder realTimeData){
+        double currentMacdOverRsiValue = realTimeData.getMacdOverCCIValueAtIndex(realTimeData.getLastCloseIndex());
+        double prevMacdOverRsiValue = realTimeData.getMacdOverCCIValueAtIndex(realTimeData.getLastCloseIndex()-1);
+        return currentMacdOverRsiValue < prevMacdOverRsiValue;
+    }
+    private PositionHandler buyAndCreatePositionHandler(DataHolder realTimeData, double currentPrice, String symbol, PositionSide positionSide, BaseDCA baseDCA) {//TODO: maybe change market later.
         bought = true;
         if (positionSide == PositionSide.LONG) {
             TelegramMessenger.sendToTelegram("buying long: " + new Date(System.currentTimeMillis()));
@@ -126,59 +130,4 @@ public class MACDOverRSIEntryStrategy implements EntryStrategy {
 
         return null;
     }
-
-    @Override
-    public void setTakeProfitPercentage(double takeProfitPercentage) {
-        this.takeProfitPercentage =takeProfitPercentage;
-    }
-
-    @Override
-    public void setStopLossPercentage(double stopLossPercentage) {
-        this.stopLossPercentage = stopLossPercentage;
-    }
-
-    @Override
-    public void setLeverage(int leverage) {
-        this.leverage = leverage;
-    }
-
-    @Override
-    public void setRequestedBuyingAmount(double requestedBuyingAmount) {
-        this.requestedBuyingAmount = requestedBuyingAmount;
-    }
-
-    public boolean decliningPyramid(DataHolder realTimeData, DecliningType type) {
-        boolean rule1;
-        boolean rule2;
-        double currentMacdOverRsiValue = realTimeData.getMacdOverRsiCloseValue();
-        double prevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex() -1);
-        double prevPrevMacdOverRsiValue = realTimeData.getMacdOverRsiValueAtIndex(realTimeData.getLastCloseIndex() -2);
-
-        if (type == DecliningType.POSITIVE){
-            rule1 = currentMacdOverRsiValue > prevMacdOverRsiValue;
-            rule2 = prevMacdOverRsiValue > prevPrevMacdOverRsiValue;
-        }
-        else{
-            rule1 = currentMacdOverRsiValue < prevMacdOverRsiValue;
-            rule2 = prevMacdOverRsiValue < prevPrevMacdOverRsiValue;
-        }
-        return rule1 && rule2;
-    }
-
-    private void updatePeeks(double macdOverRsiValueAtIndex) {
-        if (macdOverRsiValueAtIndex < 0){
-            positivePeek = 0;
-            if (macdOverRsiValueAtIndex < negativePeek) negativePeek = macdOverRsiValueAtIndex;
-        }
-        else{
-            negativePeek = 0;
-            if (macdOverRsiValueAtIndex > positivePeek) positivePeek = macdOverRsiValueAtIndex;
-        }
-    }
-
-    public enum DecliningType{
-        NEGATIVE,
-        POSITIVE;
-    }
-
 }

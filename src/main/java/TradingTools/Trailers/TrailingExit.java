@@ -1,10 +1,8 @@
-package utils;
+package TradingTools.Trailers;
 
 import com.binance.client.model.enums.PositionSide;
 
-import java.math.BigDecimal;
-
-public class Trailer {
+public class TrailingExit {
 
     private double absoluteMaxPrice;
 
@@ -14,7 +12,7 @@ public class Trailer {
 
     double trailingPercentage;
 
-    public Trailer(double currentPrice, double trailingPercentage, PositionSide side){
+    public TrailingExit(double currentPrice, double trailingPercentage, PositionSide side){
         absoluteMaxPrice = currentPrice;
         this.side = side;
         this.trailingPercentage = trailingPercentage;

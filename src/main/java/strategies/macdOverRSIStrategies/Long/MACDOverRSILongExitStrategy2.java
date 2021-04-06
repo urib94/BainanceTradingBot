@@ -1,31 +1,29 @@
 package strategies.macdOverRSIStrategies.Long;
 
 import data.DataHolder;
-import data.RealTimeData;
 import positions.PositionHandler;
 import positions.SellingInstructions;
 import singletonHelpers.TelegramMessenger;
 import strategies.macdOverRSIStrategies.MACDOverRSIBaseExitStrategy;
 import strategies.macdOverRSIStrategies.MACDOverRSIConstants;
-import utils.Trailer;
+import TradingTools.Trailers.TrailingExit;
 
-import java.math.BigDecimal;
 import java.util.Date;
 
 public class MACDOverRSILongExitStrategy2 extends MACDOverRSIBaseExitStrategy {
 
 	private boolean isTrailing = false;
-	private final Trailer trailer;
+	private final TrailingExit trailingExit;
 
-	public MACDOverRSILongExitStrategy2(Trailer trailer){
-		this.trailer = trailer;
+	public MACDOverRSILongExitStrategy2(TrailingExit trailingExit){
+		this.trailingExit = trailingExit;
 	}
 
 	@Override
 	public SellingInstructions run(DataHolder realTimeData) {
 		if (isTrailing) {
 			double currentPrice = realTimeData.getCurrentPrice();
-			trailer.updateTrailer(currentPrice);
+			trailingExit.updateTrailer(currentPrice);
 			if (stayInTrackAndThreePositiveHistograms(realTimeData)){
 				isTrailing = false;
 				TelegramMessenger.sendToTelegram("stop trailing position with long exit 2" + "time: " + new Date(System.currentTimeMillis()));
@@ -33,14 +31,14 @@ public class MACDOverRSILongExitStrategy2 extends MACDOverRSIBaseExitStrategy {
 			}
 			boolean currentPriceBelowUpperBollinger = currentPrice < realTimeData.getUpperBollingerAtIndex(realTimeData.getLastIndex());
 			boolean prevBelowUpperBollinger = realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()) < realTimeData.getUpperBollingerAtIndex(realTimeData.getLastCloseIndex());
-			if (trailer.needToSell(currentPrice) && currentPriceBelowUpperBollinger && prevBelowUpperBollinger){
+			if (trailingExit.needToSell(currentPrice) && currentPriceBelowUpperBollinger && prevBelowUpperBollinger){
 				TelegramMessenger.sendToTelegram("selling position with long exit 2" + "time: " + new Date(System.currentTimeMillis()));
 				return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT,
 						MACDOverRSIConstants.MACD_OVER_RSI_EXIT_SELLING_PERCENTAGE);
 			}
 		} else {
 			if (changedDirectionAndPositiveThreeHistogram(realTimeData)) {
-				trailer.setAbsoluteMaxPrice(realTimeData.getCurrentPrice());
+				trailingExit.setAbsoluteMaxPrice(realTimeData.getCurrentPrice());
 				isTrailing = true;
 				TelegramMessenger.sendToTelegram("start trailing position with long exit 2" + "time: " + new Date(System.currentTimeMillis()));
 			}

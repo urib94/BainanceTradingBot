@@ -45,6 +45,13 @@ public class PositionHandler implements Serializable {
         exitStrategies = _exitStrategies;
         this.DCAStrategies = dcaStrateys;
     }
+    public PositionHandler(Order order, ArrayList<ExitStrategy> _exitStrategies,BaseDCA baseDCA){
+        clientOrderId = order.getClientOrderId();
+        orderID = order.getOrderId();
+        symbol = order.getSymbol().toLowerCase();
+        exitStrategies = _exitStrategies;
+        this.baseDCA = baseDCA;
+    }
 
     public synchronized boolean isSoldOut(){
         return isActive && isSelling && (!status.equals(Config.NEW)) && (!rebuying) && ((qty == 0.0));}

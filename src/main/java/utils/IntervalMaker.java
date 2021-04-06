@@ -2,7 +2,7 @@ package utils;
 
 import com.binance.client.model.enums.CandlestickInterval;
 
-public class IntevalMaker {
+public class IntervalMaker {
 
         private String code;
 
