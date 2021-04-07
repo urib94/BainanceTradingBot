@@ -105,7 +105,7 @@ public class MACDOverCCIWIthATREntryStrategy {
                     double[] exitPrices={currentPrice - (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.ATR1)};
                     ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
                     exitStrategies.add(new MACDOverCCIWIthATRLongExitStrategy1(currentPrice,MACDOverCCIWIthATRConstants.MAX_DCA,MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT,
-                            MACDOverCCIWIthATRConstants.AMOUNT_FACTOR,PositionSide.LONG,exitPrices,exitPrices[0],realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex())));
+                            MACDOverCCIWIthATRConstants.AMOUNT_FACTOR,PositionSide.LONG,exitPrices,symbol,true, realTimeData,realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex())));
                     return new PositionHandler(buyOrder, exitStrategies);
                 } catch (Exception e) {
                     e.printStackTrace();

@@ -9,15 +9,15 @@ import strategies.MACDOverCCIWIthATR.BaseMACDOverCCIWIthATRExitStrategy;
 import strategies.MACDOverCCIWIthATR.MACDOverCCIWIthATRConstants;
 
 public class MACDOverCCIWIthATRLongExitStrategy1 extends BaseMACDOverCCIWIthATRExitStrategy {
-    public double exitPrice;
+    public double[] exitPrice;
     public double ATRValue;
 
 
-    public MACDOverCCIWIthATRLongExitStrategy1(double initiallPrice, double maxDCACount, double initialAmount, double amountFactor, PositionSide positionSide,
-                                               double[] exitPrices, double exitPrice, double ATRValue) {
-        super(initiallPrice, maxDCACount, initialAmount, amountFactor, positionSide, exitPrice);
+    public MACDOverCCIWIthATRLongExitStrategy1(double initiallPrice, double maxDCACount, double initialAmount, double amountFactor,
+                                               PositionSide positionSide, double[] exitPrices,String symbol, boolean useTP,DataHolder dataHolder, double ATRValue) {
+        super(initiallPrice, maxDCACount, initialAmount, amountFactor, positionSide, exitPrices,symbol,useTP,dataHolder);
 
-        this.exitPrice = exitPrice;
+        this.exitPrices = exitPrice;
         this.ATRValue = ATRValue;
 
     }
@@ -37,8 +37,8 @@ public class MACDOverCCIWIthATRLongExitStrategy1 extends BaseMACDOverCCIWIthATRE
 
     @Override
     public Instructions run(DataHolder realTimeData) {
-        for (double pricToExit : exitPrices) {
-            if (realTimeData.getCurrentPrice() <= pricToExit) {
+        for (double priceToExit : exitPrices) {
+            if (realTimeData.getCurrentPrice() <= priceToExit) {
                 return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT, MACDOverCCIWIthATRConstants.MACDOverCCIWIthATR_SELLING_PERCENTAGE);
             }
         }

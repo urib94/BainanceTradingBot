@@ -20,7 +20,7 @@ public class CSVDataWriter {
                     "eosusdt", "hotusdt", "ltcusdt", "adausdt"};
             String[] intervals = {"MONTHLY", "WEEKLY", "THREE_DAILY", "DAILY", "TWELVE_HOURLY", "EIGHT_HOURLY",
                     "SIX_HOURLY", "FOUR_HOURLY", "TWO_HOURLY", "HOURLY", "HALF_HOURLY", "FIFTEEN_MINUTES", "FIVE_MINUTES", "THREE_MINUTES", "ONE_MINUTE"};
-            int[] time={1,1,1,1,3,4,5,7,13,25,50,100,300,500,1500};
+            int[] time={2,2,2,2,4,5,6,7,14,26,60,111,310,550,1500};
 //        System.out.println("Enter symbol for retriving last 1500 candles");
 //        String symbol = new String(scanner.next());
 //        System.out.println("Enter the wonted candle interval");

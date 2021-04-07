@@ -37,7 +37,7 @@ public class BaseDCA implements DCAStrategy {
     public BaseDCA(double initialPrice, double maxDCACount, double initialAmount, double amountFactor,
                    PositionSide positionSide, double[] exitPrices, String symbol, boolean useTP, DataHolder dataHolder) {
         this.InitialPrice = initialPrice;
-        this.maxDCACount = exitPrices.length;
+        this.maxDCACount = maxDCACount;
         this.InitialAmount = initialAmount;
         this.amountFactor = amountFactor;
         this.positionSide=positionSide;
@@ -92,6 +92,7 @@ public class BaseDCA implements DCAStrategy {
                     if (currentPrice <= price){
                         price*=10;
                         needToDCA=true;
+                        return;
                     }
                 }
                 break;
@@ -100,11 +101,10 @@ public class BaseDCA implements DCAStrategy {
                     if (currentPrice >= price){
                         price*=10;
                         needToDCA=true;
+                        return;
                     }
                 }
             }
-        needToDCA=false;
-
     }
 
     @Override
