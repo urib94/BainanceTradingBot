@@ -30,6 +30,7 @@ public class PositionHandler implements Serializable {
     private volatile boolean terminated = false;
     private BaseDCA baseDCA;
     private boolean DCAing =false;
+    public boolean activetedTP_DCA=false;
     SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
 
 
@@ -58,27 +59,50 @@ public class PositionHandler implements Serializable {
         boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
         return isActive && noOpenOrders && (!rebuying) && ((qty == 0.0));}
 
-    public synchronized void run(DataHolder realTimeData) {//TODO: adjust to long and short and trailing as exit method
+    public synchronized void run(DataHolder realTimeData)
+    {//TODO: adjust to long and short and trailing as exit method
         isSelling = false;
-        if(isActive)
-            for (DCAStrategy DCAStrategy : DCAStrategeis) {
-                DCAInstructions dcaInstructions = (DCAInstructions) baseDCA.run(realTimeData);
-                if (!DCAing && dcaInstructions != null) {
-                    DCAOrder(dcaInstructions, realTimeData);
-                    DCAStrategy.updateExitPrice(qty,realTimeData);
-                    DCAing = true;
+        if (isActive) {
 
+
+        }
+        for (DCAStrategy DCAStrategy : DCAStrategeis)
+        {
+            DCAInstructions dcaInstructions = (DCAInstructions) baseDCA.run(realTimeData);
+            if (!activetedTP_DCA) {
+                for (double exitPrice : DCAStrategy.getexitPrices()) {
+                    TelegramMessenger.sendToTelegram("first TP, DCA");
+                    switch (DCAStrategy.getPositionSide()) {
+                        case SHORT:
+                            DCAStrategy.TakeProfit(new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_LIMIT, Config.ONE_HANDRED)
+                                    , exitPrice,DCAStrategy.getInitialAmount());
+                            DCAStrategy.DCAOrder(dcaInstructions, DCAStrategy.getNextDCAPrice());
+                            break;
+                        case LONG:
+                            DCAStrategy.TakeProfit(new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT, Config.ONE_HANDRED)
+                                    , exitPrice, DCAStrategy.getInitialAmount());
+                            DCAStrategy.DCAOrder(dcaInstructions, DCAStrategy.getNextDCAPrice());
+                            break;
+                    }
+                }
+            }else {
+                DCAing = DCAStrategy.getNeedToDCA();
+                if (DCAing && dcaInstructions != null) {
+                    TelegramMessenger.sendToTelegram("update after DCA");
+                    DCAStrategy.DCAOrder(dcaInstructions, DCAStrategy.getNextDCAPrice());
+                    DCAStrategy.updateExitPrice(qty, realTimeData);
+                    DCAing = false;
+                    DCAStrategy.increaseDCACount();
                     break;
                 }
             }
+        }
+
             for (ExitStrategy exitStrategy : exitStrategies) {
                 SellingInstructions sellingInstructions = (SellingInstructions) exitStrategy.run(realTimeData);
                 if ((!isSelling) && sellingInstructions != null) {
                     isSelling = true;
                     closePosition(sellingInstructions, realTimeData);
-                }
-                if(exitStrategy instanceof DCAStrategy){
-                    ((DCAStrategy) exitStrategy).updateExitPrice(qty,realTimeData);
                 }
             }
 
@@ -150,7 +174,7 @@ public class PositionHandler implements Serializable {
             }
         }
 
-        private void closePosition (SellingInstructions sellingInstructions, DataHolder realTimeData){
+        private void closePosition (SellingInstructions sellingInstructions, DataHolder realTimeData) {
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             String sellingQty = Utils.fixQuantity(BinanceInfo.formatQty(percentageOfQuantity(sellingInstructions.getSellingQtyPercentage()), symbol));
             switch (sellingInstructions.getType()) {
@@ -199,59 +223,13 @@ public class PositionHandler implements Serializable {
                 default:
 
             }
+
         }
 
 
-        private void DCAOrder (DCAInstructions dcaInstructions, DataHolder realTimeData){
-            SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-            String sellingQty = String.valueOf(baseDCA.calculateDCASize());
-            Order order = new Order();
-            long orderIn = System.currentTimeMillis();
-            switch (dcaInstructions.getDCAType()) {
 
-                case LONG_DCA_LIMIT:
-                    try {
-                        order = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
-                                sellingQty, String.valueOf(realTimeData.getCurrentPrice()), null, null, null, null, null, null, null, WorkingType.MARK_PRICE.toString(), NewOrderRespType.RESULT);
-                        TelegramMessenger.sendToTelegram("Selling price:  " + String.valueOf(realTimeData.getCurrentPrice()) + " ," + new Date(System.currentTimeMillis()));
-                        orderIn = System.currentTimeMillis();
-                    } catch (Exception ignored) {
-                    }
-                    break;
-                case LONG_DCA_MARKET:
-                    try {
-                        order = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.MARKET, null,
-                                sellingQty, null, null, null, null, null, null, null, null, null, NewOrderRespType.RESULT);
-                        TelegramMessenger.sendToTelegram("Selling price:  " + String.valueOf(realTimeData.getCurrentPrice()) + " ," + new Date(System.currentTimeMillis()));
-                        orderIn = System.currentTimeMillis();
-                    } catch (Exception ignored) {
-                    }
-                    break;
-                case SHORT_DCA_LIMIT:
-                    try {
-                        order = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.LIMIT, null,
-                                sellingQty, null, null, null, null, null, null, null, null, null, NewOrderRespType.RESULT);
-                        TelegramMessenger.sendToTelegram("Selling price:  " + String.valueOf(realTimeData.getCurrentPrice()) + " ," + new Date(System.currentTimeMillis()));
-                        orderIn = System.currentTimeMillis();
-                    } catch (Exception ignored) {
-                    }
-                    break;
-                case SHORT_DCA_MARKET:
-                    try {
-                        order = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.MARKET, null,
-                                sellingQty, null, null, null, null, null, null, null, null, null, NewOrderRespType.RESULT);
-                        TelegramMessenger.sendToTelegram("Selling price:  " + String.valueOf(realTimeData.getCurrentPrice()) + " ," + new Date(System.currentTimeMillis()));
-                        orderIn = System.currentTimeMillis();
-                    } catch (Exception ignored) {
-                    }
-                    break;
-            }
-            if (dcaInstructions.getDCAType() == PositionHandler.DCAType.LONG_DCA_LIMIT || dcaInstructions.getDCAType() == PositionHandler.DCAType.SHORT_DCA_LIMIT) {
-                long cur = System.currentTimeMillis();
-                while (cur - orderIn < 4000) cur = System.currentTimeMillis();
-                rebuyOrder(order);
-            }
-        }
+
+
 
 
         public enum ClosePositionTypes {

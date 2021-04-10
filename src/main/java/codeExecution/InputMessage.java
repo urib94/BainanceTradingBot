@@ -1,6 +1,7 @@
 package codeExecution;
 
 import strategies.EntryStrategy;
+import strategies.MACDOverCCIWIthATR.MACDOverCCIWIthATREntryStrategy;
 import strategies.macdOverRSIStrategies.MACDOverRSIEntryStrategy;
 import strategies.rsiStrategies.RSIEntryStrategy;
 import com.binance.client.model.enums.CandlestickInterval;
@@ -83,7 +84,7 @@ public class InputMessage {
                         "get current balance, [symbol]\n" +
                         "login, [apiKey], [secretKey]\n" +
                         "buy now, [symbol]\n"+
-                        "\n entryStrategy options: rsi, macd" +
+                        "\n entryStrategy options: rsi, macd, cci" +
                         "\n interval options: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h ,8h, 12h, 1d, 3d, 1w, 1M"
                 );
                 break;
@@ -95,10 +96,12 @@ public class InputMessage {
 
     private EntryStrategy stringToEntryStrategy(String strategyName) {
         switch (strategyName) {
+            case "cci":
+                return new MACDOverCCIWIthATREntryStrategy();
             case "rsi":
                 return new RSIEntryStrategy();
 
-            case "macd":
+                case "macd":
                 return new MACDOverRSIEntryStrategy();
 
             default:

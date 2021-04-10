@@ -24,7 +24,7 @@ public class DataHolder {
 
 
 
-    private PercentBIndicator percentIndicator;
+    private PercentBIndicator percentBIndicator;
     private ClosePriceIndicator closePriceIndicator;
     private HighPriceIndicator highPriceIndicator;
     private LowPriceIndicator lowPriceIndicator;
@@ -44,6 +44,7 @@ public class DataHolder {
         this.bollingerBandsUpperIndicator = bollingerBandsUpperIndicator;
         this.bollingerBandsLowerIndicator = bollingerBandsLowerIndicator;
         this.bollingerBandWidthIndicator=bollingerbandWidthIndicator;
+        this.percentBIndicator=percentBIndicator;
         this.closePriceIndicator = closePriceIndicator;
         currentPrice = getClosePriceAtIndex(endIndex);
         this.highPriceIndicator = highPriceIndicator;
@@ -65,15 +66,28 @@ public class DataHolder {
 
     public double getBandWidthAtIndex(int index){return bollingerBandWidthIndicator.getValue(index).doubleValue();}
 
-    public double getPercentBIAtIndex(int index){return percentIndicator.getValue(index).doubleValue();}
+    public double getPercentBIAtIndex(int index){return percentBIndicator.getValue(index).doubleValue();}
 
     public double getMacdOverRsiSignalLineValueAtIndex(int index) {
         EMAIndicator signal = new EMAIndicator(macdOverRsiIndicator, MACDOverRSIConstants.SIGNAL_LENGTH);
         return signal.getValue(index).doubleValue();
     }
 
+    public double getMACDOverCCISignalLineValueAtIndex(int index){
+        EMAIndicator signal = new EMAIndicator(macdOverCCIIndicator, MACDOverRSIConstants.SIGNAL_LENGTH);
+        return signal.getValue(index).doubleValue();
+    }
+
+    public double getMACDOverCCIHistAtIndex(int index){
+        return macdOverCCIIndicator.getValue(index).doubleValue()-getMACDOverCCISignalLineValueAtIndex(index);
+    }
+
     public double getMacdOverRsiMacdLineValueAtIndex(int index) {
         return macdOverRsiIndicator.getValue(index).doubleValue();
+    }
+
+    public double getPercentBIndicatorAtIndex(int index) {
+        return percentBIndicator.getValue(index).doubleValue();
     }
 
     public double getMacdOverRsiValueAtIndex(int index) {
@@ -85,11 +99,12 @@ public class DataHolder {
     }
 
     private double getMacdOverCCIMacdLineValueAtIndex(int index) {
-        return macdOverRsiIndicator.getValue(index).doubleValue();
+        return macdOverCCIIndicator.getValue(index).doubleValue();
     }
 
+
     private double getMacdOverCCISignalLineValueAtIndex(int index) {
-        EMAIndicator signal = new EMAIndicator(macdOverRsiIndicator, MACDOverCCIWIthATRConstants.SIGNAL_LENGTH);
+        EMAIndicator signal = new EMAIndicator(macdOverCCIIndicator, MACDOverCCIWIthATRConstants.SIGNAL_LENGTH);
         return signal.getValue(index).doubleValue();
     }
     public double getMacdOverRsiCloseValue() {
@@ -126,7 +141,8 @@ public class DataHolder {
         switch (indicatorType) {
             case RSI:
                 return rsiCrossed(crossType,candleType,threshold);
-
+            case PERECENT_BI:
+                return percentBICross(crossType,candleType,threshold);
             case MACD_OVER_RSI:
                 return macdOverRsiCrossed(crossType,candleType,threshold);
             case MACD_OVER_CCI:
@@ -200,6 +216,19 @@ public class DataHolder {
         return prevMacdOverRsiValue >= threshold && currentMacdOverRsiValue < threshold;
     }
 
+    public boolean percentBICross(CrossType crossType, CandleType candleType, double threshold){
+        double currentPercentBIValue, prevPercentBIValue;
+        if (candleType == CandleType.OPEN) {
+            currentPercentBIValue = getPercentBIndicatorAtIndex(endIndex);
+            prevPercentBIValue = getPercentBIndicatorAtIndex(endIndex-1);
+        } else {
+            currentPercentBIValue =getPercentBIndicatorAtIndex(endIndex-1);
+            prevPercentBIValue = getPercentBIndicatorAtIndex(endIndex-2);
+        }
+        if (crossType == CrossType.UP) return currentPercentBIValue > threshold && prevPercentBIValue <= threshold;
+        return prevPercentBIValue >= threshold && currentPercentBIValue < threshold;
+    }
+
 
     public boolean above(IndicatorType indicatorType, CandleType type, int threshold) {
         if (indicatorType == IndicatorType.RSI) {
@@ -254,11 +283,11 @@ public class DataHolder {
     }
 
     public PercentBIndicator getPercentIndicator() {
-        return percentIndicator;
+        return percentBIndicator;
     }
 
     public void setPercentIndicator(PercentBIndicator percentIndicator) {
-        this.percentIndicator = percentIndicator;
+        this.percentBIndicator = percentIndicator;
     }
 
     public enum CandleType {
@@ -270,6 +299,6 @@ public class DataHolder {
     }
     public enum IndicatorType {
         RSI,MACD_OVER_RSI, BOllINGER_BANDS_UPPER_INDICATOR,BOllINGER_BANDS_LOWER_INDICATOR
-        , BOllINGER_BANDS_WIDTH_INDICATOR, SAR, CLOSE_PRICE,MACD_OVER_CCI,ATR
+        , BOllINGER_BANDS_WIDTH_INDICATOR,PERECENT_BI, SAR, CLOSE_PRICE,MACD_OVER_CCI,ATR
     }
 }

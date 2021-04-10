@@ -107,7 +107,7 @@ public class RealTimeData{
         BaseBarSeries currData = new BaseBarSeries(realTimeData.getBarData());
         highPriceIndicator = new HighPriceIndicator(currData);
         lowPriceIndicator = new LowPriceIndicator(currData);
-        macdOverCCIIndicator=calculateMacdOverRsi(currData);
+        macdOverCCIIndicator=calculateMacdOverCCI(currData);
         macdOverRsiIndicator = calculateMacdOverRsi(currData);
         smaIndicator = new SMAIndicator(new ClosePriceIndicator(currData), MACDOverRSIConstants.SMA_CANDLES);
         calculateBollingerBandsIndicators(currData);
@@ -123,19 +123,20 @@ public class RealTimeData{
         bollingerBandsLowerIndicator = new BollingerBandsLowerIndicator(bollingerBandsMiddleIndicator, new StandardDeviationIndicator(closePriceIndicator, MACDOverRSIConstants.STANDARD_DEVIATION_CANDLES), MACDOverRSIConstants.DEVIATION_MULTIPLIER);
         bollingerBandWidthIndicator= new BollingerBandWidthIndicator(bollingerBandsUpperIndicator,bollingerBandsMiddleIndicator,bollingerBandsLowerIndicator);
         percentBIndicator=new PercentBIndicator(closePriceIndicator,20,2);
+        //System.out.println("%B="+percentBIndicator.getValue(currData.getEndIndex()));
     }
     private MACDIndicator calculateMacdOverRsi(BaseBarSeries currData) {
-        //RSIIndicator rsiIndicator14 = calculateRSI(MACDOverRSIConstants.RSI_CANDLE_NUM, currData);
-        CCICIndicator ccicIndicator = new CCICIndicator(currData, MACDOverRSIConstants.CCIC_CANDLES);
-        System.out.println("cc: " + ccicIndicator.getValue(currData.getEndIndex()-1));
-        return new MACDIndicator(ccicIndicator/*rsiIndicator14*/, MACDOverRSIConstants.FAST_BAR_COUNT, MACDOverRSIConstants.SLOW_BAR_COUNT);
+        RSIIndicator rsiIndicator14 = calculateRSI(MACDOverRSIConstants.RSI_CANDLE_NUM, currData);
+        //CCICIndicator ccicIndicator = new CCICIndicator(currData, MACDOverRSIConstants.CCIC_CANDLES);
+        //System.out.println("rsi: " + rsiIndicator14.getValue(currData.getEndIndex()-1));
+        return new MACDIndicator(rsiIndicator14, MACDOverRSIConstants.FAST_BAR_COUNT, MACDOverRSIConstants.SLOW_BAR_COUNT);
     }
 
     private MACDIndicator calculateMacdOverCCI(BaseBarSeries currData) {
         //RSIIndicator rsiIndicator14 = calculateRSI(MACDOverRSIConstants.RSI_CANDLE_NUM, currData);
-        CCICIndicator ccicIndicator = new CCICIndicator(currData, MACDOverCCIWIthATRConstants.CCIC_CANDLES);
-        System.out.println("cc: " + ccicIndicator.getValue(currData.getEndIndex() - 1));
-        return new MACDIndicator(ccicIndicator, MACDOverRSIConstants.FAST_BAR_COUNT, MACDOverRSIConstants.SLOW_BAR_COUNT);
+        CCICIndicator cciIndicator = new CCICIndicator(currData, MACDOverCCIWIthATRConstants.CCI_CANDLES);
+        //System.out.println("cci: "+"" + cciIndicator.getValue(currData.getEndIndex())+currData.getLastBar().getEndTime().toLocalDateTime().toString());
+        return new MACDIndicator(cciIndicator, MACDOverRSIConstants.FAST_BAR_COUNT, MACDOverRSIConstants.SLOW_BAR_COUNT);
 
     }
 

@@ -10,6 +10,8 @@ public class TelegramMessenger {
     private static String apiToken = "1493781452:AAGDIQ2nVL4NIu2xEstyyprFY6J04kQbDsA";
     private static String chatId = "-482820044";
 
+//    private static String apiToken = "1763392075:AAHB56wef0ElT3rTgU6lij8XPlFqf5S3004";
+//    private static String chatId = "-482820044";
 
     public static synchronized void sendToTelegram(String text) {
         String urlString = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s";
