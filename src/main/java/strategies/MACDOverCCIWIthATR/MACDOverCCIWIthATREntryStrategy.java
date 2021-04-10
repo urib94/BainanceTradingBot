@@ -59,7 +59,7 @@ public class MACDOverCCIWIthATREntryStrategy implements EntryStrategy {
                                     MACDOverCCIWIthATRConstants.AMOUNT_FACTOR, PositionSide.LONG, DCAPrices,symbol,true,realTimeData);
                             TelegramMessenger.sendToTelegram("buyAndCreatePositionHandler----long ");
 
-                            buyAndCreatePositionHandler(realTimeData, realTimeData.getCurrentPrice(), symbol, PositionSide.LONG, baseDCA);
+                            return buyAndCreatePositionHandler(realTimeData, realTimeData.getCurrentPrice(), symbol, PositionSide.LONG, baseDCA);
                         }
                     }
                 }else if (candleIndicateShort(realTimeData)){
@@ -72,7 +72,7 @@ public class MACDOverCCIWIthATREntryStrategy implements EntryStrategy {
                                     MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT, MACDOverCCIWIthATRConstants.AMOUNT_FACTOR, PositionSide.SHORT, DCAPrices,symbol,true,realTimeData);
                             TelegramMessenger.sendToTelegram("buyAndCreatePositionHandler----short ");
 
-                            buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT, baseDCA);
+                            return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT, baseDCA);
                         }
 
                     }
