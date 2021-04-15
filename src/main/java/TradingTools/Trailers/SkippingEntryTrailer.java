@@ -7,11 +7,10 @@ public class SkippingEntryTrailer {
 
     private double entryPrice;
 
-    private double[] entryPrices;
-
     private PositionSide side;
 
     double trailingPercentage;
+    private boolean dismiss=false;
 
 
     public SkippingEntryTrailer(double openPrice, double trailingPercentage, PositionSide side){
@@ -26,21 +25,17 @@ public class SkippingEntryTrailer {
             entryPrice = calculateShortTrailingEntryPrice(prevOpenPrice, trailingPercentage);
         }
     }
-    public SkippingEntryTrailer(double openPrice, double trailingPercentage, PositionSide side,double[] entryPrices){
-        prevOpenPrice = openPrice;
-        this.side = side;
-        this.entryPrices=entryPrices;
-    }
 
     public void updateTrailer(double currentOpenPrice){
+        dismiss=false;
         if(side == PositionSide.LONG) {
-            if (currentOpenPrice > prevOpenPrice) {
+            if (currentOpenPrice < prevOpenPrice) {
                 prevOpenPrice = currentOpenPrice;
                 entryPrice = calculateLongTrailingEntryPrice(prevOpenPrice, trailingPercentage);
             }
         }
         else{
-            if (currentOpenPrice < prevOpenPrice) {
+            if (currentOpenPrice > prevOpenPrice) {
                 prevOpenPrice = currentOpenPrice;
                 entryPrice = calculateShortTrailingEntryPrice(prevOpenPrice, trailingPercentage);
             }
@@ -49,9 +44,9 @@ public class SkippingEntryTrailer {
 
     public boolean needToEnter(double currentPrice){
         if (side == PositionSide.LONG) {
-                return currentPrice <= entryPrice;
+                return currentPrice >= entryPrice && !dismiss;
             }else
-                return currentPrice >= entryPrice;
+                return currentPrice <= entryPrice && !dismiss;
     }
 
 
@@ -96,6 +91,9 @@ public class SkippingEntryTrailer {
         this.trailingPercentage = trailingPercentage;
     }
 
+    public void dismiss() {
+        dismiss=true;
+    }
 }
 
 

@@ -14,13 +14,13 @@ public interface DCAStrategy  {
 
     public boolean getDidDCA ();
 
-    public void updateExitPrice(double qty,DataHolder realTimeData);
+    public void updatTP(double qty, DataHolder realTimeData);
 
     public void setNeedToDCA(DataHolder dataHolder);
 
     public void setNeedToDCA(DataHolder dataHolder , double[] closePrices);
 
-    public double[] getexitPrices();
+    public double getTPPrice();
 
     public void setNeedToDCA(boolean valToSet);
 
@@ -30,7 +30,9 @@ public interface DCAStrategy  {
         return needToDCA;
     }
 
-    public void TakeProfit (SellingInstructions sellingInstructions,  double exitPrice, double qty);
+    public boolean getNeedToTP();
+
+    public void TakeProfit (SellingInstructions sellingInstructions, double qty,DataHolder realTimeData);
 
     public double getInitialAmount();
     public DCAInstructions getDCAInstructions ();
@@ -41,6 +43,18 @@ public interface DCAStrategy  {
 
     void increaseDCACount();
 
-    void DCAOrder(DCAInstructions dcaInstructions, double DCAPrice);
+    void DCAOrder(DCAInstructions dcaInstructions);
+     double getDCASize();
+
+    void updateDCAPrices();
+
     public double getNextDCAPrice();
+
+
+    public enum DCAType {
+        LONG_DCA_LIMIT,
+        LONG_DCA_MARKET,
+        SHORT_DCA_LIMIT,
+        SHORT_DCA_MARKET
+    }
 }

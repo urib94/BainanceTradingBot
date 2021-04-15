@@ -2,7 +2,7 @@ package TradingTools.Trailers;
 
 import com.binance.client.model.enums.PositionSide;
 
-public class SkippingExitTrailer {
+public class SkippingExitTrailer extends TrailingExit {
     private double prevOpenPrice;
 
     private double exitPrice;
@@ -12,30 +12,31 @@ public class SkippingExitTrailer {
     double trailingPercentage;
 
 
+
     public SkippingExitTrailer(double openPrice, double trailingPercentage, PositionSide side){
         prevOpenPrice = openPrice;
         this.side = side;
         this.trailingPercentage = trailingPercentage;
 
         if(side == PositionSide.LONG){
-            exitPrice = calculateLongTrailingExitPrices(prevOpenPrice, trailingPercentage);
+            calculateLongTrailingExitPrices(prevOpenPrice, trailingPercentage);
         }
         else{
-            exitPrice = calculateShortTrailingExitPrices(prevOpenPrice, trailingPercentage);
+            calculateShortTrailingExitPrices(prevOpenPrice, trailingPercentage);
         }
     }
 
-    public void updateTrailer(double currentopenprice){
+    public void updateTrailer(double lastOpenPrice){
         if(side == PositionSide.LONG) {
-            if (currentopenprice > prevOpenPrice) {
-                prevOpenPrice = currentopenprice;
-                exitPrice = calculateLongTrailingExitPrices(prevOpenPrice, trailingPercentage);
+            if (lastOpenPrice > prevOpenPrice) {
+                prevOpenPrice = lastOpenPrice;
+                calculateLongTrailingExitPrices(prevOpenPrice, trailingPercentage);
             }
         }
         else{
-            if (currentopenprice < prevOpenPrice) {
-                prevOpenPrice = currentopenprice;
-                exitPrice = calculateShortTrailingExitPrices(prevOpenPrice, trailingPercentage);
+            if (lastOpenPrice < prevOpenPrice) {
+                prevOpenPrice = lastOpenPrice;
+                calculateShortTrailingExitPrices(prevOpenPrice, trailingPercentage);
             }
         }
     }
@@ -48,14 +49,18 @@ public class SkippingExitTrailer {
 
     }
 
-
-
-    private double calculateShortTrailingExitPrices(double curOpenPrice, double trailingPercentage) {
-        return curOpenPrice + curOpenPrice * (trailingPercentage/100);
+    private void calculateShortTrailingExitPrices(double curOpenPrice, double trailingPercentage) {
+        if (curOpenPrice<prevOpenPrice){
+            prevOpenPrice= curOpenPrice;
+            exitPrice=curOpenPrice+ curOpenPrice * (trailingPercentage/100);
+        }
     }
 
-    private double calculateLongTrailingExitPrices(double curOpenPrice, double trailingPercentage) {
-         return curOpenPrice - (curOpenPrice * (trailingPercentage/100));
+    private void calculateLongTrailingExitPrices(double curOpenPrice, double trailingPercentage) {
+        if (curOpenPrice>prevOpenPrice){
+            prevOpenPrice= curOpenPrice;
+            exitPrice=curOpenPrice- (curOpenPrice * (trailingPercentage/100));
+        }
     }
 
     public double getPrevOpenPrice() {

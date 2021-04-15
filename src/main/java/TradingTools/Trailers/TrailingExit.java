@@ -24,6 +24,9 @@ public class TrailingExit {
         }
     }
 
+    public TrailingExit() {
+    }
+
     public void updateTrailer(double currentPrice){
         if(side == PositionSide.LONG) {
             if (currentPrice > absoluteMaxPrice) {

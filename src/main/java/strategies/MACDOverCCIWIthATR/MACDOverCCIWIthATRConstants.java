@@ -22,8 +22,12 @@ public class MACDOverCCIWIthATRConstants {
     public static final double ATR1 = 15.0;
     public static final double ATR2=31.0;
     public static final double ATR3 =65.0;
+    public static final boolean USE_TP = true;
     public static  String SYMBOL ="bnbusdt" ;
     public static final double LOWER_BI=0.0;
     public static final double UPPER_BI=1.0;
-
+    public static final double CLOSE_ATR1 = 10.0;
+    public static final double CLOSE_ATR2=20.0;
+    public static final double FIRST_DCA_SIZE = DEFAULT_BUYING_AMOUNT*AMOUNT_FACTOR;
+    public static final double FEE=0.018;
 }
