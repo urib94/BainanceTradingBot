@@ -47,8 +47,8 @@ public class PositionHandler implements Serializable {
 
     public synchronized boolean isSoldOut(){
         System.out.println(symbol);
-        boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
-        return isActive && noOpenOrders && (!rebuying) && ((qty == 0.0));}
+        //boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
+        return isActive/* && noOpenOrders*/ && (!rebuying) && ((qty == 0.0));}
 
     public synchronized void run(DataHolder realTimeData)
     {//TODO: adjust to long and short and trailing as exit method
@@ -66,14 +66,14 @@ public class PositionHandler implements Serializable {
                     switch (DCAStrategy.getPositionSide()) {
                         case SHORT:
                             System.out.println("short first TP, DCA");
-                            closePosition(new SellingInstructions(ClosePositionTypes.SELL_LIMIT, Config.ONE_HANDRED)
-                                    , realTimeData, realTimeData.getCurrentPrice()+10);
+                            DCAStrategy.TakeProfit(new SellingInstructions(ClosePositionTypes.SELL_LIMIT, Config.ONE_HANDRED),
+                                    qty, realTimeData);
                             DCAStrategy.DCAOrder(DCAStrategy.getDCAInstructions());
                             break;
                         case LONG:
                             System.out.println("long first TP, DCA");
-                            closePosition(new SellingInstructions(ClosePositionTypes.SELL_LIMIT, Config.ONE_HANDRED)
-                                    , realTimeData, realTimeData.getCurrentPrice()+10);
+                            DCAStrategy.TakeProfit(new SellingInstructions(ClosePositionTypes.SELL_LIMIT, Config.ONE_HANDRED),
+                                    qty, realTimeData);
                             DCAStrategy.DCAOrder(DCAStrategy.getDCAInstructions());
                             break;
                     }

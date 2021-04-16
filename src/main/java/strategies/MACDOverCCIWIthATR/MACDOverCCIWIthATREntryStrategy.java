@@ -61,9 +61,9 @@ public class MACDOverCCIWIthATREntryStrategy implements EntryStrategy {
                         entering=true;
                         skippingEntryTrailer.updateTrailer(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()));
                         if (skippingEntryTrailer.needToEnter(currentPrice)) {
-                           DCAPrices = new double[]{currentPrice - (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.ATR1),
-                                    currentPrice - (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.ATR2), currentPrice - (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.ATR3)};
-                           TPPrice=currentPrice + (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.ATR1);
+                           DCAPrices = new double[]{currentPrice - (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.CLOSE_ATR1),
+                                    currentPrice - (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.CLOSE_ATR2), currentPrice - (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.ATR3)};
+                           TPPrice=currentPrice + (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.CLOSE_ATR1);
                             MACDOverCCIWIthATRLongExitStrategy1 macdOverCCIWIthATRLongExitStrategy1 = new MACDOverCCIWIthATRLongExitStrategy1(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()), MACDOverCCIWIthATRConstants.MAX_DCA, MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT*MACDOverCCIWIthATRConstants.DEFAULT_LEVERAGE,
                                     MACDOverCCIWIthATRConstants.AMOUNT_FACTOR, PositionSide.LONG,TPPrice, DCAPrices,symbol,true,realTimeData,
                                     new SkippingExitTrailer(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()),MACDOverCCIWIthATRConstants.POSITIVE_SKIPINGֹ_TRAILING_PERCENTAGE_BUY,PositionSide.LONG)
@@ -85,7 +85,7 @@ public class MACDOverCCIWIthATREntryStrategy implements EntryStrategy {
                         skippingEntryTrailer.updateTrailer(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()));
                         if (skippingEntryTrailer.needToEnter(currentPrice)) {
                             DCAPrices = new double[]{currentPrice + (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.ATR1),
-                                    currentPrice + (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.ATR2), currentPrice + (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.ATR3)};
+                                    currentPrice + (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.CLOSE_ATR2), currentPrice + (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.ATR3)};
                             TPPrice=currentPrice - (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.ATR1);
 
                             MACDOverCCIWIthATRShortExitStrategy1 macdOverCCIWIthATRShortExitStrategy1 = new MACDOverCCIWIthATRShortExitStrategy1(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()), MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT, MACDOverCCIWIthATRConstants.MAX_DCA,
@@ -195,8 +195,8 @@ public class MACDOverCCIWIthATREntryStrategy implements EntryStrategy {
                     SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
                     syncRequestClient.changeInitialLeverage(symbol, leverage);
                     String buyingQty = utils.Utils.getBuyingQtyAsString(currentPrice, symbol, leverage, requestedBuyingAmount);
-                    Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.LIMIT, TimeInForce.GTC,
-                            buyingQty, String.valueOf(currentPrice), null, new String("macdCciEtry"), null, null, null, null, WorkingType.MARK_PRICE, "TRUE", NewOrderRespType.RESULT);
+                    Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.MARKET, null,
+                            buyingQty, null, null, null, null, null, null, null, WorkingType.MARK_PRICE, "TRUE", NewOrderRespType.RESULT);
                     TelegramMessenger.sendToTelegram("entring long: buyOrder: " + buyOrder + new Date(System.currentTimeMillis()));
                     double[] exitPrices={currentPrice - (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.ATR1)};
                     exitStrategies.add(new MACDOverCCIWIthATRLongExitStrategy1(currentPrice,MACDOverCCIWIthATRConstants.MAX_DCA,MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT,
@@ -218,8 +218,8 @@ public class MACDOverCCIWIthATREntryStrategy implements EntryStrategy {
                     SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
                     syncRequestClient.changeInitialLeverage(symbol, leverage);
                     String buyingQty = utils.Utils.getBuyingQtyAsString(currentPrice, symbol, leverage, requestedBuyingAmount);
-                    Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.LIMIT, TimeInForce.GTC,
-                            buyingQty, String.valueOf(currentPrice), null, "maca_cci_entry", null, null, null, null, WorkingType.MARK_PRICE,"TRUE" , NewOrderRespType.RESULT);
+                    Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.MARKET, null,
+                            buyingQty, null, null, "maca_cci_entry", null, null, null, null, WorkingType.MARK_PRICE,"TRUE" , NewOrderRespType.RESULT);
                     TelegramMessenger.sendToTelegram("entring short: sellOrder: " + buyOrder + new Date(System.currentTimeMillis()));
                     return new PositionHandler(buyOrder, exitStrategies,DCAStrategies);
                 } catch (Exception e) {

@@ -7,7 +7,6 @@ import data.Config;
 import data.DataHolder;
 import positions.DCAInstructions;
 import positions.Instructions;
-import positions.PositionHandler;
 import positions.SellingInstructions;
 import singletonHelpers.BinanceInfo;
 import singletonHelpers.RequestClient;
@@ -16,6 +15,8 @@ import strategies.DCAStrategy;
 import utils.Utils;
 
 import java.util.Date;
+
+import static positions.PositionHandler.percentageOfQuantity;
 
 public class BaseDCA implements DCAStrategy {
     private DataHolder dataHolder;
@@ -58,22 +59,6 @@ public class BaseDCA implements DCAStrategy {
         this.dataHolder=dataHolder;
         this.DCASize=getDCASize();
         this.dcaInstructions=dcaInstructions;
-
-//        if (useTP){
-//            for (double exitPrice : exitPrices) {
-//                switch (positionSide) {
-//                    case SHORT:
-//                        TakeProfit(new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_LIMIT, Config.ONE_HANDRED)//todo change to take profit type
-//                                , dataHolder, exitPrice, initialAmount);
-//                        break;
-//                    case LONG:
-//                        TakeProfit(new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT, Config.ONE_HANDRED)
-//                                , dataHolder, exitPrice,initialAmount);
-//                        break;
-//                }
-//
-//            }
-//        }
     }
 
 
@@ -89,6 +74,8 @@ public class BaseDCA implements DCAStrategy {
         }
         return null;
     }
+
+
     public double calculateTotalAmount(){
         double totalAmount=0;
         if(DCACount==0){
@@ -138,7 +125,6 @@ public class BaseDCA implements DCAStrategy {
                     if (currentPrice >= price){
                         price*=10;
                         needToDCA=true;
-
                         return;
                     }
                 }
@@ -184,40 +170,48 @@ public class BaseDCA implements DCAStrategy {
     public void DCAOrder (DCAInstructions dcaInstructions){
         if(DCAPrices.length==1)updateDCAPrices();
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-            String sellingQty = String.valueOf(dcaInstructions.getDCAAmount());
+            String sellingQty= Utils.fixQuantity(BinanceInfo.formatQty(percentageOfQuantity(dcaInstructions.getSellingQtyPercentage(), dcaInstructions.getDCAAmount()), symbol));
+            String dcaPrice =Utils.fixQuantity(BinanceInfo.formatQty(DCAPrices[0],symbol));
             switch (dcaInstructions.getDCAType()) {
+
 
                 case LONG_DCA_LIMIT:
                     try {
                         orderDCA = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
-                                sellingQty, String.valueOf(DCAPrices[0]), null, symbol + "_DCA_price_" + String.valueOf(DCAPrices[0]), null, null,
-                                String.valueOf(DCAPrices[0]), null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
+                                sellingQty, String.valueOf(dcaPrice), null, null, null, null,
+                                String.valueOf(dcaPrice), null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
                         TelegramMessenger.sendToTelegram("DCA price  " + String.valueOf(DCAPrices[0]) + " ," + new Date(System.currentTimeMillis()));
-                    } catch (Exception ignored) {
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                     break;
                 case LONG_DCA_MARKET:
                     try {
-                        orderDCA = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.MARKET, null,
-                                sellingQty, null, null, null, null, null, String.valueOf(DCAPrices[0]), null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
-                        TelegramMessenger.sendToTelegram("DCA price:  " + String.valueOf(DCAPrices[0]) + " ," + new Date(System.currentTimeMillis()));
-                    } catch (Exception ignored) {
+                        orderDCA = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.STOP_MARKET, TimeInForce.GTC,
+                                sellingQty, String.valueOf(dcaPrice), null, null, String.valueOf(dcaPrice), null,
+                                String.valueOf(dcaPrice), null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
+                        TelegramMessenger.sendToTelegram("DCA price:  " + String.valueOf(dcaPrice)+ " ," + new Date(System.currentTimeMillis()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                     break;
                 case SHORT_DCA_LIMIT:
                     try {
                         orderDCA = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.LIMIT, null,
-                                sellingQty, String.valueOf(DCAPrices[0]), null, null, null, null, String.valueOf(DCAPrices[0]), null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
+                                sellingQty, String.valueOf(dcaPrice), null, null, null, null, String.valueOf(DCAPrices[0]), null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
                         TelegramMessenger.sendToTelegram("DCA price:  " + String.valueOf(DCAPrices[0]) + " ," + new Date(System.currentTimeMillis()));
-                    } catch (Exception ignored) {
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                     break;
                 case SHORT_DCA_MARKET:
                     try {
-                        orderDCA = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.MARKET, null,
-                                sellingQty, null, null, null, null, null, String.valueOf(DCAPrices[0]), null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
-                        TelegramMessenger.sendToTelegram("DCA price:  " + String.valueOf(DCAPrices[0]) + " ," + new Date(System.currentTimeMillis()));
-                    } catch (Exception ignored) {
+                        orderDCA = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.STOP_MARKET, TimeInForce.GTC,
+                                sellingQty, String.valueOf(dcaPrice), null, null, String.valueOf(dcaPrice), null,
+                                String.valueOf(dcaPrice), null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
+                        TelegramMessenger.sendToTelegram("DCA price:  " + String.valueOf(dcaPrice) + " ," + new Date(System.currentTimeMillis()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                     break;
             }
@@ -243,15 +237,17 @@ public class BaseDCA implements DCAStrategy {
 
     public void TakeProfit(SellingInstructions sellingInstructions, double qty, DataHolder realTimeData){
         System.out.println("im baseDCA TP, initial amount="+getInitialAmount());
-        if(!activeFirstTP) {
-            TelegramMessenger.sendToTelegram("Posting TP order ");
+
+
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             if (orderTP != null) {
+                TelegramMessenger.sendToTelegram("Posting TP order ");
                 syncRequestClient.cancelOrder(symbol, orderTP.getUpdateTime(), orderTP.getClientOrderId());
                 TPOrderClaintId = null;
             }
 
-            String sellingQty = Utils.fixQuantity(BinanceInfo.formatQty(PositionHandler.percentageOfQuantity(sellingInstructions.getSellingQtyPercentage(),qty), symbol));
+            String sellingQty = Utils.fixQuantity(BinanceInfo.formatQty(percentageOfQuantity(sellingInstructions.getSellingQtyPercentage(),qty), symbol));
+            String tPPrice= Utils.fixQuantity(BinanceInfo.formatQty(TPPrice,symbol));
             switch (sellingInstructions.getType()) {
 
                 case STAY_IN_POSITION:
@@ -260,54 +256,53 @@ public class BaseDCA implements DCAStrategy {
                 case SELL_LIMIT:
                     System.out.println("sell limit");
                     try {
-                        orderTP =syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
-                                sellingQty, String.valueOf(realTimeData.getCurrentPrice()+10), Config.REDUCE_ONLY, null, null, null, null, null, null, WorkingType.MARK_PRICE.toString(), NewOrderRespType.RESULT);
-                    } catch (Exception ignored) {
+                        orderTP=syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.TAKE_PROFIT, TimeInForce.GTC,
+                                sellingQty, tPPrice, "true", null, tPPrice, null,
+                                tPPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
+                        TelegramMessenger.sendToTelegram("DCA price  " + String.valueOf(DCAPrices[0]) + " ," + new Date(System.currentTimeMillis()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                     break;
 
                 case SELL_MARKET:
                     System.out.println("sell maeket");
                     try {
-                        orderTP=syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.MARKET, null,
-                                sellingQty, null, Config.REDUCE_ONLY, null, String.valueOf(TPPrice), null, null, null, null, null, NewOrderRespType.RESULT);
-                        TelegramMessenger.sendToTelegram("Selling price:  " + String.valueOf(TPPrice) + " ," + new Date(System.currentTimeMillis()));
-                        TPOrderClaintId = String.valueOf(System.currentTimeMillis());
-                    } catch (Exception ignored) {
+                        orderTP=syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.TAKE_PROFIT_MARKET, TimeInForce.GTC,
+                                sellingQty, tPPrice, "true", null, tPPrice, null,
+                                tPPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
+                        TelegramMessenger.sendToTelegram("DCA price  " + String.valueOf(DCAPrices[0]) + " ," + new Date(System.currentTimeMillis()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                     break;
 
-
                 case CLOSE_SHORT_LIMIT:
                     try {
-                        System.out.println("sell short limit");
-                        TPOrderClaintId = String.valueOf(System.currentTimeMillis());
-                        orderTP= syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
-                                sellingQty, String.valueOf(TPPrice), Config.REDUCE_ONLY, "TPOrder", String.valueOf(TPPrice + (TPPrice / 1000)), null, String.valueOf(566), null, null, WorkingType.MARK_PRICE.toString(), NewOrderRespType.RESULT);
-                        TelegramMessenger.sendToTelegram("Selling price:  " + String.valueOf(TPPrice) + " ," + new Date(System.currentTimeMillis()));
-                    } catch (Exception ignored) {
+                        orderTP= syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.TAKE_PROFIT, TimeInForce.GTC,
+                                sellingQty, tPPrice, "true", null, tPPrice, null,
+                                tPPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
+                        TelegramMessenger.sendToTelegram("DCA price  " + String.valueOf(DCAPrices[0]) + " ," + new Date(System.currentTimeMillis()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                     break;
 
                 case CLOSE_SHORT_MARKET:
                     try {
-                        System.out.println("sell short market");
-                        orderTP= syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.MARKET, null,
-                                sellingQty, null, Config.REDUCE_ONLY, "TPOrder", String.valueOf(TPPrice), null, null, null, null, null, NewOrderRespType.RESULT);
-                        TelegramMessenger.sendToTelegram("Selling price:  " + String.valueOf(TPPrice) + " ," + new Date(System.currentTimeMillis()));
-                        TPOrderClaintId = String.valueOf(System.currentTimeMillis());
-                    } catch (Exception ignored) {
+                        orderTP= syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.TAKE_PROFIT_MARKET, TimeInForce.GTC,
+                                sellingQty, tPPrice, "true", null, tPPrice, null,
+                                tPPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
+                        TelegramMessenger.sendToTelegram("DCA price  " + String.valueOf(DCAPrices[0]) + " ," + new Date(System.currentTimeMillis()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
+
                     break;
-
-
                 default:
-
             }
 
         }
-        System.out.println(orderTP.getOrigQty());
-    }
 
     public boolean getNeedToTP(){
         return orderTP == null;

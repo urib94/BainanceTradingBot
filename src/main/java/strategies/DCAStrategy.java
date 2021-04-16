@@ -8,7 +8,7 @@ import positions.SellingInstructions;
 
 public interface DCAStrategy  {
     public boolean needToDCA =false;
-    DCAInstructions DCA_INSTRUCTIONS = null;
+
 
     public void setDidDCA(boolean valToSet);
 
