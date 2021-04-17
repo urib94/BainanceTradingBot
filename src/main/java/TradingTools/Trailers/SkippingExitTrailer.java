@@ -26,16 +26,16 @@ public class SkippingExitTrailer extends TrailingExit {
         }
     }
 
-    public void updateTrailer(double lastOpenPrice){
+    public void updateTrailer(double currentOpenPrice){
         if(side == PositionSide.LONG) {
-            if (lastOpenPrice > prevOpenPrice) {
-                prevOpenPrice = lastOpenPrice;
+            if (currentOpenPrice < prevOpenPrice) {
+                prevOpenPrice = currentOpenPrice;
                 calculateLongTrailingExitPrices(prevOpenPrice, trailingPercentage);
             }
         }
         else{
-            if (lastOpenPrice < prevOpenPrice) {
-                prevOpenPrice = lastOpenPrice;
+            if (currentOpenPrice > prevOpenPrice) {
+                prevOpenPrice = currentOpenPrice;
                 calculateShortTrailingExitPrices(prevOpenPrice, trailingPercentage);
             }
         }

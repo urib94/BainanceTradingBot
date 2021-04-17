@@ -9,30 +9,21 @@ import positions.SellingInstructions;
 public interface DCAStrategy  {
     public boolean needToDCA =false;
 
+    public double gettPPrice();
 
-    public void setDidDCA(boolean valToSet);
+    int getdCACount();
 
-    public boolean getDidDCA ();
-
-    public void updatTP(double qty, DataHolder realTimeData);
-
-    public void setNeedToDCA(DataHolder dataHolder);
-
-    public void setNeedToDCA(DataHolder dataHolder , double[] closePrices);
-
-    public double getTPPrice();
+    double  getMaxDCACount();
 
     public void setNeedToDCA(boolean valToSet);
 
     public PositionSide getPositionSide();
 
-    public default boolean getNeedToDCA(){
-        return needToDCA;
-    }
+    public  boolean getNeedToDCA();
 
     public boolean getNeedToTP();
 
-    public void TakeProfit (SellingInstructions sellingInstructions, double qty,DataHolder realTimeData);
+    public void TakeProfit (SellingInstructions sellingInstructions, double qty,double entryPrice,DataHolder realTimeData);
 
     public double getInitialAmount();
     public DCAInstructions getDCAInstructions ();
@@ -41,15 +32,16 @@ public interface DCAStrategy  {
 
     Instructions run(DataHolder realTimeData);
 
-    void increaseDCACount();
+    void DCAOrder(DCAInstructions dcaInstructions,DataHolder realTimeData);
+     double getNextDCASize();
 
-    void DCAOrder(DCAInstructions dcaInstructions);
-     double getDCASize();
+    void updateDCAPrices(double currentPrice);
 
-    void updateDCAPrices();
+    double distanceToTP();
 
     public double getNextDCAPrice();
 
+    boolean isNewPosition();
 
     public enum DCAType {
         LONG_DCA_LIMIT,

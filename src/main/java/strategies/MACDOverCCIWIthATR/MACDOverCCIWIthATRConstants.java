@@ -19,15 +19,17 @@ public class MACDOverCCIWIthATRConstants {
     public static final int ATR_CANDLE_COUNT = 5;
     public static final int MAX_DCA = 3;
     public static final double AMOUNT_FACTOR = 2;
-    public static final double ATR1 = 15.0;
-    public static final double ATR2=31.0;
-    public static final double ATR3 =65.0;
+    public static final double ATR1 = 1.5;
+    public static final double ATR2=3.1;
+    public static final double ATR3 =6.2;
     public static final boolean USE_TP = true;
+    public static  double STEP_FACTOR =1.5 ;
+    public static  double STEP=0;
     public static  String SYMBOL ="bnbusdt" ;
     public static final double LOWER_BI=0.0;
     public static final double UPPER_BI=1.0;
-    public static final double CLOSE_ATR1 = 5.0;
-    public static final double CLOSE_ATR2=10.0;
+    public static final double CLOSE_ATR1 = 0.5;
+    public static final double CLOSE_ATR2=1.5;
     public static final double FIRST_DCA_SIZE = DEFAULT_BUYING_AMOUNT*AMOUNT_FACTOR;
     public static final double FEE=0.018;
 }

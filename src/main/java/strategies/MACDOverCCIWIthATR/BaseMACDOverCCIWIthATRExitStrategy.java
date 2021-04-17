@@ -11,9 +11,9 @@ public abstract class BaseMACDOverCCIWIthATRExitStrategy extends BaseDCA impleme
 
 
     public BaseMACDOverCCIWIthATRExitStrategy(double initiallPrice, double maxDCACount, double initialAmount, double amountFactor,
-                                              PositionSide positionSide, double TPPrice, double[]DCAPrices, String symbol, boolean useTP, DataHolder dataHolder
+                                              PositionSide positionSide, double TPPrice, double DCAPrices, String symbol, boolean useTP, double step, double stepFactor, DataHolder dataHolder
     , DCAInstructions dcaInstructions) {
-        super(initiallPrice, maxDCACount, initialAmount, amountFactor, positionSide, TPPrice,DCAPrices,symbol, useTP, dataHolder, dcaInstructions);
+        super(initiallPrice, maxDCACount, initialAmount, amountFactor, positionSide, TPPrice,DCAPrices,symbol, useTP, step ,stepFactor,dcaInstructions);
     }
 
     public Instructions run(DataHolder realTimeData){

@@ -25,9 +25,9 @@ public class MACDOverCCIWIthATRLongExitStrategy1 extends BaseMACDOverCCIWIthATRE
 
 
     public MACDOverCCIWIthATRLongExitStrategy1(double initiallPrice, int maxDCACount, double initialAmount, double amountFactor,
-                                               PositionSide positionSide, double TPPrice, double[] DCAPrices, String symbol, boolean useTP, DataHolder dataHolder, TrailingExit trailingExit, DCAInstructions dcaInstructions) {
-        super(initiallPrice, maxDCACount, initialAmount, amountFactor, positionSide, TPPrice,DCAPrices,symbol,useTP,dataHolder, dcaInstructions );
-        this.TPPrice = TPPrice;
+                                               PositionSide positionSide, double TPPrice, double DCAPrices, String symbol, boolean useTP, double step,double stepFactor, DataHolder dataHolder, TrailingExit trailingExit, DCAInstructions dcaInstructions) {
+        super(initiallPrice, maxDCACount, initialAmount, amountFactor, positionSide, TPPrice,DCAPrices,symbol,useTP,step,stepFactor, dataHolder, dcaInstructions );
+        this.tPPrice = TPPrice;
         this.ATRValue = ATRValue;
         this.skippingExitTrailer=(SkippingExitTrailer) trailingExit;
     }
@@ -37,7 +37,7 @@ public class MACDOverCCIWIthATRLongExitStrategy1 extends BaseMACDOverCCIWIthATRE
         if (!isTrailing) {
             if (realTimeData.crossed(DataHolder.IndicatorType.PERECENT_BI, DataHolder.CrossType.UP, DataHolder.CandleType.CLOSE, 1.00)) {
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-                syncRequestClient.cancelOrder(orderTP.getSymbol(), orderDCA.getOrderId(), orderDCA.getClientOrderId());
+                //syncRequestClient.cancelOrder(orderTP.getSymbol(), orderDCA.getOrderId(), orderDCA.getClientOrderId());
                 isTrailing = true;
             }
         } else if (isTrailing) {
@@ -45,7 +45,7 @@ public class MACDOverCCIWIthATRLongExitStrategy1 extends BaseMACDOverCCIWIthATRE
             skippingExitTrailer.updateTrailer(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()));
             if (realTimeData.crossed(DataHolder.IndicatorType.PERECENT_BI, DataHolder.CrossType.DOWN, DataHolder.CandleType.CLOSE, 1.00)) {
                 isTrailing = false;
-                TakeProfit(new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT, Config.ONE_HANDRED), calculateTotalAmount(), realTimeData);
+                //TakeProfit(new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_LIMIT, Config.ONE_HANDRED), calculateTotalAmount(),currentPrice, realTimeData);
                 TelegramMessenger.sendToTelegram("stop trailing position with long exit 1" + "time: " + new Date(System.currentTimeMillis()));
                 return null;
             } else {
