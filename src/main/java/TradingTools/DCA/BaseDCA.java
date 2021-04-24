@@ -117,7 +117,7 @@ public class BaseDCA implements DCAStrategy {
                 double currentPrice = realTimeData.getCurrentPrice();
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
                 String sellingQty = Utils.fixQuantity(BinanceInfo.formatQty(dCASize / currentPrice, symbol));
-                String dcaPrice = Utils.fixQuantity(BinanceInfo.formatQty(calculateNextDCAPrice(currentPrice), symbol));
+                String dcaPrice = BinanceInfo.formatPrice(calculateNextDCAPrice(currentPrice), symbol);
                 switch (dcaInstructions.getDCAType()) {
 
 
@@ -126,7 +126,7 @@ public class BaseDCA implements DCAStrategy {
                             orderDCA = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
                                     sellingQty, String.valueOf(dcaPrice), null, null, null, null,
                                     String.valueOf(dcaPrice), null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
-                            TelegramMessenger.sendToTelegram("DCA price  " + String.valueOf(dCAPrice) + " ," + new Date(System.currentTimeMillis()));
+                            TelegramMessenger.sendToTelegram("DCA price  " + String.valueOf(dcaPrice) + " ," + new Date(System.currentTimeMillis()));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -242,15 +242,14 @@ public class BaseDCA implements DCAStrategy {
     private double calculateNextDCAPrice(double currentPrice){
         if(positionSide == PositionSide.LONG){
             if (dCACount == 0) {
-                nextDCAPrice = currentPrice - (currentPrice / 100 * getStep());
+                return currentPrice - (currentPrice / 100 * getStep());
             }
-            else nextDCAPrice = nextDCAPrice - (getStep() * nextDCAPrice);
+            else return nextDCAPrice - (getStep() * nextDCAPrice);
         }else {
             if (dCACount == 0) {
-                nextDCAPrice = currentPrice + currentPrice / 100 * getStep();
-            }else nextDCAPrice = nextDCAPrice + (getStep() * nextDCAPrice);
+                return currentPrice + currentPrice / 100 * getStep();
+            }else return nextDCAPrice + (getStep() * nextDCAPrice);
         }
-        return 0;
     }
 
     public void setDCASize() {
