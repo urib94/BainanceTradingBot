@@ -1,6 +1,7 @@
 package strategies;
 
 import com.binance.client.model.enums.PositionSide;
+import com.binance.client.model.trade.Order;
 import data.DataHolder;
 import positions.DCAInstructions;
 import positions.Instructions;
@@ -8,6 +9,8 @@ import positions.SellingInstructions;
 
 public interface DCAStrategy  {
     public boolean needToDCA =false;
+
+    PositionSide getPositionSide();
 
     public double gettPPrice();
 
@@ -17,9 +20,9 @@ public interface DCAStrategy  {
 
     public void setNeedToDCA(boolean valToSet);
 
-    public PositionSide getPositionSide();
-
     public  boolean getNeedToDCA();
+
+    double calculateTotalAmount();
 
     public boolean getNeedToTP();
 
@@ -37,6 +40,7 @@ public interface DCAStrategy  {
 
     void updateDCAPrices(double currentPrice);
 
+    Order getTpOrder();
     double distanceToTP();
 
     public double getNextDCAPrice();

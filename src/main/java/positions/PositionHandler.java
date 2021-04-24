@@ -18,13 +18,13 @@ public class PositionHandler implements Serializable {
     private  ArrayList<DCAStrategy> DCAStrategeis;
     private String clientOrderId;
     private Long orderID;
+    private int openOrderCount=0;
     private boolean halt=false;
     private double qty = 0.0;
     private double entryPrice=0.0;
     private static double amount=0;
     private final String symbol;
     private volatile boolean isActive = false;
-    private String status = Config.NEW;
     private  ArrayList<ExitStrategy> exitStrategies;
     private Long baseTime = 0L;
     private volatile boolean rebuying = true;
@@ -52,11 +52,13 @@ public class PositionHandler implements Serializable {
     }
 
     public synchronized boolean isSoldOut(){
-        System.out.println(symbol);
-        return isActive && (!rebuying) && ((qty == 0.0));}
+        boolean res = isActive && (!rebuying) && ((qty == 0.0));
+        if(res)System.out.println("is sold out ");
+        return res;}
 
     public synchronized void run(DataHolder realTimeData)
     {//TODO: adjust to long and short and trailing as exit method
+        double currentPrice=realTimeData.getCurrentPrice();
         if(isSoldOut())terminate();
        if(!halt) {
 
@@ -64,7 +66,7 @@ public class PositionHandler implements Serializable {
            if (isActive) {
                if (DCAStrategeis != null) {
                    for (DCAStrategy DCAStrategy : DCAStrategeis) {
-                       System.out.println("newpostion?" + newPosition);
+                       if (newPosition)System.out.println("new postion");
                        if (newPosition) {
                            DCAStrategy.run(realTimeData);
                            System.out.println("TP & DCA for new position");
@@ -73,7 +75,7 @@ public class PositionHandler implements Serializable {
                                    System.out.println("short first TP, DCA");
                                    DCAStrategy.TakeProfit(new SellingInstructions(ClosePositionTypes.SELL_LIMIT, Config.ONE_HANDRED),
                                            qty, entryPrice, realTimeData);
-                                   //DCAStrategy.DCAOrder(DCAStrategy.getDCAInstructions(), realTimeData);
+                                   DCAStrategy.DCAOrder(DCAStrategy.getDCAInstructions(), realTimeData);
                                    break; case LONG: System.out.println("long first TP, DCA");
                                    DCAStrategy.TakeProfit(new SellingInstructions(ClosePositionTypes.SELL_LIMIT, Config.ONE_HANDRED),
                                            qty, entryPrice, realTimeData);
@@ -83,6 +85,13 @@ public class PositionHandler implements Serializable {
                            newPosition = false;
                        } else {
                            System.out.println("need for DCA" + DCAStrategy.getNeedToDCA() + "      DCAStrategy.getDCAInstructions() != null " + DCAStrategy.getDCAInstructions() != null);
+                           if(currentPrice>DCAStrategy.gettPPrice()&& DCAStrategy.getTpOrder()!=null){
+                               if(DCAStrategy.getPositionSide()==PositionSide.LONG) {
+                                   closePosition(new SellingInstructions(ClosePositionTypes.SELL_MARKET,Config.ONE_HANDRED),realTimeData,currentPrice);
+                               }
+                           }else if(currentPrice<DCAStrategy.gettPPrice()&& DCAStrategy.getTpOrder()!=null){
+                               closePosition(new SellingInstructions(ClosePositionTypes.CLOSE_SHORT_MARKET,Config.ONE_HANDRED),realTimeData,currentPrice);
+                           }
                            if (DCAStrategy.getNeedToDCA() && DCAStrategy.getDCAInstructions() != null && DCAStrategy.getdCACount() <= DCAStrategy.getMaxDCACount()) {
                                System.out.println("tp &SL for existing position");
                                TelegramMessenger.sendToTelegram("update after DCA");
@@ -99,7 +108,7 @@ public class PositionHandler implements Serializable {
                        SellingInstructions sellingInstructions = (SellingInstructions) exitStrategy.run(realTimeData);
                        if ((!isSelling) && sellingInstructions != null) {
                            isSelling = true;
-                           closePosition(sellingInstructions, realTimeData, realTimeData.getCurrentPrice());
+                           closePosition(sellingInstructions, realTimeData, currentPrice);
                        }
                    }
            }
@@ -110,28 +119,28 @@ public class PositionHandler implements Serializable {
                 rebuying = false;
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
                 Order order = syncRequestClient.getOrder(symbol, orderID, clientOrderId);
-                status = order.getStatus();
                 isActive(realTimeData, order, interval);
                 entryPrice=Double.parseDouble(AccountBalance.getAccountBalance().getPosition(symbol).getEntryPrice());
                 qty = AccountBalance.getAccountBalance().getPosition(symbol).getPositionAmt().doubleValue();
-                if(qty!=0)isActive=true;
-                else if(isSoldOut()) halt=true;
-                if (amount!=qty&& amount!=0){
-                    System.out.println("amount!=qty&& amount!=0");
+                if(qty!=0 && !isActive){
+                    isActive=true;
+                }
+                else if(isSoldOut()){
+                    halt=true;
+                }
+                if (amount!=qty&& amount!=0.0){
+                    System.out.println("qty= "+qty+"    amount="+amount);
                     for (DCAStrategy DCAStrategy : DCAStrategeis){
                         DCAStrategy.setNeedToDCA(true);
                     }
                 }
-                else{
+                else if (amount!=0){
                     for (DCAStrategy DCAStrategy : DCAStrategeis){
                     DCAStrategy.setNeedToDCA(false);
                 }
-
-
-                amount=qty;
-                System.out.println("qty= "+qty);
             }
-        }
+            amount=qty;
+    }
 
         private void isActive (DataHolder realTimeData, Order order, CandlestickInterval interval){
 //            if (status.equals(Config.NEW)) {

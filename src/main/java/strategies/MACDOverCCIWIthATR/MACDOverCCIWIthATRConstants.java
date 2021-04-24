@@ -16,7 +16,7 @@ public class MACDOverCCIWIthATRConstants {
     public static final double LOWER_PERCENT=0.0;
     public static final double UPPER_PERCENT=0.0;
     public static final int CCI_CANDLES = 20;
-    public static final int ATR_CANDLE_COUNT = 5;
+    public static final int ATR_CANDLE_COUNT = 14;
     public static final int MAX_DCA = 3;
     public static final double AMOUNT_FACTOR = 2;
     public static final double ATR1 = 1.5;
