@@ -36,7 +36,7 @@ public interface DCAStrategy  {
     Instructions run(DataHolder realTimeData);
 
     void DCAOrder(DCAInstructions dcaInstructions,DataHolder realTimeData);
-     double getNextDCASize();
+    double getNextDCASize();
 
     void updateDCAPrices(double currentPrice);
 
