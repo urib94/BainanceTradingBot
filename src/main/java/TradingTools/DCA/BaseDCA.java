@@ -58,10 +58,9 @@ public class BaseDCA implements DCAStrategy {
 
 
     public Instructions run(DataHolder realTimeData) {
-
-        if(getNeedToDCA() || orderDCA == null){
+        if(needToDCA || orderDCA == null){
             switch (positionSide){
-                //// TODO: 4/5/2021  include position side BOTH
+                // TODO: 4/5/2021  include position side BOTH
                 case SHORT:
                     return new DCAInstructions(DCAStrategy.DCAType.SHORT_DCA_LIMIT, dCASize);
                 case LONG:

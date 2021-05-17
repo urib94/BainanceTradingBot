@@ -207,7 +207,7 @@ public class MACDOverCCIWIthATREntryStrategy implements EntryStrategy {
                             ,new DCAInstructions(DCAStrategy.DCAType.LONG_DCA_LIMIT,MACDOverCCIWIthATRConstants.FIRST_DCA_SIZE));
 
 
-                    return new PositionHandler(buyOrder, exitStrategies,DCAStrategies);
+                    return new PositionHandler(buyOrder, exitStrategies, DCAStrategies);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

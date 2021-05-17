@@ -30,7 +30,7 @@ public class PositionHandler implements Serializable {
     private volatile boolean rebuying = true;
     private volatile boolean isSelling = false;
     private volatile boolean terminated = false;
-    private boolean newPosition=true;
+    private boolean newPosition = true;
     SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
     private long timeRefrencer = System.currentTimeMillis();
 
@@ -48,7 +48,7 @@ public class PositionHandler implements Serializable {
         symbol = order.getSymbol().toLowerCase();
         exitStrategies = _exitStrategies;
         DCAStrategies = _DCAStrategies;
-        amount=qty;
+        amount = qty;
     }
 
     public synchronized boolean isSoldOut(){
