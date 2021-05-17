@@ -24,7 +24,7 @@ public class CSVDataWriter {
         CandlestickInterval[] intervals = new CandlestickInterval[]{/*CandlestickInterval.THREE_DAILY, CandlestickInterval.DAILY, CandlestickInterval.TWELVE_HOURLY
                 , CandlestickInterval.EIGHT_HOURLY, CandlestickInterval.SIX_HOURLY, CandlestickInterval.FOUR_HOURLY,*/ CandlestickInterval.TWO_HOURLY, CandlestickInterval.HOURLY, CandlestickInterval.HALF_HOURLY
                 , CandlestickInterval.FIFTEEN_MINUTES, CandlestickInterval.FIVE_MINUTES, CandlestickInterval.ONE_MINUTE};
-        Long fullDay = 86400000L;
+        long fullDay = 86400000L;
 //            List<Long> candlesAmounts = new ArrayList<>();
 //            candlesAmounts.add(new Long())
         int[] time = {1, 2, 2, 2, 4, 5, 6, 7, 14, 26, 60, 111, 310, 550, 1500};
@@ -124,21 +124,30 @@ public class CSVDataWriter {
         }
 
     }
+    //1500 minutes = 90 000 seconds
+    public static void getAndWriteData() {
+        long startTime = 1618088400000L;
+        long endTime = System.currentTimeMillis() - 90000000L;
+        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+        List<Candlestick> candlestickBars = new ArrayList<>();
+        File file = new File("./lotOfCandles");
+        while (startTime < endTime){
+            candlestickBars.addAll( syncRequestClient.getContinuousCandlesticks("btcusdt", ContractType.PERPETUAL, CandlestickInterval.ONE_MINUTE,
+                    startTime, null, 1500));
+            startTime += 90000000;
+        }
+        writToFile(file, candlestickBars);
+    }
 
 
     public static void writToFile(File file, List<Candlestick> candlestickBars) {
-        int i = 0;
         // create a List which contains String array
-        List<String[]> data = new ArrayList<String[]>();
+        ArrayList<String[]> data = new ArrayList<>();
 
-        while (i < candlestickBars.size()) {
-                data.add(new String[]{"openTime", "open", "high", "low",
-                        "close", "volume", "closeTime", "quoteAssetVolume", "numTrades", "takerBuyBaseAssetVolume", "takerBuyQuoteAssetVolume"});
-                for (Candlestick candlestick :candlestickBars) {
-                    for (Candlestick candle : (List<Candlestick>) candlestickBars)
-                        data.add(candlestickToStringArray((Candlestick) candle));
-                }
-            i++;
+        data.add(new String[]{"openTime", "open", "high", "low",
+                "close", "volume", "closeTime", "quoteAssetVolume", "numTrades", "takerBuyBaseAssetVolume", "takerBuyQuoteAssetVolume"});
+        for (Candlestick candlestick :candlestickBars) {
+                data.add(candlestickToStringArray(candlestick));
         }
         try{
         // create FileWriter object with file as parameter
@@ -161,7 +170,7 @@ public class CSVDataWriter {
     }
 
     public static void main(String[] args) {
-        CSVDataWriter.writeDataAtOnce();
+        CSVDataWriter.getAndWriteData();
     }
 
 

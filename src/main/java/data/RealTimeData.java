@@ -107,11 +107,11 @@ public class RealTimeData{
         BaseBarSeries currData = new BaseBarSeries(realTimeData.getBarData());
         highPriceIndicator = new HighPriceIndicator(currData);
         lowPriceIndicator = new LowPriceIndicator(currData);
-        macdOverCCIIndicator=calculateMacdOverCCI(currData);
+        macdOverCCIIndicator = calculateMacdOverCCI(currData);
         macdOverRsiIndicator = calculateMacdOverRsi(currData);
         smaIndicator = new SMAIndicator(new ClosePriceIndicator(currData), MACDOverRSIConstants.SMA_CANDLES);
         calculateBollingerBandsIndicators(currData);
-        atrIndicator=calculateATR(currData,MACDOverCCIWIthATRConstants.ATR_CANDLE_COUNT);
+        atrIndicator = calculateATR(currData,MACDOverCCIWIthATRConstants.ATR_CANDLE_COUNT);
     }
 
 
@@ -121,8 +121,8 @@ public class RealTimeData{
         BollingerBandsMiddleIndicator bollingerBandsMiddleIndicator = new BollingerBandsMiddleIndicator(smaIndicator);
         bollingerBandsUpperIndicator = new BollingerBandsUpperIndicator(bollingerBandsMiddleIndicator, new StandardDeviationIndicator(closePriceIndicator, MACDOverRSIConstants.STANDARD_DEVIATION_CANDLES), MACDOverRSIConstants.DEVIATION_MULTIPLIER);
         bollingerBandsLowerIndicator = new BollingerBandsLowerIndicator(bollingerBandsMiddleIndicator, new StandardDeviationIndicator(closePriceIndicator, MACDOverRSIConstants.STANDARD_DEVIATION_CANDLES), MACDOverRSIConstants.DEVIATION_MULTIPLIER);
-        bollingerBandWidthIndicator= new BollingerBandWidthIndicator(bollingerBandsUpperIndicator,bollingerBandsMiddleIndicator,bollingerBandsLowerIndicator);
-        percentBIndicator=new PercentBIndicator(closePriceIndicator,20,2);
+        bollingerBandWidthIndicator = new BollingerBandWidthIndicator(bollingerBandsUpperIndicator,bollingerBandsMiddleIndicator,bollingerBandsLowerIndicator);
+        percentBIndicator = new PercentBIndicator(closePriceIndicator,20,2);
         //System.out.println("%B="+percentBIndicator.getValue(currData.getEndIndex()));
     }
     private MACDIndicator calculateMacdOverRsi(BaseBarSeries currData) {
