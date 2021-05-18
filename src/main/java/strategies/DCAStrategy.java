@@ -36,14 +36,14 @@ public interface DCAStrategy  {
     Instructions run(DataHolder realTimeData);
 
     void DCAOrder(DCAInstructions dcaInstructions,DataHolder realTimeData);
+
     double getNextDCASize();
 
-    void updateDCAPrices(double currentPrice);
+    double calculateNextDCAPrice(double currentPrice);
 
     Order getTpOrder();
-    double distanceToTP();
 
-    public double getNextDCAPrice();
+    double distanceToTP();
 
     boolean isNewPosition();
 

@@ -160,6 +160,35 @@ public class DataHolder {
                 return closePriceCrossed(crossType,candleType,threshold);
 
         }
+
+        return true; // will not come to this!
+
+    }
+
+    public boolean crossedAtIndex(IndicatorType indicatorType, CrossType crossType, CandleType candleType, double threshold,int index) {
+        switch (indicatorType) {
+            case RSI:
+                return rsiCrossed(crossType,candleType,threshold);
+            case PERECENT_BI:
+                return percentBICross(crossType,candleType,threshold);
+            case MACD_OVER_RSI:
+                return macdOverRsiCrossed(crossType,candleType,threshold);
+            case MACD_OVER_CCI:
+                return macdOverCCICrossedAtIndex(crossType,candleType,threshold, index);
+
+            case BOllINGER_BANDS_UPPER_INDICATOR:
+                break;
+            case BOllINGER_BANDS_LOWER_INDICATOR:
+                break;
+            case BOllINGER_BANDS_WIDTH_INDICATOR:
+                break;
+            case SAR:
+                break;
+            case CLOSE_PRICE:
+                return closePriceCrossed(crossType,candleType,threshold);
+
+        }
+
         return true; // will not come to this!
 
     }
@@ -215,6 +244,19 @@ public class DataHolder {
         if (crossType == CrossType.UP) return currentMacdOverRsiValue > threshold && prevMacdOverRsiValue <= threshold;
         return prevMacdOverRsiValue >= threshold && currentMacdOverRsiValue < threshold;
     }
+    private boolean macdOverCCICrossedAtIndex(CrossType crossType, CandleType candleType, double threshold ,int index) {
+        double currentMacdOverRsiValue,prevMacdOverRsiValue;
+        if (candleType == CandleType.OPEN) {
+            currentMacdOverRsiValue = getMacdOverCCIValueAtIndex(index);
+            prevMacdOverRsiValue  = getMacdOverCCIValueAtIndex(index-1);
+        } else {
+            currentMacdOverRsiValue =getMacdOverCCIValueAtIndex(index-1);
+            prevMacdOverRsiValue = getMacdOverCCIValueAtIndex(index-2);
+        }
+        if (crossType == CrossType.UP) return currentMacdOverRsiValue > threshold && prevMacdOverRsiValue <= threshold;
+        return prevMacdOverRsiValue >= threshold && currentMacdOverRsiValue < threshold;
+    }
+
 
     public boolean percentBICross(CrossType crossType, CandleType candleType, double threshold){
         double currentPercentBIValue, prevPercentBIValue;
@@ -230,7 +272,7 @@ public class DataHolder {
     }
 
 
-    public boolean above(IndicatorType indicatorType, CandleType type, int threshold) {
+    public boolean above(IndicatorType indicatorType, CandleType type, double threshold) {
         if (indicatorType == IndicatorType.RSI) {
             if (type == CandleType.OPEN) {
                 return getRsiOpenValue() > threshold;
@@ -243,7 +285,10 @@ public class DataHolder {
             } else {
                 return  getMacdOverRsiValueAtIndex(getLastCloseIndex()) > threshold;
             }
-        } else {
+        }  else if(indicatorType == IndicatorType.MACD_OVER_CCI ){
+            return getMACDOverCCIHistAtIndex(getLastCloseIndex()) > threshold;
+        }
+        else {
             if (type == CandleType.OPEN) {
                 return getSmaValueAtIndex(getLastIndex())>threshold;
             } else {
@@ -298,7 +343,16 @@ public class DataHolder {
         UP,DOWN
     }
     public enum IndicatorType {
-        RSI,MACD_OVER_RSI, BOllINGER_BANDS_UPPER_INDICATOR,BOllINGER_BANDS_LOWER_INDICATOR
-        , BOllINGER_BANDS_WIDTH_INDICATOR,PERECENT_BI, SAR, CLOSE_PRICE,MACD_OVER_CCI,ATR
+        RSI,
+        MACD_OVER_RSI,
+        BOllINGER_BANDS_UPPER_INDICATOR,
+        BOllINGER_BANDS_LOWER_INDICATOR,
+        BOllINGER_BANDS_WIDTH_INDICATOR,
+        PERECENT_BI,
+        SAR,
+        CLOSE_PRICE,
+        MACD_OVER_CCI,
+        ATR,
+        MACD_OVER_CCI_HIST,
     }
 }

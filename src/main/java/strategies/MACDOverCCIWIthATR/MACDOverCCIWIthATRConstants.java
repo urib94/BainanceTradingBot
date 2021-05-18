@@ -15,6 +15,9 @@ public class MACDOverCCIWIthATRConstants {
 //    public static final double CONSTANT_TRAILING_PERCENTAGE = 0.1;
     public static final double LOWER_PERCENT=0.0;
     public static final double UPPER_PERCENT=0.0;
+    public static final double STRONG_TRAD_MULTIPLIER = 1.5;
+    public static final double REGULAR_TRAD_MULTIPLIER = 1.0;
+    public static final double WEAK_TRAD_MULTIPLIER = 0.6;
     public static final int CCI_CANDLES = 20;
     public static final int ATR_CANDLE_COUNT = 14;
     public static final int MAX_DCA = 3;

@@ -32,7 +32,6 @@ public class BaseDCA implements DCAStrategy {
     public double nextDCAPrice;
     public Order orderDCA, orderTP;
     private DCAInstructions dcaInstructions;
-    private double prevQTY = 0;
     private double distanceToTP;
     public boolean needToDCA = true;
     public PositionSide positionSide;
@@ -73,7 +72,7 @@ public class BaseDCA implements DCAStrategy {
     public double calculateTotalAmount(){
         double totalAmount = 0;
         if(dCACount == 0){
-            totalAmount=getInitialAmount();
+            totalAmount = getInitialAmount();
         }else {
             for (int i = 0; i < dCACount; i++){
                 totalAmount+=totalAmount*amountFactor;
@@ -87,20 +86,18 @@ public class BaseDCA implements DCAStrategy {
         if(maxDCACount < dCACount) return;
         switch (positionSide){
             case SHORT:
-                if(currentPrice >= getCurrentPrice() + (step * 100)){
+                if(currentPrice >= currentPrice+ (step * 100)){
                     needToDCA = true;
                 }
                 break;
             case LONG:
-                if(currentPrice <= (getCurrentPrice() - (step * 100))){
+                if(currentPrice <= (currentPrice - (step * 100))){
                     needToDCA = true;
                 }
                 break;
         }
         needToDCA = false;
     }
-
-//
 
     private void updateStep() {
         step *= stepFactor;
@@ -112,7 +109,6 @@ public class BaseDCA implements DCAStrategy {
             setDCASize();
             setNeedToDCA(false);
             if (dCACount <= maxDCACount) {
-                prevQTY = PositionHandler.getQty();
                 double currentPrice = realTimeData.getCurrentPrice();
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
                 String sellingQty = Utils.fixQuantity(BinanceInfo.formatQty(dCASize / currentPrice, symbol));
@@ -162,7 +158,7 @@ public class BaseDCA implements DCAStrategy {
                 }
                 dCACount++;
             }
-            updateDCAPrices(currentPrice);
+            updateStep();
             return;
         }
         System.out.println("wrong call for DCA");
@@ -238,7 +234,7 @@ public class BaseDCA implements DCAStrategy {
         return orderTP == null;
     }
 
-    private double calculateNextDCAPrice(double currentPrice){
+    public double calculateNextDCAPrice(double currentPrice){
         if(positionSide == PositionSide.LONG){
             if (dCACount == 0) {
                 return currentPrice - (currentPrice / 100 * getStep());
@@ -254,7 +250,7 @@ public class BaseDCA implements DCAStrategy {
     public void setDCASize() {
         if (dCASize == 0) dCASize = getInitialAmount()*getAmountFactor();
         else {
-                dCASize = dCASize * getAmountFactor();
+                dCASize = PositionHandler.getQty() * getAmountFactor();
             }
     }
 
@@ -267,11 +263,6 @@ public class BaseDCA implements DCAStrategy {
     public double getNextDCASize(){
         System.out.println("next DCA size = " + dCASize * amountFactor);
         return dCASize *= amountFactor;
-    }
-
-    public double getNextDCAPrice(){
-        //calculateNextDCAPrice();
-        return nextDCAPrice;
     }
 
     public void setNeedToDCA(boolean needToDCA) {
@@ -342,23 +333,6 @@ public class BaseDCA implements DCAStrategy {
     }
 
 
-    public void updateDCAPrices(double currentPrice) {
-        switch (positionSide) {
-            case SHORT:
-                if (dCACount == 0) {
-                    dCAPrice = currentPrice + (currentPrice / 100 * step);
-                    break;
-                } else dCAPrice += (dCAPrice / 100) * (step);
-                break;
-            case LONG:
-                if (dCACount == 0) {
-                    dCAPrice = currentPrice - (currentPrice / 100 * step);
-                    break;
-                } else dCAPrice -= (dCAPrice / 100) * (step);
-                break;
-        }
-    }
-
     @Override
     public Order getTpOrder() {
         return orderTP;
@@ -370,38 +344,10 @@ public class BaseDCA implements DCAStrategy {
     }
 
 
-//    public void setDCAInstructions(DCAInstructions dcaInstructions) {
-
-    // }
-
 
     @Override
     public PositionSide getPositionSide() {
         return positionSide;
     }
-//    public void setNeedToDCA(DataHolder dataHolder , double[] closePrices){
-//        double currentPrice= dataHolder.getCurrentPrice();
-//        switch (positionSide){
-//            case SHORT:
-//                for (double price : closePrices) {
-//                    if (currentPrice <= price){
-//                        price*=10;
-//                        needToDCA=true;
-//                        return;
-//                    }
-//                }
-//                break;
-//            case LONG:
-//                for (double price : closePrices) {
-//                    if (currentPrice >= price){
-//                        price*=10;
-//                        needToDCA=true;
-//                        return;
-//                    }
-//                }
-//            }
-//    }
-//
-
 }
 

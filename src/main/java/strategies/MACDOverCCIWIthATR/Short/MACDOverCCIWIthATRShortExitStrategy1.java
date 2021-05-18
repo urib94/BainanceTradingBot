@@ -1,6 +1,7 @@
 package strategies.MACDOverCCIWIthATR.Short;
 
 import TradingTools.Trailers.SkippingExitTrailer;
+import TradingTools.Trailers.TrailingExit;
 import com.binance.client.model.enums.PositionSide;
 import data.DataHolder;
 import positions.DCAInstructions;
@@ -8,8 +9,15 @@ import positions.Instructions;
 import strategies.MACDOverCCIWIthATR.BaseMACDOverCCIWIthATRExitStrategy;
 
 public class MACDOverCCIWIthATRShortExitStrategy1 extends BaseMACDOverCCIWIthATRExitStrategy {
-    public MACDOverCCIWIthATRShortExitStrategy1(double initiallPrice, double maxDCACount, double initialAmount, double amountFactor, PositionSide positionSide, double TPPrice, double DCAPrices, String symbol, boolean useTP,double step, double stepFactor, DataHolder dataHolder, SkippingExitTrailer skippingExitTrailer, DCAInstructions dcaInstructions) {
-        super(initiallPrice, maxDCACount, initialAmount, amountFactor, positionSide, TPPrice,DCAPrices, symbol, useTP,step,stepFactor , dataHolder, dcaInstructions);
+    public double ATRValue;
+    private boolean cancelledTP=false;
+    private SkippingExitTrailer skippingExitTrailer;
+    private boolean isTrailing=false;
+    public MACDOverCCIWIthATRShortExitStrategy1(double initiallPrice, int maxDCACount, double initialAmount, double amountFactor,
+                                                PositionSide positionSide, double TPPrice, double DCAPrices, String symbol, boolean useTP, double step, double stepFactor, DataHolder dataHolder, TrailingExit trailingExit, DCAInstructions dcaInstructions) {
+        super(initiallPrice, maxDCACount, initialAmount, amountFactor, positionSide, TPPrice,DCAPrices,symbol,useTP,step,stepFactor, dataHolder, dcaInstructions );        this.tPPrice = TPPrice;
+        this.ATRValue = ATRValue;
+        this.skippingExitTrailer=(SkippingExitTrailer) trailingExit;
     }
 
     @Override
