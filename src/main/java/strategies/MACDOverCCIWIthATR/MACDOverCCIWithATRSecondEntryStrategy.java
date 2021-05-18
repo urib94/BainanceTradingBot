@@ -2,7 +2,6 @@ package strategies.MACDOverCCIWIthATR;
 
 import TradingTools.Trailers.SkippingEntryTrailer;
 import TradingTools.Trailers.SkippingExitTrailer;
-import TradingTools.Trailers.TrailingExit;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.*;
 import com.binance.client.model.trade.Order;
@@ -14,35 +13,32 @@ import positions.PositionHandler;
 import singletonHelpers.RequestClient;
 import singletonHelpers.TelegramMessenger;
 import strategies.DCAStrategy;
-import strategies.EntryStrategy;
 import strategies.ExitStrategy;
 import strategies.MACDOverCCIWIthATR.Long.MACDOverCCIWIthATRLongExitStrategy1;
 import strategies.MACDOverCCIWIthATR.Long.MACDOverCCIWIthATRLongExitStrategy2;
 import strategies.MACDOverCCIWIthATR.Short.MACDOverCCIWIthATRShortExitStrategy1;
-import strategies.macdOverRSIStrategies.MACDOverRSIConstants;
-import strategies.macdOverRSIStrategies.Short.*;
+import strategies.MACDOverCCIWIthATR.Short.MACDOverCCIWIthATRShortExitStrategy2;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 
+public class MACDOverCCIWithATRSecondEntryStrategy {
 
-public class MACDOverCCIWIthATREntryStrategy implements EntryStrategy {
     private double takeProfitPercentage = MACDOverCCIWIthATRConstants.DEFAULT_TAKE_PROFIT_PERCENTAGE;
     private double stopLossPercentage = MACDOverCCIWIthATRConstants.DEFAULT_STOP_LOSS_PERCENTAGE;
     private int leverage = MACDOverCCIWIthATRConstants.DEFAULT_LEVERAGE;
     private double requestedBuyingAmount = MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT;
-    private final AccountBalance accountBalance ;
+    private final AccountBalance accountBalance;
     private volatile boolean bought = false;
     private double positivePeek = 0;
     private double negativePeek = 0;
     private SkippingEntryTrailer skippingEntryTrailer;
     private double DCAPrices;
-    private double  TPPrice;
-    private boolean entering =false;
+    private double TPPrice;
+    private boolean entering = false;
 
-
-    public MACDOverCCIWIthATREntryStrategy(){
+    public MACDOverCCIWithATRSecondEntryStrategy(){
         accountBalance = AccountBalance.getAccountBalance();
         System.out.println("macd over cci");
     }
@@ -54,33 +50,29 @@ public class MACDOverCCIWIthATREntryStrategy implements EntryStrategy {
         boolean notInPosition = accountBalance.getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == Config.ZERO;
         if(notInPosition){
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-            skippingEntryTrailer = new SkippingEntryTrailer(realTimeData.getClosePriceAtIndex(-1),MACDOverCCIWIthATRConstants.NEGATIVE_SKIPINGֹ_TRAILING_PERCENTAGE_BUY,PositionSide.LONG);
-            boolean noOpenOrders = true;// syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
+            skippingEntryTrailer = new SkippingEntryTrailer(realTimeData.getClosePriceAtIndex(-1)
+                    ,MACDOverCCIWIthATRConstants.NEGATIVE_SKIPINGֹ_TRAILING_PERCENTAGE_BUY,PositionSide.LONG);
+            boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
             if (noOpenOrders){
                 double atrVAl=realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex());
-                if (/*lowerBICroosUp(realTimeData)&&*/ !entering){
-                    if (/*candleIndicateLong(realTimeData,realTimeData.getLastCloseIndex())&& !BBIsExpanding(realTimeData )*/ true){
+                if (realTimeData.above(DataHolder.IndicatorType.MACD_OVER_CCI, DataHolder.CandleType.CLOSE,Config.DOUBLE_ZERO)){
+                    if (candleIndicateLong(realTimeData,realTimeData.getLastCloseIndex())&& !BBIsExpanding(realTimeData)
+                            && longCurrHightIsBigger(realTimeData) && !entering ){
                         entering=true;
                         skippingEntryTrailer.updateTrailer(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()));
-                        if (skippingEntryTrailer.needToEnter(currentPrice)) {
-                           DCAPrices = currentPrice - (atrVAl * MACDOverCCIWIthATRConstants.ATR1);
-                            MACDOverCCIWIthATRConstants.STEP=(currentPrice- (currentPrice -realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.CLOSE_ATR1))/(currentPrice/100);
-                            System.out.println("step="+MACDOverCCIWIthATRConstants.STEP);
-                           TPPrice=currentPrice + (atrVAl * MACDOverCCIWIthATRConstants.CLOSE_ATR1);
-                            MACDOverCCIWIthATRLongExitStrategy1 macdOverCCIWIthATRLongExitStrategy1 = new MACDOverCCIWIthATRLongExitStrategy1(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()), MACDOverCCIWIthATRConstants.MAX_DCA, MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT*MACDOverCCIWIthATRConstants.DEFAULT_LEVERAGE,
-                                    MACDOverCCIWIthATRConstants.AMOUNT_FACTOR, PositionSide.LONG,TPPrice, DCAPrices,symbol,true,MACDOverCCIWIthATRConstants.STEP,MACDOverCCIWIthATRConstants.STEP_FACTOR,realTimeData,
-                                    new SkippingExitTrailer(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()),MACDOverCCIWIthATRConstants.POSITIVE_SKIPINGֹ_TRAILING_PERCENTAGE_BUY,PositionSide.LONG)
-                                    ,new DCAInstructions(DCAStrategy.DCAType.LONG_DCA_LIMIT,MACDOverCCIWIthATRConstants.FIRST_DCA_SIZE));
-                            MACDOverCCIWIthATRLongExitStrategy2 macdOverCCIWIthATRLongExitStrategy2=new MACDOverCCIWIthATRLongExitStrategy2();
-                            DCAStrategies.add(macdOverCCIWIthATRLongExitStrategy1);
-                            exitStrategies.add(macdOverCCIWIthATRLongExitStrategy2);
-
+                        if( lowerBICroosUp(realTimeData)) {
+                            return buyAndCreatePositionHandler(realTimeData, realTimeData.getCurrentPrice(), symbol, PositionSide.LONG, DCAStrategies,
+                                    exitStrategies, MACDOverCCIWIthATRConstants.STRONG_TRAD_MULTIPLIER );
+                        }else if (skippingEntryTrailer.needToEnter(currentPrice)) {
+                           MACDOverCCIWIthATRLongExitStrategy2 macdOverCCIWIthATRLongExitStrategy2=new MACDOverCCIWIthATRLongExitStrategy2();
+                           DCAStrategies.add(enterLongPostion(realTimeData, currentPrice, atrVAl, symbol));
+                           exitStrategies.add(macdOverCCIWIthATRLongExitStrategy2);
                             TelegramMessenger.sendToTelegram("buyAndCreatePositionHandler----long ");
-
-                            return buyAndCreatePositionHandler(realTimeData, realTimeData.getCurrentPrice(), symbol, PositionSide.LONG, DCAStrategies,exitStrategies);
+                           return buyAndCreatePositionHandler(realTimeData, realTimeData.getCurrentPrice(), symbol, PositionSide.LONG, DCAStrategies,
+                                    exitStrategies, MACDOverCCIWIthATRConstants.REGULAR_TRAD_MULTIPLIER );
                         }
                     } else if (candleIndicateShort(realTimeData,realTimeData.getLastCloseIndex())){
-                            skippingEntryTrailer.dismiss();
+                        skippingEntryTrailer.dismiss();
                     }
                 }else if (upperBICroosDown(realTimeData)&& !entering){
                     if (candleIndicateShort(realTimeData,realTimeData.getLastCloseIndex()) && !BBIsExpanding(realTimeData )){
@@ -99,7 +91,7 @@ public class MACDOverCCIWIthATREntryStrategy implements EntryStrategy {
                             exitStrategies.add(macdOverCCIWIthATRLongExitStrategy2);
                             TelegramMessenger.sendToTelegram("buyAndCreatePositionHandler----short ");
 
-                            return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT, DCAStrategies,exitStrategies);
+                            return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT, DCAStrategies,exitStrategies, );
                         }
 
                     } else if (candleIndicateLong(realTimeData,realTimeData.getLastCloseIndex())){
@@ -107,7 +99,7 @@ public class MACDOverCCIWIthATREntryStrategy implements EntryStrategy {
                     }
 
                 }else if((candleIndicateLong(realTimeData,realTimeData.getLastCloseIndex()) && candleIndicateShort(realTimeData,realTimeData.getLastCloseIndex()-1))
-                            && upperBICroosUp(realTimeData) && !entering ){
+                        && upperBICroosUp(realTimeData) && !entering ){
                     entering=true;
                     SkippingExitTrailer nullTrailler=null;
                     DCAPrices = currentPrice - (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.CLOSE_ATR1);
@@ -122,30 +114,76 @@ public class MACDOverCCIWIthATREntryStrategy implements EntryStrategy {
                     DCAStrategies.add(macdOverCCIWIthATRLongExitStrategy1);
                     exitStrategies.add(macdOverCCIWIthATRLongExitStrategy2);
 
-                    return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.LONG, DCAStrategies, exitStrategies);
+                    return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.LONG, DCAStrategies, exitStrategies, );
                 }
                 else if ((candleIndicateShort(realTimeData,realTimeData.getLastCloseIndex()) && candleIndicateLong(realTimeData,realTimeData.getLastCloseIndex()-1))
                         && lowerBICroosDown(realTimeData) && !entering){
                     SkippingExitTrailer nullTrailler=null;
-                    DCAPrices = currentPrice - (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.CLOSE_ATR1);
-                    MACDOverCCIWIthATRConstants.STEP=realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.CLOSE_ATR1;
-                    TPPrice=currentPrice + (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.CLOSE_ATR1);
-                    MACDOverCCIWIthATRLongExitStrategy1 macdOverCCIWIthATRLongExitStrategy1 = new MACDOverCCIWIthATRLongExitStrategy1(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()), MACDOverCCIWIthATRConstants.MAX_DCA, MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT*MACDOverCCIWIthATRConstants.DEFAULT_LEVERAGE,
-                            MACDOverCCIWIthATRConstants.AMOUNT_FACTOR, PositionSide.LONG,TPPrice, DCAPrices,symbol,true,MACDOverCCIWIthATRConstants.STEP,
-                            MACDOverCCIWIthATRConstants.STEP_FACTOR, realTimeData,
-                            new SkippingExitTrailer(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()),MACDOverCCIWIthATRConstants.POSITIVE_SKIPINGֹ_TRAILING_PERCENTAGE_BUY,PositionSide.LONG)
-                            ,new DCAInstructions(DCAStrategy.DCAType.LONG_DCA_LIMIT,MACDOverCCIWIthATRConstants.FIRST_DCA_SIZE));
-                    MACDOverCCIWIthATRLongExitStrategy2 macdOverCCIWIthATRLongExitStrategy2=new MACDOverCCIWIthATRLongExitStrategy2();
-                    DCAStrategies.add(macdOverCCIWIthATRLongExitStrategy1);
+                    MACDOverCCIWIthATRShortExitStrategy2 macdOverCCIWIthATRLongExitStrategy2=new MACDOverCCIWIthATRSHExitStrategy2();
+                    DCAStrategies.add(enterShortPostion(realTimeData,currentPrice,atrVAl,symbol));
                     exitStrategies.add(macdOverCCIWIthATRLongExitStrategy2);
 
-                    return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT, DCAStrategies, exitStrategies);
+
+                    return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT, DCAStrategies, exitStrategies, );
                 }
             }
         }
         entering=false;
         return null;
 
+    }
+    private boolean MACDOverZeroCroosUp(DataHolder dataHolder,int index){
+        return dataHolder.crossedAtIndex(DataHolder.IndicatorType.MACD_OVER_CCI, DataHolder.CrossType.UP,DataHolder.CandleType.CLOSE, Config.DOUBLE_ZERO ,index);
+    }
+
+    private MACDOverCCIWIthATRLongExitStrategy1 enterLongPostion(DataHolder realTimeData,double currentPrice, double atrVAl, String symbol){
+        DCAPrices = currentPrice - (atrVAl * MACDOverCCIWIthATRConstants.ATR1);
+        MACDOverCCIWIthATRConstants.STEP=(currentPrice- (currentPrice -realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.CLOSE_ATR1))/(currentPrice/100);
+        System.out.println("step="+MACDOverCCIWIthATRConstants.STEP);
+        TPPrice=currentPrice + (atrVAl * MACDOverCCIWIthATRConstants.CLOSE_ATR1);
+        MACDOverCCIWIthATRLongExitStrategy1 macdOverCCIWIthATRLongExitStrategy1 = new MACDOverCCIWIthATRLongExitStrategy1(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()), MACDOverCCIWIthATRConstants.MAX_DCA, MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT*MACDOverCCIWIthATRConstants.DEFAULT_LEVERAGE,
+                MACDOverCCIWIthATRConstants.AMOUNT_FACTOR, PositionSide.LONG,TPPrice, DCAPrices,symbol,true,MACDOverCCIWIthATRConstants.STEP,MACDOverCCIWIthATRConstants.STEP_FACTOR,realTimeData,
+                new SkippingExitTrailer(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()),MACDOverCCIWIthATRConstants.POSITIVE_SKIPINGֹ_TRAILING_PERCENTAGE_BUY,PositionSide.LONG)
+                ,new DCAInstructions(DCAStrategy.DCAType.LONG_DCA_LIMIT,MACDOverCCIWIthATRConstants.FIRST_DCA_SIZE));
+        return macdOverCCIWIthATRLongExitStrategy1;
+    }
+
+    private MACDOverCCIWIthATRShortExitStrategy1 enterShortPostion(DataHolder realTimeData, double currentPrice, double atrVAl, String symbol){
+        DCAPrices = currentPrice - (atrVAl * MACDOverCCIWIthATRConstants.ATR1);
+        MACDOverCCIWIthATRConstants.STEP=(currentPrice- (currentPrice -realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.CLOSE_ATR1))/(currentPrice/100);
+        System.out.println("step="+MACDOverCCIWIthATRConstants.STEP);
+        TPPrice=currentPrice + (atrVAl * MACDOverCCIWIthATRConstants.CLOSE_ATR1);
+        MACDOverCCIWIthATRShortExitStrategy1 macdOverCCIWIthATRShortExitStrategy1 = new MACDOverCCIWIthATRShortExitStrategy1(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex())
+                , MACDOverCCIWIthATRConstants.MAX_DCA, MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT*MACDOverCCIWIthATRConstants.DEFAULT_LEVERAGE,
+                MACDOverCCIWIthATRConstants.AMOUNT_FACTOR, PositionSide.SHORT,TPPrice, DCAPrices,symbol,true,MACDOverCCIWIthATRConstants.STEP,MACDOverCCIWIthATRConstants.STEP_FACTOR,realTimeData,
+                new SkippingExitTrailer(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()),MACDOverCCIWIthATRConstants.POSITIVE_SKIPINGֹ_TRAILING_PERCENTAGE_BUY,PositionSide.LONG)
+                ,new DCAInstructions(DCAStrategy.DCAType.LONG_DCA_LIMIT,MACDOverCCIWIthATRConstants.FIRST_DCA_SIZE));
+        return macdOverCCIWIthATRShortExitStrategy1;
+    }
+
+    private boolean longCurrHightIsBigger(DataHolder realTimeData){
+        int i = 0, lastIndex = realTimeData.getLastCloseIndex();
+        double prevHight = 0, macdVal;
+        while (!MACDOverZeroCroosDown(realTimeData,lastIndex-i++)){
+            if(Math.abs(prevHight)<Math.abs((macdVal = realTimeData.getMACDOverCCIHistAtIndex(lastIndex-i)))){
+                prevHight = macdVal;
+            }
+        }
+        return prevHight<Math.abs(realTimeData.getMACDOverCCIHistAtIndex(lastIndex));
+    }
+
+    private boolean ShortCurrHightIsBigger(DataHolder realTimeData){
+        int i = 0, lastIndex = realTimeData.getLastCloseIndex();
+        double prevHight = 0, macdVal;
+        while (!MACDOverZeroCroosUp(realTimeData,lastIndex-i++)){
+            if(Math.abs(prevHight)<Math.abs((macdVal = realTimeData.getMACDOverCCIHistAtIndex(lastIndex-i)))){
+                prevHight = macdVal;
+            }
+        }
+        return prevHight<Math.abs(realTimeData.getMACDOverCCIHistAtIndex(lastIndex));
+    }
+    private boolean MACDOverZeroCroosDown(DataHolder dataHolder, int index){
+        return dataHolder.crossedAtIndex(DataHolder.IndicatorType.MACD_OVER_CCI, DataHolder.CrossType.DOWN,DataHolder.CandleType.CLOSE, Config.DOUBLE_ZERO, index );
     }
 
     private boolean lowerBICroosUp(DataHolder dataHolder){
@@ -186,7 +224,7 @@ public class MACDOverCCIWIthATREntryStrategy implements EntryStrategy {
         return currWidh>prevWidh;
     }
 
-    private PositionHandler buyAndCreatePositionHandler(DataHolder realTimeData, double currentPrice, String symbol, PositionSide positionSide, ArrayList <DCAStrategy> DCAStrategies,ArrayList<ExitStrategy> exitStrategies ) {//TODO: maybe change market later.
+    private PositionHandler buyAndCreatePositionHandler(DataHolder realTimeData, double currentPrice, String symbol, PositionSide positionSide, ArrayList <DCAStrategy> DCAStrategies,ArrayList<ExitStrategy> exitStrategies, double multiplier ) {//TODO: maybe change market later.
         bought = true;
         if (positionSide == PositionSide.LONG) {
             TelegramMessenger.sendToTelegram("trailing enter long: " + new Date(System.currentTimeMillis()));
@@ -195,19 +233,20 @@ public class MACDOverCCIWIthATREntryStrategy implements EntryStrategy {
                 try {
                     SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
                     syncRequestClient.changeInitialLeverage(symbol, leverage);
-                    String buyingQty = utils.Utils.getBuyingQtyAsString(currentPrice, symbol, leverage, requestedBuyingAmount);
+                    String buyingQty = utils.Utils.getBuyingQtyAsString(currentPrice, symbol, leverage, requestedBuyingAmount * multiplier);
                     Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.MARKET, null,
                             buyingQty, null, null, null, null, null, null, null, WorkingType.MARK_PRICE, "TRUE", NewOrderRespType.RESULT);
                     TelegramMessenger.sendToTelegram("entring long: buyOrder: " + buyOrder + new Date(System.currentTimeMillis()));
                     double[] exitPrices={currentPrice - (realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.ATR1)};
-                    MACDOverCCIWIthATRLongExitStrategy1 macdOverCCIWIthATRLongExitStrategy1 = new MACDOverCCIWIthATRLongExitStrategy1(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()), MACDOverCCIWIthATRConstants.MAX_DCA, MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT*MACDOverCCIWIthATRConstants.DEFAULT_LEVERAGE,
+                    MACDOverCCIWIthATRLongExitStrategy1 macdOverCCIWIthATRLongExitStrategy1 = new MACDOverCCIWIthATRLongExitStrategy1(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()), MACDOverCCIWIthATRConstants.MAX_DCA,
+                            MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT*MACDOverCCIWIthATRConstants.DEFAULT_LEVERAGE,
                             MACDOverCCIWIthATRConstants.AMOUNT_FACTOR, PositionSide.LONG,TPPrice, DCAPrices,symbol,true,MACDOverCCIWIthATRConstants.STEP,
                             MACDOverCCIWIthATRConstants.STEP_FACTOR, realTimeData,
                             new SkippingExitTrailer(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()),MACDOverCCIWIthATRConstants.POSITIVE_SKIPINGֹ_TRAILING_PERCENTAGE_BUY,PositionSide.LONG)
                             ,new DCAInstructions(DCAStrategy.DCAType.LONG_DCA_LIMIT,MACDOverCCIWIthATRConstants.FIRST_DCA_SIZE));
 
 
-                    return new PositionHandler(buyOrder, exitStrategies, DCAStrategies);
+                    return new PositionHandler(buyOrder, exitStrategies,DCAStrategies);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
