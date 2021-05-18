@@ -45,22 +45,23 @@ public class MACDOverCCIWithATRSecondEntryStrategy {
 
     public synchronized PositionHandler run(DataHolder realTimeData, String symbol) {
         ArrayList <DCAStrategy> DCAStrategies = new ArrayList<>();
-        ArrayList <ExitStrategy> exitStrategies =new ArrayList<>();
+        ArrayList <ExitStrategy> exitStrategies = new ArrayList<>();
         double currentPrice=realTimeData.getCurrentPrice();
         boolean notInPosition = accountBalance.getPosition(symbol).getPositionAmt().compareTo(BigDecimal.valueOf(Config.DOUBLE_ZERO)) == Config.ZERO;
         if(notInPosition){
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-            skippingEntryTrailer = new SkippingEntryTrailer(realTimeData.getClosePriceAtIndex(-1)
-                    ,MACDOverCCIWIthATRConstants.NEGATIVE_SKIPINGֹ_TRAILING_PERCENTAGE_BUY,PositionSide.LONG);
+            double lastClosePrice = realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex());
+            skippingEntryTrailer = new SkippingEntryTrailer(lastClosePrice, MACDOverCCIWIthATRConstants.NEGATIVE_SKIPINGֹ_TRAILING_PERCENTAGE_BUY,PositionSide.LONG);
             boolean noOpenOrders = syncRequestClient.getOpenOrders(symbol).size() == Config.ZERO;
             if (noOpenOrders){
-                double atrVAl=realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex());
-                if (realTimeData.above(DataHolder.IndicatorType.MACD_OVER_CCI, DataHolder.CandleType.CLOSE,Config.DOUBLE_ZERO)){
-                    if (candleIndicateLong(realTimeData,realTimeData.getLastCloseIndex())&& !BBIsExpanding(realTimeData)
-                            && longCurrHightIsBigger(realTimeData) && !entering ){
-                        entering=true;
+                double atrVAl = realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex());
+                boolean cCIAboveZero = realTimeData.above(DataHolder.IndicatorType.MACD_OVER_CCI, DataHolder.CandleType.CLOSE,Config.DOUBLE_ZERO);
+                if (cCIAboveZero){
+                    boolean candleIndicateLong = candleIndicateLong(realTimeData, realTimeData.getLastCloseIndex());
+                    if (candleIndicateLong && !BBIsExpanding(realTimeData) && longCurrHightIsBigger(realTimeData) && !entering ){
+                        entering = true;
                         skippingEntryTrailer.updateTrailer(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()));
-                        if( lowerBICroosUp(realTimeData)) {
+                        if(lowerBICroosUp(realTimeData)) {
                             return buyAndCreatePositionHandler(realTimeData, realTimeData.getCurrentPrice(), symbol, PositionSide.LONG, DCAStrategies,
                                     exitStrategies, MACDOverCCIWIthATRConstants.STRONG_TRAD_MULTIPLIER );
                         }else if (skippingEntryTrailer.needToEnter(currentPrice)) {
