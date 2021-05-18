@@ -44,7 +44,7 @@ public class InvestmentManager implements Runnable{
             if (dataHolder != null){
                 AccountBalance.getAccountBalance().updateBalance(symbol, Config.BASE_COIN);
                 for (PositionHandler positionHandler :positionHandlers){
-                    positionHandler.update(dataHolder, interval);
+                    positionHandler.update();
                     if (positionHandler.isSoldOut()){
                         positionHandler.terminate();
                         positionHandlers.remove(positionHandler);

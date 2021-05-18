@@ -8,46 +8,34 @@ import positions.Instructions;
 import positions.SellingInstructions;
 
 public interface DCAStrategy  {
-    public boolean needToDCA =false;
 
     PositionSide getPositionSide();
 
-    public double gettPPrice();
+    double gettPPrice();
 
     int getdCACount();
 
     double  getMaxDCACount();
 
-    public void setNeedToDCA(boolean valToSet);
+    void setNeedToDCA(boolean valToSet);
 
-    public  boolean getNeedToDCA();
+    boolean getNeedToDCA();
 
-    double calculateTotalAmount();
+    void TakeProfit (SellingInstructions sellingInstructions, double qty,double entryPrice,DataHolder realTimeData);
 
-    public boolean getNeedToTP();
+    double getInitialAmount();
 
-    public void TakeProfit (SellingInstructions sellingInstructions, double qty,double entryPrice,DataHolder realTimeData);
-
-    public double getInitialAmount();
-    public DCAInstructions getDCAInstructions ();
-    //public void setDCAInstructions(DCAInstructions dcaInstructions);
-
+    DCAInstructions getDCAInstructions ();
 
     Instructions run(DataHolder realTimeData);
 
     void DCAOrder(DCAInstructions dcaInstructions,DataHolder realTimeData);
-    double getNextDCASize();
 
     void updateDCAPrices(double currentPrice);
 
     Order getTpOrder();
-    double distanceToTP();
 
-    public double getNextDCAPrice();
-
-    boolean isNewPosition();
-
-    public enum DCAType {
+    enum DCAType {
         LONG_DCA_LIMIT,
         LONG_DCA_MARKET,
         SHORT_DCA_LIMIT,
