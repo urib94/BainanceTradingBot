@@ -72,7 +72,6 @@ public class PositionHandler implements Serializable {
                             closePosition(new SellingInstructions(ClosePositionTypes.CLOSE_SHORT_MARKET, Config.ONE_HUNDRED), realTimeData, currentPrice);
                         }
                         if (DCAStrategy.getNeedToDCA() && DCAStrategy.getDCAInstructions() != null && DCAStrategy.getdCACount() <= DCAStrategy.getMaxDCACount()) {
-                            System.out.println("tp &SL for existing position");
                             TelegramMessenger.sendToTelegram("update after DCA");
                             DCAStrategy.DCAOrder(DCAStrategy.getDCAInstructions(), realTimeData, qty);
                             DCAStrategy.TakeProfit(new SellingInstructions(ClosePositionTypes.SELL_LIMIT, Config.ONE_HUNDRED),
