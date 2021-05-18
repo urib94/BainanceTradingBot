@@ -4,7 +4,6 @@ import TradingTools.Trailers.SkippingExitTrailer;
 import TradingTools.Trailers.TrailingExit;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.PositionSide;
-import data.Config;
 import data.DataHolder;
 import positions.DCAInstructions;
 import positions.Instructions;
@@ -26,7 +25,7 @@ public class MACDOverCCIWIthATRLongExitStrategy1 extends BaseMACDOverCCIWIthATRE
 
     public MACDOverCCIWIthATRLongExitStrategy1(double initiallPrice, int maxDCACount, double initialAmount, double amountFactor,
                                                PositionSide positionSide, double TPPrice, double DCAPrices, String symbol, boolean useTP, double step,double stepFactor, DataHolder dataHolder, TrailingExit trailingExit, DCAInstructions dcaInstructions) {
-        super(initiallPrice, maxDCACount, initialAmount, amountFactor, positionSide, TPPrice,DCAPrices,symbol,useTP,step,stepFactor, dataHolder, dcaInstructions );
+        super(initiallPrice, maxDCACount, initialAmount, amountFactor, positionSide, TPPrice,DCAPrices,symbol, step,stepFactor, dataHolder, dcaInstructions );
         this.tPPrice = TPPrice;
         this.ATRValue = ATRValue;
         this.skippingExitTrailer=(SkippingExitTrailer) trailingExit;

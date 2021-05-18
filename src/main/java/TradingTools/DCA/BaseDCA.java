@@ -22,13 +22,13 @@ public class BaseDCA implements DCAStrategy {
     private final double initialAmount;
     private final double amountFactor;
     private final PositionSide positionSide;
-    private double tPPrice;
+    protected double tPPrice;
     private double dCAPrice;
     private final String symbol;
     private Order orderDCA, orderTP;
     private double step;
     private final double stepFactor;
-    public double dCASize;
+    public double dCASize = 0;
     private int dCACount = 0;
     private double prevQTY;
     public double nextDCAPrice;
@@ -49,7 +49,6 @@ public class BaseDCA implements DCAStrategy {
         this.dCAPrice = dCAPrice;
         this.symbol = symbol;
         this.step = step ;
-        this.dCASize = initialAmount * amountFactor;
         this.dcaInstructions = dcaInstructions;
         distanceToTP = (Math.abs(openPrice - tPPrice)) / (openPrice / 100);
         this.stepFactor = stepFactor;
@@ -59,7 +58,6 @@ public class BaseDCA implements DCAStrategy {
     public Instructions run(DataHolder realTimeData) {
         if(needToDCA || orderDCA == null){
             switch (positionSide){
-                // TODO: 4/5/2021  include position side BOTH
                 case SHORT:
                     return new DCAInstructions(DCAStrategy.DCAType.SHORT_DCA_LIMIT, dCASize);
                 case LONG:
@@ -69,26 +67,24 @@ public class BaseDCA implements DCAStrategy {
         return null;
     }
 
-    public void DCAOrder(DCAInstructions dcaInstructions, DataHolder realTimeData){
-        System.out.println("posting DCA order");
+    public void DCAOrder(DCAInstructions dcaInstructions, DataHolder realTimeData, double qty){
         if(needToDCA) {
             setDCASize();
-            setNeedToDCA(false);
+            needToDCA = false;
             if (dCACount <= maxDCACount) {
-                prevQTY = PositionHandler.getQty();
+                prevQTY = qty;
                 double currentPrice = realTimeData.getCurrentPrice();
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
                 String sellingQty = Utils.fixQuantity(BinanceInfo.formatQty(dCASize / currentPrice, symbol));
                 String dcaPrice = BinanceInfo.formatPrice(calculateNextDCAPrice(currentPrice), symbol);
                 switch (dcaInstructions.getDCAType()) {
 
-
                     case LONG_DCA_LIMIT:
                         try {
                             orderDCA = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
                                     sellingQty, String.valueOf(dcaPrice), null, null, null, null,
                                     String.valueOf(dcaPrice), null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
-                            TelegramMessenger.sendToTelegram("DCA price  " + String.valueOf(dcaPrice) + " ," + new Date(System.currentTimeMillis()));
+                            TelegramMessenger.sendToTelegram("DCA price  " + dcaPrice + " ," + new Date(System.currentTimeMillis()));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -98,7 +94,7 @@ public class BaseDCA implements DCAStrategy {
                             orderDCA = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.STOP_MARKET, TimeInForce.GTC,
                                     sellingQty, String.valueOf(dcaPrice), null, null, String.valueOf(dcaPrice), null,
                                     String.valueOf(dcaPrice), null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
-                            TelegramMessenger.sendToTelegram("DCA price:  " + String.valueOf(dcaPrice) + " ," + new Date(System.currentTimeMillis()));
+                            TelegramMessenger.sendToTelegram("DCA price:  " + dcaPrice + " ," + new Date(System.currentTimeMillis()));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -107,7 +103,7 @@ public class BaseDCA implements DCAStrategy {
                         try {
                             orderDCA = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.LIMIT, null,
                                     sellingQty, String.valueOf(dcaPrice), null, null, null, null, String.valueOf(dCAPrice), null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
-                            TelegramMessenger.sendToTelegram("DCA price:  " + String.valueOf(dCAPrice) + " ," + new Date(System.currentTimeMillis()));
+                            TelegramMessenger.sendToTelegram("DCA price:  " + dCAPrice + " ," + new Date(System.currentTimeMillis()));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -117,7 +113,7 @@ public class BaseDCA implements DCAStrategy {
                             orderDCA = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.STOP_MARKET, TimeInForce.GTC,
                                     sellingQty, String.valueOf(dcaPrice), null, null, String.valueOf(dcaPrice), null,
                                     String.valueOf(dcaPrice), null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
-                            TelegramMessenger.sendToTelegram("DCA price:  " + String.valueOf(dcaPrice) + " ," + new Date(System.currentTimeMillis()));
+                            TelegramMessenger.sendToTelegram("DCA price:  " + dcaPrice + " ," + new Date(System.currentTimeMillis()));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -126,46 +122,37 @@ public class BaseDCA implements DCAStrategy {
                 dCACount++;
             }
             updateDCAPrices(openPrice);
-            return;
         }
-        System.out.println("wrong call for DCA");
     }
 
-    public void TakeProfit(SellingInstructions sellingInstructions, double qty,double entryPrice, DataHolder realTimeData){
-        System.out.println("posting Take Profit Order");
+    public void TakeProfit(SellingInstructions sellingInstructions, double qty, double entryPrice, DataHolder realTimeData){
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             if (orderTP != null) {
                 TelegramMessenger.sendToTelegram("Posting TP order ");
                 syncRequestClient.cancelOrder(symbol, orderTP.getOrderId(), orderTP.getClientOrderId());
-                orderTP = null;
             }
 
             String sellingQty = Utils.fixQuantity(BinanceInfo.formatQty(qty, symbol));
-            String tPPrice= Utils.fixQuantity(BinanceInfo.formatQty(entryPrice+(entryPrice/100*distanceToTP),symbol));
+            String tPPrice= BinanceInfo.formatPrice(entryPrice + (entryPrice / 100 * distanceToTP), symbol);
             switch (sellingInstructions.getType()) {
 
-                case STAY_IN_POSITION:
-                    break;
-
                 case SELL_LIMIT:
-                    System.out.println("sell limit");
                     try {
                         orderTP=syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.TAKE_PROFIT, TimeInForce.GTC,
                                 sellingQty, tPPrice, "true", null, tPPrice, null,
                                 tPPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
-                        TelegramMessenger.sendToTelegram("DCA price  " + String.valueOf(dCAPrice) + " ," + new Date(System.currentTimeMillis()));
+                        TelegramMessenger.sendToTelegram("DCA price  " + dCAPrice + " ," + new Date(System.currentTimeMillis()));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     break;
 
                 case SELL_MARKET:
-                    System.out.println("sell maeket");
                     try {
                         orderTP=syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.TAKE_PROFIT_MARKET, TimeInForce.GTC,
                                 sellingQty, tPPrice, "true", null, tPPrice, null,
                                 tPPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
-                        TelegramMessenger.sendToTelegram("DCA price  " + String.valueOf(dCAPrice) + " ," + new Date(System.currentTimeMillis()));
+                        TelegramMessenger.sendToTelegram("DCA price  " + dCAPrice + " ," + new Date(System.currentTimeMillis()));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -176,7 +163,7 @@ public class BaseDCA implements DCAStrategy {
                         orderTP= syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.TAKE_PROFIT, TimeInForce.GTC,
                                 sellingQty, tPPrice, "true", null, tPPrice, null,
                                 tPPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
-                        TelegramMessenger.sendToTelegram("DCA price  " + String.valueOf(dCAPrice) + " ," + new Date(System.currentTimeMillis()));
+                        TelegramMessenger.sendToTelegram("DCA price  " + dCAPrice + " ," + new Date(System.currentTimeMillis()));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -187,47 +174,36 @@ public class BaseDCA implements DCAStrategy {
                         orderTP= syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.TAKE_PROFIT_MARKET, TimeInForce.GTC,
                                 sellingQty, tPPrice, "true", null, tPPrice, null,
                                 tPPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
-                        TelegramMessenger.sendToTelegram("DCA price  " + String.valueOf(dCAPrice) + " ," + new Date(System.currentTimeMillis()));
+                        TelegramMessenger.sendToTelegram("DCA price  " + dCAPrice + " ," + new Date(System.currentTimeMillis()));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-
                     break;
+
                 default:
+                    break;
             }
         }
 
     private double calculateNextDCAPrice(double currentPrice){
-        if(positionSide == PositionSide.LONG){
-            if (dCACount == 0) {
-                return currentPrice - (currentPrice / 100 * getStep());
-            }
-            else return nextDCAPrice - (getStep() * nextDCAPrice);
+        if (positionSide == PositionSide.LONG){
+            if (dCACount == 0) return currentPrice - (currentPrice / 100 * step);
+            else return nextDCAPrice - (step * nextDCAPrice);
         }else {
-            if (dCACount == 0) {
-                return currentPrice + currentPrice / 100 * getStep();
-            }else return nextDCAPrice + (getStep() * nextDCAPrice);
+            if (dCACount == 0) return currentPrice + currentPrice / 100 * step;
+            else return nextDCAPrice + (step * nextDCAPrice);
         }
     }
 
     public void setDCASize() {
-        if (dCASize == 0) dCASize = getInitialAmount()*getAmountFactor();
-        else {
-                dCASize = dCASize * getAmountFactor();
-            }
-    }
-
-    public void setNeedToDCA(boolean needToDCA) {
-        this.needToDCA = needToDCA;
-    }
-
-    public double getStep() {
-        return step;
+        if (dCASize == 0) dCASize = getInitialAmount() * amountFactor;
+        else dCASize = dCASize * amountFactor;
     }
 
     public double getMaxDCACount() {
         return maxDCACount;
     }
+
 
     public double getInitialAmount() {
         return initialAmount;
@@ -254,16 +230,16 @@ public class BaseDCA implements DCAStrategy {
     public void updateDCAPrices(double currentPrice) {
         switch (positionSide) {
             case SHORT:
-                if (dCACount == 0) {
-                    dCAPrice = currentPrice + (currentPrice / 100 * step);
-                    break;
-                } else dCAPrice += (dCAPrice / 100) * (step);
+                if (dCACount == 0) dCAPrice = currentPrice + (currentPrice / 100 * step);
+                else dCAPrice += (dCAPrice / 100) * (step);
                 break;
+
             case LONG:
-                if (dCACount == 0) {
-                    dCAPrice = currentPrice - (currentPrice / 100 * step);
-                    break;
-                } else dCAPrice -= (dCAPrice / 100) * (step);
+                if (dCACount == 0) dCAPrice = currentPrice - (currentPrice / 100 * step);
+                else dCAPrice -= (dCAPrice / 100) * (step);
+                break;
+
+            default:
                 break;
         }
     }
@@ -281,6 +257,10 @@ public class BaseDCA implements DCAStrategy {
     @Override
     public PositionSide getPositionSide() {
         return positionSide;
+    }
+
+    public void terminate(){
+
     }
 
 }

@@ -3,6 +3,7 @@ package positions;
 import strategies.DCAStrategy;
 
 public class DCAInstructions extends SellingInstructions {
+
     private DCAStrategy.DCAType type;
 
     public DCAInstructions(DCAStrategy.DCAType type, double buyingAmount) {

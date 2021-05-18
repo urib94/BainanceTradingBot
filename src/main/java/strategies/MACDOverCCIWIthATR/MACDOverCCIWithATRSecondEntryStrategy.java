@@ -151,11 +151,10 @@ public class MACDOverCCIWithATRSecondEntryStrategy {
     private MACDOverCCIWIthATRShortExitStrategy1 enterShortPostion(DataHolder realTimeData, double currentPrice, double atrVAl, String symbol){
         DCAPrices = currentPrice - (atrVAl * MACDOverCCIWIthATRConstants.ATR1);
         MACDOverCCIWIthATRConstants.STEP=(currentPrice- (currentPrice -realTimeData.getATRValueAtIndex(realTimeData.getLastCloseIndex()) * MACDOverCCIWIthATRConstants.CLOSE_ATR1))/(currentPrice/100);
-        System.out.println("step="+MACDOverCCIWIthATRConstants.STEP);
         TPPrice=currentPrice + (atrVAl * MACDOverCCIWIthATRConstants.CLOSE_ATR1);
         MACDOverCCIWIthATRShortExitStrategy1 macdOverCCIWIthATRShortExitStrategy1 = new MACDOverCCIWIthATRShortExitStrategy1(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex())
-                , MACDOverCCIWIthATRConstants.MAX_DCA, MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT*MACDOverCCIWIthATRConstants.DEFAULT_LEVERAGE,
-                MACDOverCCIWIthATRConstants.AMOUNT_FACTOR, PositionSide.SHORT,TPPrice, DCAPrices,symbol,true,MACDOverCCIWIthATRConstants.STEP,MACDOverCCIWIthATRConstants.STEP_FACTOR,realTimeData,
+                ,MACDOverCCIWIthATRConstants.MAX_DCA, MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT*MACDOverCCIWIthATRConstants.DEFAULT_LEVERAGE,
+                MACDOverCCIWIthATRConstants.AMOUNT_FACTOR, PositionSide.SHORT,TPPrice , DCAPrices, symbol, MACDOverCCIWIthATRConstants.STEP,MACDOverCCIWIthATRConstants.STEP_FACTOR ,realTimeData,
                 new SkippingExitTrailer(realTimeData.getClosePriceAtIndex(realTimeData.getLastCloseIndex()),MACDOverCCIWIthATRConstants.POSITIVE_SKIPINGֹ_TRAILING_PERCENTAGE_BUY,PositionSide.LONG)
                 ,new DCAInstructions(DCAStrategy.DCAType.LONG_DCA_LIMIT,MACDOverCCIWIthATRConstants.FIRST_DCA_SIZE));
         return macdOverCCIWIthATRShortExitStrategy1;

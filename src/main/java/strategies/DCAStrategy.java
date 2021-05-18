@@ -17,8 +17,6 @@ public interface DCAStrategy  {
 
     double  getMaxDCACount();
 
-    void setNeedToDCA(boolean valToSet);
-
     boolean getNeedToDCA();
 
     void TakeProfit (SellingInstructions sellingInstructions, double qty,double entryPrice,DataHolder realTimeData);
@@ -29,7 +27,7 @@ public interface DCAStrategy  {
 
     Instructions run(DataHolder realTimeData);
 
-    void DCAOrder(DCAInstructions dcaInstructions,DataHolder realTimeData);
+    void DCAOrder(DCAInstructions dcaInstructions,DataHolder realTimeData, double qty);
 
     void updateDCAPrices(double currentPrice);
 

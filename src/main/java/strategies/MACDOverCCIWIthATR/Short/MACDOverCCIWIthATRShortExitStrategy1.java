@@ -14,8 +14,8 @@ public class MACDOverCCIWIthATRShortExitStrategy1 extends BaseMACDOverCCIWIthATR
     private SkippingExitTrailer skippingExitTrailer;
     private boolean isTrailing=false;
     public MACDOverCCIWIthATRShortExitStrategy1(double initiallPrice, int maxDCACount, double initialAmount, double amountFactor,
-                                                PositionSide positionSide, double TPPrice, double DCAPrices, String symbol, boolean useTP, double step, double stepFactor, DataHolder dataHolder, TrailingExit trailingExit, DCAInstructions dcaInstructions) {
-        super(initiallPrice, maxDCACount, initialAmount, amountFactor, positionSide, TPPrice,DCAPrices,symbol,useTP,step,stepFactor, dataHolder, dcaInstructions );        this.tPPrice = TPPrice;
+                                                PositionSide positionSide, double TPPrice, double DCAPrices, String symbol, double step, double stepFactor, DataHolder dataHolder, TrailingExit trailingExit, DCAInstructions dcaInstructions) {
+        super(initiallPrice, maxDCACount, initialAmount, amountFactor, positionSide, TPPrice,DCAPrices,symbol, step,stepFactor, dataHolder, dcaInstructions );        this.tPPrice = TPPrice;
         this.ATRValue = ATRValue;
         this.skippingExitTrailer=(SkippingExitTrailer) trailingExit;
     }

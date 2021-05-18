@@ -49,17 +49,17 @@ public class PositionHandler implements Serializable {
             if (DCAStrategies != null) {
                 for (DCAStrategy DCAStrategy : DCAStrategies) {
                     if (newPosition) {
-                        DCAStrategy.run(realTimeData);
                         switch (DCAStrategy.getPositionSide()) {
                             case SHORT:
                                 DCAStrategy.TakeProfit(new SellingInstructions(ClosePositionTypes.CLOSE_SHORT_LIMIT, Config.ONE_HUNDRED),
                                         qty, entryPrice, realTimeData);
-                                DCAStrategy.DCAOrder(DCAStrategy.getDCAInstructions(), realTimeData);
+                                DCAStrategy.DCAOrder(DCAStrategy.getDCAInstructions(), realTimeData, qty);
                                 break;
+
                             case LONG:
                                 DCAStrategy.TakeProfit(new SellingInstructions(ClosePositionTypes.SELL_LIMIT, Config.ONE_HUNDRED),
                                         qty, entryPrice, realTimeData);
-                                DCAStrategy.DCAOrder(DCAStrategy.getDCAInstructions(), realTimeData);
+                                DCAStrategy.DCAOrder(DCAStrategy.getDCAInstructions(), realTimeData, qty);
                                 break;
                         }
                         newPosition = false;
@@ -74,7 +74,7 @@ public class PositionHandler implements Serializable {
                         if (DCAStrategy.getNeedToDCA() && DCAStrategy.getDCAInstructions() != null && DCAStrategy.getdCACount() <= DCAStrategy.getMaxDCACount()) {
                             System.out.println("tp &SL for existing position");
                             TelegramMessenger.sendToTelegram("update after DCA");
-                            DCAStrategy.DCAOrder(DCAStrategy.getDCAInstructions(), realTimeData);
+                            DCAStrategy.DCAOrder(DCAStrategy.getDCAInstructions(), realTimeData, qty);
                             DCAStrategy.TakeProfit(new SellingInstructions(ClosePositionTypes.SELL_LIMIT, Config.ONE_HUNDRED),
                                     qty, entryPrice, realTimeData);
                         }
