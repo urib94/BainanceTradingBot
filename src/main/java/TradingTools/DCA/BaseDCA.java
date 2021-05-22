@@ -83,7 +83,7 @@ public class BaseDCA implements DCAStrategy {
                         try {
                             orderDCA = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
                                     sellingQty, String.valueOf(dcaPrice), null, null, null, null,
-                                    String.valueOf(dcaPrice), null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
+                                    dcaPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
                             TelegramMessenger.sendToTelegram("DCA price  " + dcaPrice + " ," + new Date(System.currentTimeMillis()));
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -133,12 +133,12 @@ public class BaseDCA implements DCAStrategy {
             }
 
             String sellingQty = Utils.fixQuantity(BinanceInfo.formatQty(qty, symbol));
-            String tPPrice= BinanceInfo.formatPrice(entryPrice + (entryPrice / 100 * distanceToTP), symbol);
+            String tPPrice= BinanceInfo.formatPrice(entryPrice + (entryPrice / 100 * distanceToTP) + 10, symbol);
             switch (sellingInstructions.getType()) {
 
                 case SELL_LIMIT:
                     try {
-                        orderTP=syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.TAKE_PROFIT, TimeInForce.GTC,
+                        orderTP = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.TAKE_PROFIT, TimeInForce.GTC,
                                 sellingQty, tPPrice, "true", null, tPPrice, null,
                                 tPPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
                         TelegramMessenger.sendToTelegram("DCA price  " + dCAPrice + " ," + new Date(System.currentTimeMillis()));

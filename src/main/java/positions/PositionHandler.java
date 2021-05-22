@@ -39,7 +39,7 @@ public class PositionHandler implements Serializable {
     }
 
     public synchronized boolean isSoldOut() {
-        return isActive && (!rebuying) && (qty == 0.0);
+        return isActive && (qty == 0.0);
     }
 
     public synchronized void run(DataHolder realTimeData) {//TODO: adjust to long and short and trailing as exit method

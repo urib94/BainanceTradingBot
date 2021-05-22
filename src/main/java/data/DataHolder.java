@@ -9,7 +9,6 @@ import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import org.ta4j.core.indicators.helpers.HighPriceIndicator;
 import org.ta4j.core.indicators.helpers.LowPriceIndicator;
 import strategies.MACDOverCCIWIthATR.MACDOverCCIWIthATRConstants;
-import strategies.macdOverRSIStrategies.MACDOverRSIConstants;
 
 public class DataHolder {
     private double currentPrice;
@@ -40,7 +39,6 @@ public class DataHolder {
         this.macdOverRsiIndicator = macdOverRsiIndicator;
         this.smaIndicator = smaIndicator;
         this.endIndex = endIndex;
-        this.macdOverRsiCloseValue = getMacdOverRsiValueAtIndex(endIndex-1);
         this.bollingerBandsUpperIndicator = bollingerBandsUpperIndicator;
         this.bollingerBandsLowerIndicator = bollingerBandsLowerIndicator;
         this.bollingerBandWidthIndicator=bollingerbandWidthIndicator;
@@ -68,13 +66,9 @@ public class DataHolder {
 
     public double getPercentBIAtIndex(int index){return percentBIndicator.getValue(index).doubleValue();}
 
-    public double getMacdOverRsiSignalLineValueAtIndex(int index) {
-        EMAIndicator signal = new EMAIndicator(macdOverRsiIndicator, MACDOverRSIConstants.SIGNAL_LENGTH);
-        return signal.getValue(index).doubleValue();
-    }
 
     public double getMACDOverCCISignalLineValueAtIndex(int index){
-        EMAIndicator signal = new EMAIndicator(macdOverCCIIndicator, MACDOverRSIConstants.SIGNAL_LENGTH);
+        EMAIndicator signal = new EMAIndicator(macdOverCCIIndicator, MACDOverCCIWIthATRConstants.SIGNAL_LENGTH);
         return signal.getValue(index).doubleValue();
     }
 
@@ -88,10 +82,6 @@ public class DataHolder {
 
     public double getPercentBIndicatorAtIndex(int index) {
         return percentBIndicator.getValue(index).doubleValue();
-    }
-
-    public double getMacdOverRsiValueAtIndex(int index) {
-        return getMacdOverRsiMacdLineValueAtIndex(index) - getMacdOverRsiSignalLineValueAtIndex(index);
     }
 
     public double getMacdOverCCIValueAtIndex(int index) {
@@ -143,8 +133,6 @@ public class DataHolder {
                 return rsiCrossed(crossType,candleType,threshold);
             case PERECENT_BI:
                 return percentBICross(crossType,candleType,threshold);
-            case MACD_OVER_RSI:
-                return macdOverRsiCrossed(crossType,candleType,threshold);
             case MACD_OVER_CCI:
                 return macdOverCCICrossed(crossType,candleType,threshold);
 
@@ -171,8 +159,6 @@ public class DataHolder {
                 return rsiCrossed(crossType,candleType,threshold);
             case PERECENT_BI:
                 return percentBICross(crossType,candleType,threshold);
-            case MACD_OVER_RSI:
-                return macdOverRsiCrossed(crossType,candleType,threshold);
             case MACD_OVER_CCI:
                 return macdOverCCICrossedAtIndex(crossType,candleType,threshold, index);
 
@@ -220,18 +206,7 @@ public class DataHolder {
         if (crossType == CrossType.UP) return rsiValueNow > threshold && rsiValuePrev <= threshold;
         return rsiValuePrev >= threshold && rsiValueNow < threshold;
     }
-    private boolean macdOverRsiCrossed(CrossType crossType, CandleType candleType, double threshold) {
-        double currentMacdOverRsiValue,prevMacdOverRsiValue;
-        if (candleType == CandleType.OPEN) {
-            currentMacdOverRsiValue = getMacdOverRsiValueAtIndex(endIndex);
-            prevMacdOverRsiValue  = macdOverRsiCloseValue;
-        } else {
-            currentMacdOverRsiValue = macdOverRsiCloseValue;
-            prevMacdOverRsiValue = getMacdOverRsiValueAtIndex(endIndex - 2);
-        }
-        if (crossType == CrossType.UP) return currentMacdOverRsiValue > threshold && prevMacdOverRsiValue <= threshold;
-        return prevMacdOverRsiValue >= threshold && currentMacdOverRsiValue < threshold;
-    }
+
     private boolean macdOverCCICrossed(CrossType crossType, CandleType candleType, double threshold) {
         double currentMacdOverRsiValue,prevMacdOverRsiValue;
         if (candleType == CandleType.OPEN) {
@@ -278,12 +253,6 @@ public class DataHolder {
                 return getRsiOpenValue() > threshold;
             } else {
                 return getRsiCloseValue() > threshold;
-            }
-        } else if(indicatorType == IndicatorType.MACD_OVER_RSI) {
-            if (type == CandleType.OPEN) {
-                return getMacdOverRsiValueAtIndex(getLastIndex()) > threshold;
-            } else {
-                return  getMacdOverRsiValueAtIndex(getLastCloseIndex()) > threshold;
             }
         }  else if(indicatorType == IndicatorType.MACD_OVER_CCI ){
             return getMACDOverCCIHistAtIndex(getLastCloseIndex()) > threshold;
