@@ -10,7 +10,7 @@ public class SkippingEntryTrailer {
     private PositionSide side;
 
     double trailingPercentage;
-    private boolean dismiss=false;
+    private boolean dismiss = false;
 
 
     public SkippingEntryTrailer(double openPrice, double trailingPercentage, PositionSide side){
@@ -27,7 +27,7 @@ public class SkippingEntryTrailer {
     }
 
     public void updateTrailer(double currentOpenPrice){
-        dismiss=false;
+        dismiss = false;
         if(side == PositionSide.LONG) {
             if (currentOpenPrice < prevOpenPrice) {
                 prevOpenPrice = currentOpenPrice;
@@ -92,7 +92,7 @@ public class SkippingEntryTrailer {
     }
 
     public void dismiss() {
-        dismiss=true;
+        dismiss = true;
     }
 }
 

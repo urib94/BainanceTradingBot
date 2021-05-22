@@ -15,16 +15,14 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class PositionHandler implements Serializable {
-    private ArrayList<DCAStrategy> DCAStrategies;
+    private ArrayList<DCAStrategy> dcaStrategies;
     private double qty = 0.0;
-    private double entryPrice = 0.0;
+    private double averagePrice = 0.0;
     private final String symbol;
     private volatile boolean isActive = false;
-    private ArrayList<ExitStrategy> exitStrategies;
-    private volatile boolean rebuying = true;
+    private final ArrayList<ExitStrategy> exitStrategies;
     private volatile boolean isSelling = false;
     private volatile boolean terminated = false;
-    private boolean newPosition = true;
 
     public PositionHandler(Order order, ArrayList<ExitStrategy> _exitStrategies) {
         symbol = order.getSymbol().toLowerCase();
@@ -32,10 +30,10 @@ public class PositionHandler implements Serializable {
     }
 
 
-    public PositionHandler(Order order, ArrayList<ExitStrategy> _exitStrategies, ArrayList<DCAStrategy> _DCAStrategies) {
+    public PositionHandler(Order order, ArrayList<ExitStrategy> _exitStrategies, ArrayList<DCAStrategy> dcaStrategies) {
         symbol = order.getSymbol().toLowerCase();
         exitStrategies = _exitStrategies;
-        DCAStrategies = _DCAStrategies;
+        this.dcaStrategies = dcaStrategies;
     }
 
     public synchronized boolean isSoldOut() {
@@ -46,41 +44,9 @@ public class PositionHandler implements Serializable {
         double currentPrice = realTimeData.getCurrentPrice();
         isSelling = false;
         if (isActive) {
-            if (DCAStrategies != null) {
-                for (DCAStrategy DCAStrategy : DCAStrategies) {
-                    if (newPosition) {
-                        switch (DCAStrategy.getPositionSide()) {
-                            case SHORT:
-                                DCAStrategy.TakeProfit(new SellingInstructions(ClosePositionTypes.CLOSE_SHORT_LIMIT, Config.ONE_HUNDRED),
-                                        qty, entryPrice, realTimeData);
-                                DCAStrategy.DCAOrder(DCAStrategy.getDCAInstructions(), realTimeData, qty);
-                                break;
-
-                            case LONG:
-                                DCAStrategy.TakeProfit(new SellingInstructions(ClosePositionTypes.SELL_LIMIT, Config.ONE_HUNDRED),
-                                        qty, entryPrice, realTimeData);
-                                DCAStrategy.DCAOrder(DCAStrategy.getDCAInstructions(), realTimeData, qty);
-                                break;
-                        }
-                        newPosition = false;
-                    } else {
-                        if (currentPrice > DCAStrategy.gettPPrice() && DCAStrategy.getTpOrder() != null) {
-                            if (DCAStrategy.getPositionSide() == PositionSide.LONG) {
-                                closePosition(new SellingInstructions(ClosePositionTypes.SELL_MARKET, Config.ONE_HUNDRED), realTimeData, currentPrice);
-                            }
-                        } else if (currentPrice < DCAStrategy.gettPPrice() && DCAStrategy.getTpOrder() != null) {
-                            closePosition(new SellingInstructions(ClosePositionTypes.CLOSE_SHORT_MARKET, Config.ONE_HUNDRED), realTimeData, currentPrice);
-                        }
-                        if (DCAStrategy.getNeedToDCA() && DCAStrategy.getDCAInstructions() != null && DCAStrategy.getdCACount() <= DCAStrategy.getMaxDCACount()) {
-                            TelegramMessenger.sendToTelegram("update after DCA");
-                            DCAStrategy.DCAOrder(DCAStrategy.getDCAInstructions(), realTimeData, qty);
-                            DCAStrategy.TakeProfit(new SellingInstructions(ClosePositionTypes.SELL_LIMIT, Config.ONE_HUNDRED),
-                                    qty, entryPrice, realTimeData);
-                        }
-                    }
-                }
+            for (DCAStrategy dcaStrategy : dcaStrategies) {
+                dcaStrategy.run(realTimeData, qty, averagePrice);
             }
-
             for (ExitStrategy exitStrategy : exitStrategies) {
                 SellingInstructions sellingInstructions = (SellingInstructions) exitStrategy.run(realTimeData);
                 if ((!isSelling) && sellingInstructions != null) {
@@ -93,7 +59,7 @@ public class PositionHandler implements Serializable {
     }
 
     public synchronized void update() {
-        entryPrice = Double.parseDouble(AccountBalance.getAccountBalance().getPosition(symbol).getEntryPrice());
+        averagePrice = Double.parseDouble(AccountBalance.getAccountBalance().getPosition(symbol).getEntryPrice());
         qty = AccountBalance.getAccountBalance().getPosition(symbol).getPositionAmt().doubleValue();
         if (qty != 0 && !isActive) {
             isActive = true;
@@ -121,19 +87,19 @@ public class PositionHandler implements Serializable {
 //            }
     }
 
-    private synchronized void rebuyOrder(Order order) {
-        rebuying = true;
-        try {
-            SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-            syncRequestClient.cancelOrder(order.getSymbol(), order.getOrderId(), order.getClientOrderId());//// TODO: 4/5/2021  cheke if this canceletion methood is working.
-            //            syncRequestClient.cancelAllOpenOrder(symbol);
-            OrderSide side = stringToOrderSide(order.getSide());
-            Order buyOrder = syncRequestClient.postOrder(symbol, side, null, OrderType.MARKET, null,
-                    order.getOrigQty().toString(), null, null, null, null, null, null, null, null, WorkingType.MARK_PRICE.toString(), NewOrderRespType.RESULT);
-            TelegramMessenger.sendToTelegram("bought again:  " + buyOrder + ", " + new Date(System.currentTimeMillis()));
-        } catch (Exception ignored) {
-        }
-    }
+//    private synchronized void rebuyOrder(Order order) {
+//        rebuying = true;
+//        try {
+//            SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+//            syncRequestClient.cancelOrder(order.getSymbol(), order.getOrderId(), order.getClientOrderId());//// TODO: 4/5/2021  cheke if this canceletion methood is working.
+//            //            syncRequestClient.cancelAllOpenOrder(symbol);
+//            OrderSide side = stringToOrderSide(order.getSide());
+//            Order buyOrder = syncRequestClient.postOrder(symbol, side, null, OrderType.MARKET, null,
+//                    order.getOrigQty().toString(), null, null, null, null, null, null, null, null, WorkingType.MARK_PRICE.toString(), NewOrderRespType.RESULT);
+//            TelegramMessenger.sendToTelegram("bought again:  " + buyOrder + ", " + new Date(System.currentTimeMillis()));
+//        } catch (Exception ignored) {
+//        }
+//    }
 
     private OrderSide stringToOrderSide(String side) {
         for (OrderSide orderSide : OrderSide.values()) {
@@ -225,6 +191,7 @@ public class PositionHandler implements Serializable {
         SL
     }
 }
+
 
 
 

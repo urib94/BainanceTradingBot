@@ -47,6 +47,7 @@ public class InvestmentManager implements Runnable{
                     positionHandler.update();
                     if (positionHandler.isSoldOut()){
                         positionHandler.terminate();
+                        entryStrategies.peek().positionClosed();
                         positionHandlers.remove(positionHandler);
                     }
                     else{

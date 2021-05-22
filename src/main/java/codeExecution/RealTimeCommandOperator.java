@@ -110,6 +110,7 @@ public class RealTimeCommandOperator {
                 AccountBalance.getAccountBalance().getCoinBalance(message.getSymbol())));
 
         commandsAndOps.put(RealTImeOperations.CLOSE_PROGRAM, (message) -> {
+            shouldTerminate = true;
             SubClient.getSubClient().getSubscriptionClient().unsubscribeAll();
             ExecutorService executorService = ExecService.getExecService().getExecutorService();
             executorService.shutdown();
@@ -138,12 +139,13 @@ public class RealTimeCommandOperator {
                     }
                 }
             }
+            realTimeCommandOperatorThread.interrupt();
         }
     }
     private class KeyboardReader implements Runnable{
         public void run() {
-            Scanner scan= new Scanner(System.in);
-            while (true) {
+            Scanner scan = new Scanner(System.in);
+            while (!shouldTerminate) {
                 try {
                     InputMessage message = new InputMessage();
                     String input = scan.nextLine();
@@ -154,7 +156,7 @@ public class RealTimeCommandOperator {
                             awaitingMessages.add(message);
                             awaitingMessages.notifyAll();
                         }
-                        if (messageOperation.equals(RealTImeOperations.CLOSE_PROGRAM))break;
+                        if (messageOperation.equals(RealTImeOperations.CLOSE_PROGRAM)) break;
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

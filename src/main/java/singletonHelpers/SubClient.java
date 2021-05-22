@@ -10,7 +10,7 @@ public class SubClient {
         private static SubClient subClient = new SubClient();
     }
     private SubClient() {
-        subscriptionClient = SubscriptionClient.create(Config.API_KEY, Config.SECRET_KEY);
+        subscriptionClient = SubscriptionClient.create();
     }
 
     public static SubClient getSubClient(){

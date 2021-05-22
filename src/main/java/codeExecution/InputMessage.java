@@ -2,10 +2,8 @@ package codeExecution;
 
 import singletonHelpers.BinanceInfo;
 import strategies.EntryStrategy;
-import strategies.MACDOverCCIWIthATR.MACDOverCCIWIthATREntryStrategy;
 import com.binance.client.model.enums.CandlestickInterval;
-
-import java.math.BigDecimal;
+import strategies.MACDOverCCIWIthATR.MACDOverCCIWithATREntryStrategy;
 
 public class InputMessage {
     public String operation = RealTImeOperations.UNKNOWN_OPERATION;
@@ -91,7 +89,7 @@ public class InputMessage {
     private EntryStrategy stringToEntryStrategy(String strategyName) {
         switch (strategyName) {
             case "macd":
-                return new MACDOverCCIWIthATREntryStrategy();
+                return new MACDOverCCIWithATREntryStrategy();
 
             default:
                 return null;
