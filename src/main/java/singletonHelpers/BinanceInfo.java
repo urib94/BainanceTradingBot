@@ -51,4 +51,8 @@ public class BinanceInfo {
         return String.format("%." + symbolInformation.get(symbol).getPricePrecision().toString() + "f", price);
     }
 
+    public static boolean isSymbolExists(String symbol){
+        return symbolInformation.containsKey(symbol);
+    }
+
 }

@@ -2,6 +2,7 @@ package codeExecution;
 
 import data.AccountBalance;
 import data.Config;
+import singletonHelpers.ExecService;
 import singletonHelpers.RequestClient;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.*;
@@ -10,9 +11,12 @@ import com.binance.client.model.trade.Order;
 import com.binance.client.model.trade.Position;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import singletonHelpers.SubClient;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -22,6 +26,7 @@ public class RealTimeCommandOperator {
     private final HashMap<Pair<String, CandlestickInterval>, InvestmentManager> investmentManagerHashMap;
     private final ReadWriteLock investmentManagerHashMapLock = new ReentrantReadWriteLock();
     private final ConcurrentLinkedDeque<InputMessage> awaitingMessages;
+    private boolean shouldTerminate = false;
 
     public RealTimeCommandOperator() {
         investmentManagerHashMap = new HashMap<>();
@@ -63,22 +68,6 @@ public class RealTimeCommandOperator {
             }
         });
 
-        commandsAndOps.put(RealTImeOperations.ACTIVATE_STRATEGY_D, (message) -> {
-            Pair<String, CandlestickInterval> pair = new MutablePair<>(message.getSymbol(), message.getInterval());
-            investmentManagerHashMapLock.readLock().lock();
-            if (investmentManagerHashMap.containsKey(pair)) {
-                investmentManagerHashMap.get(pair).addEntryStrategy(message.getEntryStrategy());
-                investmentManagerHashMapLock.readLock().unlock();
-            } else {
-                investmentManagerHashMapLock.readLock().unlock();
-                investmentManagerHashMapLock.writeLock().lock();
-                InvestmentManager investmentManager = new InvestmentManager(message.getInterval(), message.getSymbol(), message.getEntryStrategy());
-                investmentManagerHashMap.put(pair, investmentManager);
-                investmentManagerHashMapLock.writeLock().unlock();
-                investmentManager.run();
-            }
-        });
-
         commandsAndOps.put(RealTImeOperations.DEACTIVATE_STRATEGY, (message) -> {
             Pair<String, CandlestickInterval> pair = new MutablePair<>(message.getSymbol(), message.getInterval());
             investmentManagerHashMapLock.readLock().lock();
@@ -88,7 +77,7 @@ public class RealTimeCommandOperator {
             }
         });
 
-        commandsAndOps.put(RealTImeOperations.GET_LAST_TRADES, (message) -> {//TODO: complete
+        commandsAndOps.put(RealTImeOperations.GET_LAST_TRADES, (message) -> {
             SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             List<MyTrade> myTrades = syncRequestClient.getAccountTrades(message.getSymbol(),null,null,null, 100);
             int index = 1;
@@ -117,17 +106,20 @@ public class RealTimeCommandOperator {
             }
         });
 
-        commandsAndOps.put(RealTImeOperations.GET_CURRENT_BALANCE, (message) -> System.out.println("Your current balance is: " + AccountBalance.getAccountBalance().getCoinBalance(message.getSymbol())));
+        commandsAndOps.put(RealTImeOperations.GET_CURRENT_BALANCE, (message) -> System.out.println("Your current balance is: " +
+                AccountBalance.getAccountBalance().getCoinBalance(message.getSymbol())));
 
-        commandsAndOps.put(RealTImeOperations.LOGIN, (message) -> {
-            Config.setApiKey(message.getApiKey());
-            Config.setSecretKey(message.getSecretKey());
-        });
-
-        commandsAndOps.put(RealTImeOperations.BUY_NOW, (message) -> {
-            SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-            syncRequestClient.postOrder(message.getSymbol().toLowerCase(), OrderSide.BUY, null, OrderType.MARKET, null,
-                    "0.001", null, null, null, null,null,null,null, null, null, NewOrderRespType.RESULT);
+        commandsAndOps.put(RealTImeOperations.CLOSE_PROGRAM, (message) -> {
+            SubClient.getSubClient().getSubscriptionClient().unsubscribeAll();
+            ExecutorService executorService = ExecService.getExecService().getExecutorService();
+            executorService.shutdown();
+            try {
+                if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+                    executorService.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                executorService.shutdownNow();
+            }
         });
     }
 
@@ -135,7 +127,7 @@ public class RealTimeCommandOperator {
         Thread realTimeCommandOperatorThread = new Thread(new KeyboardReader());
         realTimeCommandOperatorThread.start();
         synchronized (awaitingMessages) {
-            while (true) {
+            while (!shouldTerminate) {
                 InputMessage message = awaitingMessages.poll();
                 if (message == null) {
                     awaitingMessages.wait();
@@ -156,11 +148,13 @@ public class RealTimeCommandOperator {
                     InputMessage message = new InputMessage();
                     String input = scan.nextLine();
                     message.initialize(input);
-                    if (! message.getOperation().equals("")){
+                    String messageOperation = message.getOperation();
+                    if (! messageOperation.equals(RealTImeOperations.UNKNOWN_OPERATION)){
                         synchronized (awaitingMessages) {
                             awaitingMessages.add(message);
                             awaitingMessages.notifyAll();
                         }
+                        if (messageOperation.equals(RealTImeOperations.CLOSE_PROGRAM))break;
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

@@ -19,8 +19,6 @@ import strategies.ExitStrategy;
 import strategies.MACDOverCCIWIthATR.Long.MACDOverCCIWIthATRLongExitStrategy1;
 import strategies.MACDOverCCIWIthATR.Long.MACDOverCCIWIthATRLongExitStrategy2;
 import strategies.MACDOverCCIWIthATR.Short.MACDOverCCIWIthATRShortExitStrategy1;
-import strategies.macdOverRSIStrategies.MACDOverRSIConstants;
-import strategies.macdOverRSIStrategies.Short.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
