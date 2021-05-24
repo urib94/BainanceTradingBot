@@ -45,7 +45,7 @@ public class PositionHandler implements Serializable {
         isSelling = false;
         if (isActive) {
             for (DCAStrategy dcaStrategy : dcaStrategies) {
-                dcaStrategy.run(realTimeData, qty, averagePrice);
+                dcaStrategy.run(qty, averagePrice);
             }
             for (ExitStrategy exitStrategy : exitStrategies) {
                 SellingInstructions sellingInstructions = (SellingInstructions) exitStrategy.run(realTimeData);
@@ -142,7 +142,7 @@ public class PositionHandler implements Serializable {
                 try {
                     syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.MARKET, null,
                             sellingQty, null, Config.REDUCE_ONLY, null, null, null, null, null, null, null, NewOrderRespType.RESULT);
-                    TelegramMessenger.sendToTelegram("Selling price:  " + String.valueOf(realTimeData.getCurrentPrice()) + " ," + new Date(System.currentTimeMillis()));
+                    TelegramMessenger.sendToTelegram("Selling price:  " + realTimeData.getCurrentPrice() + " ," + new Date(System.currentTimeMillis()));
                 } catch (Exception ignored) {
                 }
                 break;

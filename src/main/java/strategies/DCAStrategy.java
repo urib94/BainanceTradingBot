@@ -1,10 +1,8 @@
 package strategies;
 
-import data.DataHolder;
-
 public interface DCAStrategy  {
 
-    void run(DataHolder realTimeData, double qty, double averagePrice);
+    void run(double qty, double averagePrice);
 
     enum DCAType {
         LONG_DCA_LIMIT,

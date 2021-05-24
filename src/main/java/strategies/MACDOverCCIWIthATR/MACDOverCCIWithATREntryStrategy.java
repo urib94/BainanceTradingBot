@@ -55,21 +55,21 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
                         }
                         return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.LONG, MACDOverCCIWIthATRConstants.WEAK_TRADE_MULTIPLIER);
                     }
-                    if (!positivePeekLargerthanNegative && candleIndicateShort(realTimeData, realTimeData.getLastCloseIndex())){
-                        if (bbiExpanding(realTimeData)){
-                            return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT, MACDOverCCIWIthATRConstants.STRONG_TRADE_MULTIPLIER);
-                        }
-                        return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT, MACDOverCCIWIthATRConstants.WEAK_TRADE_MULTIPLIER);
-                    }
+//                    if (!positivePeekLargerthanNegative && candleIndicateShort(realTimeData, realTimeData.getLastCloseIndex())){
+//                        if (bbiExpanding(realTimeData)){
+//                            return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT, MACDOverCCIWIthATRConstants.STRONG_TRADE_MULTIPLIER);
+//                        }
+//                        return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT, MACDOverCCIWIthATRConstants.WEAK_TRADE_MULTIPLIER);
+//                    }
                     break;
 
                 case POSITIVE:
-                    if(positivePeekLargerthanNegative && candleIndicateLong(realTimeData, realTimeData.getLastCloseIndex())){
-                        if (bbiExpanding(realTimeData)){
-                            return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.LONG, MACDOverCCIWIthATRConstants.STRONG_TRADE_MULTIPLIER);
-                        }
-                        return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.LONG, MACDOverCCIWIthATRConstants.WEAK_TRADE_MULTIPLIER);
-                    }
+//                    if(positivePeekLargerthanNegative && candleIndicateLong(realTimeData, realTimeData.getLastCloseIndex())){
+//                        if (bbiExpanding(realTimeData)){
+//                            return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.LONG, MACDOverCCIWIthATRConstants.STRONG_TRADE_MULTIPLIER);
+//                        }
+//                        return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.LONG, MACDOverCCIWIthATRConstants.WEAK_TRADE_MULTIPLIER);
+//                    }
                     if (!positivePeekLargerthanNegative && candleIndicateShort(realTimeData, realTimeData.getLastCloseIndex())){
                         if (!bbiExpanding(realTimeData)){
                             return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT, MACDOverCCIWIthATRConstants.STRONG_TRADE_MULTIPLIER);
@@ -108,9 +108,10 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
     }
 
     private PositionHandler buyAndCreatePositionHandler(DataHolder realTimeData, double currentPrice, String symbol, PositionSide positionSide, double multiplier ) {//TODO: maybe change market later.
-        TelegramMessenger.sendToTelegram("Rohesh " + new Date(System.currentTimeMillis()));
+        TelegramMessenger.sendToTelegram("Entering new position " + new Date(System.currentTimeMillis()));
         ArrayList <DCAStrategy> DCAStrategies = new ArrayList<>();
         ArrayList <ExitStrategy> exitStrategies = new ArrayList<>();
+//        updateBuyingAmount(symbol);
         if (positionSide == PositionSide.LONG) {
             try {
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
@@ -118,6 +119,7 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
                 String buyingQty = utils.Utils.getBuyingQtyAsString(currentPrice, symbol, leverage, requestedBuyingAmount * multiplier);
                 Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.MARKET, null,
                         buyingQty, null, null, null, null, null, null, null, WorkingType.MARK_PRICE, "TRUE", NewOrderRespType.RESULT);
+                TelegramMessenger.sendToTelegram("bought long:  " + buyOrder + " ," + new Date(System.currentTimeMillis()));
                 exitStrategies.add(new MACDOverCCIWIthATRLongExitStrategy1());
                 exitStrategies.add(new MACDOverCCIWIthATRLongExitStrategy2());
                 DCAStrategies.add(createBaseDCA(realTimeData, currentPrice, symbol, positionSide));
@@ -134,6 +136,7 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
                 String buyingQty = utils.Utils.getBuyingQtyAsString(currentPrice, symbol, leverage, requestedBuyingAmount);
                 Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.MARKET, null,
                         buyingQty, null, null, null, null, null, null, null, WorkingType.MARK_PRICE,"TRUE" , NewOrderRespType.RESULT);
+                TelegramMessenger.sendToTelegram("entered short:  " + buyOrder + " ," + new Date(System.currentTimeMillis()));
                 exitStrategies.add(new MACDOverCCIWIthATRLongExitStrategy1());
                 exitStrategies.add(new MACDOverCCIWIthATRLongExitStrategy2());
                 DCAStrategies.add(createBaseDCA(realTimeData, currentPrice, symbol, positionSide));
@@ -144,6 +147,10 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
             }
         }
         return null;
+    }
+
+    private void updateBuyingAmount(String symbol, double availableBalancePercentage) {
+        double balance = accountBalance.getCoinBalance(symbol).doubleValue();
     }
 
     private DCAStrategy createBaseDCA(DataHolder realTimeData,double currentPrice, String symbol, PositionSide positionSide) {

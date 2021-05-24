@@ -9,7 +9,7 @@ public class MACDOverCCIWIthATRConstants {
     public static final double DEFAULT_TAKE_PROFIT_PERCENTAGE = 0.0;
     public static final double DEFAULT_STOP_LOSS_PERCENTAGE = 0.0;
     public static final int DEFAULT_LEVERAGE = 100;
-    public static final double DEFAULT_BUYING_AMOUNT = 0.5;
+    public static final double DEFAULT_BUYING_AMOUNT = 0.74;
     public static final int SIGNAL_LENGTH = 9;
 //    public static final int RSI_CANDLE_NUM = 9;
     public static final double MACDOverCCIWIthATR_SELLING_PERCENTAGE = 100;
@@ -32,9 +32,9 @@ public class MACDOverCCIWIthATRConstants {
     public static final int SMA_CANDLES = 20;
     public static final int STANDARD_DEVIATION_CANDLES = 20;
     public static final Num DEVIATION_MULTIPLIER = PrecisionNum.valueOf(2);
-    public static  double STEP_FACTOR = 1.5 ;
-    public static  double STEP = 0;
-    public static  String SYMBOL ="btcusdt" ;
+    public static final double STEP_FACTOR = 1.5 ;
+    public static final double STEP = 0;
+    public static final String SYMBOL ="btcusdt" ;
     public static final double LOWER_BI = 0.0;
     public static final double UPPER_BI = 1.0;
     public static final double CLOSE_ATR1 = 0.5;

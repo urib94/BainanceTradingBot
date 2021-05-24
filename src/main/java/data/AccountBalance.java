@@ -5,9 +5,11 @@ import com.binance.client.model.trade.AccountInformation;
 import com.binance.client.model.trade.Asset;
 import com.binance.client.model.trade.Position;
 import singletonHelpers.RequestClient;
+import singletonHelpers.TelegramMessenger;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,12 +55,17 @@ public class AccountBalance {
 
     public void updateBalance(String symbol, String baseCoin){
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-        AccountInformation accountInformation = syncRequestClient.getAccountInformation();
+        try{
+            AccountInformation accountInformation = syncRequestClient.getAccountInformation();
+
         for (Position position: accountInformation.getPositions()){
             if (position.getSymbol().toLowerCase().equals(symbol)) positions.put(symbol, position);
         }
         for (Asset asset: accountInformation.getAssets()){
             if (asset.getAsset().toLowerCase().equals(baseCoin)) assets.put(baseCoin, asset);
+        }
+        }catch (Exception e){
+            TelegramMessenger.sendToTelegram("Exception thrown:  " + e.getMessage() + ", " + new Date(System.currentTimeMillis()));
         }
     }
 

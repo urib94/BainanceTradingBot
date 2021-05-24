@@ -19,8 +19,8 @@ public class DataHolder {
     private BollingerBandsUpperIndicator bollingerBandsUpperIndicator;
     private BollingerBandsLowerIndicator bollingerBandsLowerIndicator;
     private BollingerBandWidthIndicator bollingerBandWidthIndicator;
-    private ATRIndicator ATRIndicator;
-
+    private ATRIndicator atrIndicator;
+    private CCICIndicator ccicIndicator;
 
 
     private PercentBIndicator percentBIndicator;
@@ -48,7 +48,7 @@ public class DataHolder {
         this.highPriceIndicator = highPriceIndicator;
         this.lowPriceIndicator = lowPriceIndicator;
         this.macdOverCCIIndicator=macdOverCCIIndicator;
-        this.ATRIndicator=atrIndicator;
+        this.atrIndicator =atrIndicator;
     }
 
     public double getClosePriceAtIndex(int index){return closePriceIndicator.getValue(index).doubleValue();}
@@ -102,7 +102,7 @@ public class DataHolder {
     }
 
     public double getATRValueAtIndex(int index){
-        return getATRIndicator().getValue(index).doubleValue();
+        return getAtrIndicator().getValue(index).doubleValue();
     }
     public double getRsiOpenValue() {
         return rsiIndicator.getValue(endIndex).doubleValue();
@@ -123,8 +123,8 @@ public class DataHolder {
     public BollingerBandsLowerIndicator getBollingerBandsLowerIndicator() {
         return bollingerBandsLowerIndicator;
     }
-    public org.ta4j.core.indicators.ATRIndicator getATRIndicator() {
-        return ATRIndicator;
+    public org.ta4j.core.indicators.ATRIndicator getAtrIndicator() {
+        return atrIndicator;
     }
 
     public boolean crossed(IndicatorType indicatorType, CrossType crossType, CandleType candleType, double threshold) {
