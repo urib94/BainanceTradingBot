@@ -47,9 +47,10 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
         if (positionHandler == null){
             double currentPrice = realTimeData.getCurrentPrice();
             boolean positivePeekLargerthanNegative = positivePeek > Math.abs(negativePeek);
+            double cciValue = realTimeData.getCCICIndciator(realTimeData.getLastCloseIndex());
             switch (macdOverCCIPrevSign){
                 case NEGATIVE:
-                    if(positivePeekLargerthanNegative && candleIndicateLong(realTimeData, realTimeData.getLastCloseIndex())){
+                    if(positivePeekLargerthanNegative && cciValue <= 100 && candleIndicateLong(realTimeData, realTimeData.getLastCloseIndex())){
                         if (!bbiExpanding(realTimeData)){
                             return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.LONG, MACDOverCCIWIthATRConstants.STRONG_TRADE_MULTIPLIER);
                         }
@@ -70,7 +71,7 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
 //                        }
 //                        return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.LONG, MACDOverCCIWIthATRConstants.WEAK_TRADE_MULTIPLIER);
 //                    }
-                    if (!positivePeekLargerthanNegative && candleIndicateShort(realTimeData, realTimeData.getLastCloseIndex())){
+                    if (!positivePeekLargerthanNegative && cciValue >= -100 && candleIndicateShort(realTimeData, realTimeData.getLastCloseIndex())){
                         if (!bbiExpanding(realTimeData)){
                             return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT, MACDOverCCIWIthATRConstants.STRONG_TRADE_MULTIPLIER);
                         }

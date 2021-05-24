@@ -55,17 +55,12 @@ public class AccountBalance {
 
     public void updateBalance(String symbol, String baseCoin){
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-        try{
-            AccountInformation accountInformation = syncRequestClient.getAccountInformation();
-
+        AccountInformation accountInformation = syncRequestClient.getAccountInformation();
         for (Position position: accountInformation.getPositions()){
             if (position.getSymbol().toLowerCase().equals(symbol)) positions.put(symbol, position);
         }
         for (Asset asset: accountInformation.getAssets()){
             if (asset.getAsset().toLowerCase().equals(baseCoin)) assets.put(baseCoin, asset);
-        }
-        }catch (Exception e){
-            TelegramMessenger.sendToTelegram("Exception thrown:  " + e.getMessage() + ", " + new Date(System.currentTimeMillis()));
         }
     }
 

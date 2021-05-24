@@ -36,6 +36,7 @@ public class RealTimeData{
     private HighPriceIndicator highPriceIndicator;
     private LowPriceIndicator lowPriceIndicator;
     private ATRIndicator atrIndicator;
+    private CCICIndicator ccicIndicator;
 
 
 
@@ -64,7 +65,7 @@ public class RealTimeData{
         counter = 0;
         calculateIndicators();
         return new DataHolder(highPriceIndicator, lowPriceIndicator, closePriceIndicator, rsiIndicator, macdOverRsiIndicator, bollingerBandsUpperIndicator, bollingerBandsLowerIndicator,
-                smaIndicator,bollingerBandWidthIndicator, percentBIndicator, realTimeData.getEndIndex(),macdOverCCIIndicator,atrIndicator);
+                smaIndicator,bollingerBandWidthIndicator, percentBIndicator, realTimeData.getEndIndex(),macdOverCCIIndicator,atrIndicator, ccicIndicator);
     }
 
     private boolean updateLastCandle(CandlestickEvent event) {
@@ -126,9 +127,9 @@ public class RealTimeData{
 
     private MACDIndicator calculateMacdOverCCI(BaseBarSeries currData) {
         //RSIIndicator rsiIndicator14 = calculateRSI(MACDOverRSIConstants.RSI_CANDLE_NUM, currData);
-        CCICIndicator cciIndicator = new CCICIndicator(currData, MACDOverCCIWIthATRConstants.CCI_CANDLES);
+        ccicIndicator = new CCICIndicator(currData, MACDOverCCIWIthATRConstants.CCI_CANDLES);
         //System.out.println("cci: "+"" + cciIndicator.getValue(currData.getEndIndex())+currData.getLastBar().getEndTime().toLocalDateTime().toString());
-        return new MACDIndicator(cciIndicator, MACDOverCCIWIthATRConstants.FAST_BAR_COUNT, MACDOverCCIWIthATRConstants.SLOW_BAR_COUNT);
+        return new MACDIndicator(ccicIndicator, MACDOverCCIWIthATRConstants.FAST_BAR_COUNT, MACDOverCCIWIthATRConstants.SLOW_BAR_COUNT);
 
     }
 

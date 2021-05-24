@@ -22,19 +22,17 @@ public class DataHolder {
     private ATRIndicator atrIndicator;
     private CCICIndicator ccicIndicator;
 
-
     private PercentBIndicator percentBIndicator;
     private ClosePriceIndicator closePriceIndicator;
     private HighPriceIndicator highPriceIndicator;
     private LowPriceIndicator lowPriceIndicator;
-    private double macdOverRsiCloseValue;
     private int endIndex;
 
 
 
     public DataHolder(HighPriceIndicator highPriceIndicator, LowPriceIndicator lowPriceIndicator, ClosePriceIndicator closePriceIndicator, RSIIndicator rsiIndicator, MACDIndicator macdOverRsiIndicator, BollingerBandsUpperIndicator bollingerBandsUpperIndicator,
                       BollingerBandsLowerIndicator bollingerBandsLowerIndicator, SMAIndicator smaIndicator, BollingerBandWidthIndicator bollingerbandWidthIndicator, PercentBIndicator percentBIndicator, int endIndex
-                        , MACDIndicator macdOverCCIIndicator, ATRIndicator atrIndicator) {
+                        , MACDIndicator macdOverCCIIndicator, ATRIndicator atrIndicator, CCICIndicator ccicIndicator) {
         this.rsiIndicator = rsiIndicator;
         this.macdOverRsiIndicator = macdOverRsiIndicator;
         this.smaIndicator = smaIndicator;
@@ -49,6 +47,7 @@ public class DataHolder {
         this.lowPriceIndicator = lowPriceIndicator;
         this.macdOverCCIIndicator=macdOverCCIIndicator;
         this.atrIndicator =atrIndicator;
+        this.ccicIndicator = ccicIndicator;
     }
 
     public double getClosePriceAtIndex(int index){return closePriceIndicator.getValue(index).doubleValue();}
@@ -80,6 +79,10 @@ public class DataHolder {
         return macdOverRsiIndicator.getValue(index).doubleValue();
     }
 
+    public double getCCICIndciator(int index){
+        return ccicIndicator.getValue(index).doubleValue();
+    }
+
     public double getPercentBIndicatorAtIndex(int index) {
         return percentBIndicator.getValue(index).doubleValue();
     }
@@ -97,10 +100,6 @@ public class DataHolder {
         EMAIndicator signal = new EMAIndicator(macdOverCCIIndicator, MACDOverCCIWIthATRConstants.SIGNAL_LENGTH);
         return signal.getValue(index).doubleValue();
     }
-    public double getMacdOverRsiCloseValue() {
-        return macdOverRsiCloseValue;
-    }
-
     public double getATRValueAtIndex(int index){
         return getAtrIndicator().getValue(index).doubleValue();
     }
