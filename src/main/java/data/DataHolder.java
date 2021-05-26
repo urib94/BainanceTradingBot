@@ -9,6 +9,7 @@ import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import org.ta4j.core.indicators.helpers.HighPriceIndicator;
 import org.ta4j.core.indicators.helpers.LowPriceIndicator;
 import strategies.MACDOverCCIWIthATR.MACDOverCCIWIthATRConstants;
+import strategies.MACDOverSMAStrategy.MACDOverSMAConstants;
 
 public class DataHolder {
     private double currentPrice;
@@ -27,12 +28,14 @@ public class DataHolder {
     private HighPriceIndicator highPriceIndicator;
     private LowPriceIndicator lowPriceIndicator;
     private int endIndex;
-
+    private MACDIndicator macdOverMa9;
+    private MACDIndicator macdOverMa14;
+    private MACDIndicator macdOverMa50;
 
 
     public DataHolder(HighPriceIndicator highPriceIndicator, LowPriceIndicator lowPriceIndicator, ClosePriceIndicator closePriceIndicator, RSIIndicator rsiIndicator, MACDIndicator macdOverRsiIndicator, BollingerBandsUpperIndicator bollingerBandsUpperIndicator,
                       BollingerBandsLowerIndicator bollingerBandsLowerIndicator, SMAIndicator smaIndicator, BollingerBandWidthIndicator bollingerbandWidthIndicator, PercentBIndicator percentBIndicator, int endIndex
-                        , MACDIndicator macdOverCCIIndicator, ATRIndicator atrIndicator, CCICIndicator ccicIndicator) {
+                        , MACDIndicator macdOverCCIIndicator, ATRIndicator atrIndicator, CCICIndicator ccicIndicator, MACDIndicator macdOverMa9, MACDIndicator macdOverMa14, MACDIndicator macdOverMa50) {
         this.rsiIndicator = rsiIndicator;
         this.macdOverRsiIndicator = macdOverRsiIndicator;
         this.smaIndicator = smaIndicator;
@@ -48,6 +51,9 @@ public class DataHolder {
         this.macdOverCCIIndicator=macdOverCCIIndicator;
         this.atrIndicator =atrIndicator;
         this.ccicIndicator = ccicIndicator;
+        this.macdOverMa9 = macdOverMa9;
+        this.macdOverMa14 = macdOverMa14;
+        this.macdOverMa50 = macdOverMa50;
     }
 
     public double getClosePriceAtIndex(int index){return closePriceIndicator.getValue(index).doubleValue();}
@@ -65,6 +71,59 @@ public class DataHolder {
 
     public double getPercentBIAtIndex(int index){return percentBIndicator.getValue(index).doubleValue();}
 
+    public double getMACDOverSMAAverage(int index, int candleCount){
+        if (candleCount == MACDOverSMAConstants.FAST_CANDLE_COUNT){
+            return (macdOverMa9.getValue(index).doubleValue() + getMACDOverSMASignalLineValueAtIndex(index, candleCount))/2;
+        }
+
+        else if(candleCount == MACDOverSMAConstants.MEDIUM_CANDLE_COUNT){
+            return (macdOverMa14.getValue(index).doubleValue() - getMACDOverSMASignalLineValueAtIndex(index, candleCount))/2;
+        }
+        else{
+            return (macdOverMa50.getValue(index).doubleValue() - getMACDOverSMASignalLineValueAtIndex(index, candleCount))/2;
+        }
+    }
+
+    public double getMACDOverSMASignalLineValueAtIndex(int index, int candleCount){
+        EMAIndicator signal;
+        if (candleCount == MACDOverSMAConstants.FAST_CANDLE_COUNT){
+            signal = new EMAIndicator(macdOverMa9, MACDOverSMAConstants.SIGNAL_LENGTH);
+        }
+
+        else if(candleCount == MACDOverSMAConstants.MEDIUM_CANDLE_COUNT){
+            signal = new EMAIndicator(macdOverMa14, MACDOverSMAConstants.SIGNAL_LENGTH);
+        }
+        else{
+            signal = new EMAIndicator(macdOverMa50, MACDOverSMAConstants.SIGNAL_LENGTH);
+        }
+        return signal.getValue(index).doubleValue();
+    }
+
+    public double getMACDOverSMAHistAtIndex(int index, int candleCount){
+        if (candleCount == MACDOverSMAConstants.FAST_CANDLE_COUNT){
+            return macdOverMa9.getValue(index).doubleValue() - getMACDOverSMASignalLineValueAtIndex(index, candleCount);
+        }
+
+        else if(candleCount == MACDOverSMAConstants.MEDIUM_CANDLE_COUNT){
+            return macdOverMa14.getValue(index).doubleValue() - getMACDOverSMASignalLineValueAtIndex(index, candleCount);
+        }
+        else{
+            return macdOverMa50.getValue(index).doubleValue() - getMACDOverSMASignalLineValueAtIndex(index, candleCount);
+        }
+    }
+
+    public double getMacdOverSMAMacdLineValueAtIndex(int index, int candleCount) {
+        if (candleCount == MACDOverSMAConstants.FAST_CANDLE_COUNT){
+            return macdOverMa9.getValue(index).doubleValue();
+        }
+
+        else if(candleCount == MACDOverSMAConstants.MEDIUM_CANDLE_COUNT){
+            return macdOverMa14.getValue(index).doubleValue();
+        }
+        else{
+            return macdOverMa50.getValue(index).doubleValue();
+        }
+    }
 
     public double getMACDOverCCISignalLineValueAtIndex(int index){
         EMAIndicator signal = new EMAIndicator(macdOverCCIIndicator, MACDOverCCIWIthATRConstants.SIGNAL_LENGTH);
@@ -75,8 +134,8 @@ public class DataHolder {
         return macdOverCCIIndicator.getValue(index).doubleValue()-getMACDOverCCISignalLineValueAtIndex(index);
     }
 
-    public double getMacdOverRsiMacdLineValueAtIndex(int index) {
-        return macdOverRsiIndicator.getValue(index).doubleValue();
+    public double getMacdOverCCIValueAtIndex(int index) {
+        return getMacdOverCCIMacdLineValueAtIndex(index) - getMacdOverCCISignalLineValueAtIndex(index);
     }
 
     public double getCCICIndciator(int index){
@@ -87,9 +146,6 @@ public class DataHolder {
         return percentBIndicator.getValue(index).doubleValue();
     }
 
-    public double getMacdOverCCIValueAtIndex(int index) {
-        return getMacdOverCCIMacdLineValueAtIndex(index) - getMacdOverCCISignalLineValueAtIndex(index);
-    }
 
     private double getMacdOverCCIMacdLineValueAtIndex(int index) {
         return macdOverCCIIndicator.getValue(index).doubleValue();

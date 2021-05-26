@@ -1,0 +1,6 @@
+# pack-refs with: peeled fully-peeled sorted 
+c1972e5c86f1a17df4d87930b587cad53fba7dd5 refs/remotes/origin/dependabot/maven/ch.qos.logback-logback-classic-1.3.0-alpha5
+e81b04537b22077b9fffa399e146c086583ced90 refs/remotes/origin/dependabot/maven/com.github.yonathan95-binance-java-sdk-1.2.3
+7b7391ab78dd1873f766b4114574a9b62f4db860 refs/remotes/origin/dependabot/maven/com.opencsv-opencsv-5.4
+a153f2ad6d0f9d5c4d92cd792bb3e4c0fc4e06a4 refs/remotes/origin/dependabot/maven/org.slf4j-slf4j-simple-2.0.0-alpha1
+d6b8403e0f377f308050e1b3d8fab1691d5240a2 refs/remotes/origin/main

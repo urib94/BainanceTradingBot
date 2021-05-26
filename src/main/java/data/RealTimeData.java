@@ -13,6 +13,7 @@ import com.binance.client.model.market.Candlestick;
 import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import singletonHelpers.RequestClient;
+import strategies.MACDOverSMAStrategy.MACDOverSMAConstants;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
@@ -37,6 +38,13 @@ public class RealTimeData{
     private LowPriceIndicator lowPriceIndicator;
     private ATRIndicator atrIndicator;
     private CCICIndicator ccicIndicator;
+    private MFIIndicator mfiIndicator;
+
+    private MACDIndicator macdOverMa9;
+    private MACDIndicator macdOverMa14;
+    private MACDIndicator macdOverMa50;
+
+
 
 
 
@@ -65,7 +73,7 @@ public class RealTimeData{
         counter = 0;
         calculateIndicators();
         return new DataHolder(highPriceIndicator, lowPriceIndicator, closePriceIndicator, rsiIndicator, macdOverRsiIndicator, bollingerBandsUpperIndicator, bollingerBandsLowerIndicator,
-                smaIndicator,bollingerBandWidthIndicator, percentBIndicator, realTimeData.getEndIndex(),macdOverCCIIndicator,atrIndicator, ccicIndicator);
+                smaIndicator,bollingerBandWidthIndicator, percentBIndicator, realTimeData.getEndIndex(),macdOverCCIIndicator,atrIndicator, ccicIndicator, macdOverMa9, macdOverMa14, macdOverMa50);
     }
 
     private boolean updateLastCandle(CandlestickEvent event) {
@@ -109,8 +117,17 @@ public class RealTimeData{
         lowPriceIndicator = new LowPriceIndicator(currData);
         macdOverCCIIndicator = calculateMacdOverCCI(currData);
         smaIndicator = new SMAIndicator(new ClosePriceIndicator(currData), MACDOverCCIWIthATRConstants.SMA_CANDLES);
-        calculateBollingerBandsIndicators(currData);
-        atrIndicator = calculateATR(currData,MACDOverCCIWIthATRConstants.ATR_CANDLE_COUNT);
+//        calculateBollingerBandsIndicators(currData);
+//        atrIndicator = calculateATR(currData,MACDOverCCIWIthATRConstants.ATR_CANDLE_COUNT);
+//        macdOverMa9 = calculateMacdOverMa(currData, MACDOverSMAConstants.FAST_CANDLE_COUNT);
+//        macdOverMa14 = calculateMacdOverMa(currData, MACDOverSMAConstants.MEDIUM_CANDLE_COUNT);
+//        macdOverMa50 = calculateMacdOverMa(currData, MACDOverSMAConstants.SLOW_CANDLE_COUNT);
+    }
+
+    private MACDIndicator calculateMacdOverMa(BaseBarSeries currData, int i) {
+        ClosePriceIndicator closePriceIndicator = new ClosePriceIndicator(currData);
+        SMAIndicator smaIndicator = new SMAIndicator(closePriceIndicator, i);
+        return new MACDIndicator(smaIndicator, MACDOverCCIWIthATRConstants.FAST_BAR_COUNT, MACDOverCCIWIthATRConstants.SLOW_BAR_COUNT);
     }
 
 

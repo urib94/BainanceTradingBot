@@ -45,7 +45,7 @@ public class BaseDCA implements DCAStrategy {
 
     public void run(double qty, double averagePrice) {
         this.averagePrice = averagePrice;
-        if (dCACount < maxDCACount) {
+        if (dCACount <= maxDCACount) {
             if (initialize) {
                 postDCAOrder(qty, averagePrice);
                 postTakeProfit(qty, averagePrice);
@@ -56,7 +56,9 @@ public class BaseDCA implements DCAStrategy {
                 boolean needToDCA = qty != amount;
                 boolean dcaOrderIsFilled = isDCAOrderFilled();
                 if (needToDCA && dcaOrderIsFilled) {
-                    postDCAOrder(qty, averagePrice);
+                    if (dCACount < maxDCACount) {
+                        postDCAOrder(qty, averagePrice);
+                    }
                     postTakeProfit(qty, averagePrice);
                     amount = qty;
                 }

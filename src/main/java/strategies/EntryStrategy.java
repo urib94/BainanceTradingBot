@@ -12,8 +12,6 @@ public interface EntryStrategy{
      */
     PositionHandler run(DataHolder realTimeData, String symbol);
 
-    void setTakeProfitPercentage(double takeProfitPercentage);
-    void setStopLossPercentage(double stopLossPercentage);
     void setLeverage(int leverage);
     void setRequestedBuyingAmount(double requestedBuyingAmount);
 
