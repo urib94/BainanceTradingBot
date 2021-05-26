@@ -1,16 +1,9 @@
 package strategies.MACDOverCCIWIthATR.Long;
 
 import TradingTools.Trailers.SkippingExitTrailer;
-import com.binance.client.SyncRequestClient;
 import data.DataHolder;
-import positions.PositionHandler;
 import positions.SellingInstructions;
-import singletonHelpers.RequestClient;
-import singletonHelpers.TelegramMessenger;
 import strategies.ExitStrategy;
-import strategies.MACDOverCCIWIthATR.MACDOverCCIWIthATRConstants;
-
-import java.util.Date;
 
 public class MACDOverCCIWIthATRLongExitStrategy1 implements ExitStrategy {
     public double ATRValue;

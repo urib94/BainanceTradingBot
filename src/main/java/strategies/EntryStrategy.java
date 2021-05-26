@@ -1,9 +1,6 @@
 package strategies;
 import data.DataHolder;
-import data.RealTimeData;
 import positions.PositionHandler;
-
-import java.math.BigDecimal;
 
 public interface EntryStrategy{
     /**

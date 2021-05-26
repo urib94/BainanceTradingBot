@@ -25,7 +25,7 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
     private double takeProfitPercentage = MACDOverCCIWIthATRConstants.DEFAULT_TAKE_PROFIT_PERCENTAGE;
     private double stopLossPercentage = MACDOverCCIWIthATRConstants.DEFAULT_STOP_LOSS_PERCENTAGE;
     private int leverage = MACDOverCCIWIthATRConstants.DEFAULT_LEVERAGE;
-    private double requestedBuyingAmount = MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT;
+
     private final AccountBalance accountBalance;
     private double positivePeek = 0;
     private double negativePeek = 0;
@@ -109,6 +109,8 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
     }
 
     private PositionHandler buyAndCreatePositionHandler(DataHolder realTimeData, double currentPrice, String symbol, PositionSide positionSide, double multiplier ) {//TODO: maybe change market later.
+        updateBuyingAmount(symbol);
+        double requestedBuyingAmount = MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT;
         TelegramMessenger.sendToTelegram("Entering new position " + new Date(System.currentTimeMillis()));
         ArrayList <DCAStrategy> DCAStrategies = new ArrayList<>();
         ArrayList <ExitStrategy> exitStrategies = new ArrayList<>();
@@ -117,10 +119,11 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
             try {
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
                 syncRequestClient.changeInitialLeverage(symbol, leverage);
-                String buyingQty = utils.Utils.getBuyingQtyAsString(currentPrice, symbol, leverage, requestedBuyingAmount * multiplier);
+                String buyingQty = utils.Utils.getBuyingQtyAsString(currentPrice, symbol, leverage, MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT * multiplier);
                 Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.MARKET, null,
                         buyingQty, null, null, null, null, null, null, null, WorkingType.MARK_PRICE, "TRUE", NewOrderRespType.RESULT);
-                TelegramMessenger.sendToTelegram("bought long:  " + buyOrder + " ," + new Date(System.currentTimeMillis()));
+                TelegramMessenger.sendToTelegram("bought long:  " + "Side: " + buyOrder.getSide() + " , Qty: " + buyOrder.getCumQty() +
+                        " , Activate Price: " + buyOrder.getActivatePrice() + " ,                   Time: " + new Date(System.currentTimeMillis()));
                 exitStrategies.add(new MACDOverCCIWIthATRLongExitStrategy1());
                 exitStrategies.add(new MACDOverCCIWIthATRLongExitStrategy2());
                 DCAStrategies.add(createBaseDCA(realTimeData, currentPrice, symbol, positionSide));
@@ -137,7 +140,8 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
                 String buyingQty = utils.Utils.getBuyingQtyAsString(currentPrice, symbol, leverage, requestedBuyingAmount);
                 Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.MARKET, null,
                         buyingQty, null, null, null, null, null, null, null, WorkingType.MARK_PRICE,"TRUE" , NewOrderRespType.RESULT);
-                TelegramMessenger.sendToTelegram("entered short:  " + buyOrder + " ," + new Date(System.currentTimeMillis()));
+                TelegramMessenger.sendToTelegram("bought long:  " + "Side: " + buyOrder.getSide() + " , Qty: " + buyOrder.getCumQty() +
+                        " , Activate Price: " + buyOrder.getActivatePrice() + " ,                   Time: " + new Date(System.currentTimeMillis()));
                 exitStrategies.add(new MACDOverCCIWIthATRLongExitStrategy1());
                 exitStrategies.add(new MACDOverCCIWIthATRLongExitStrategy2());
                 DCAStrategies.add(createBaseDCA(realTimeData, currentPrice, symbol, positionSide));
@@ -150,8 +154,16 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
         return null;
     }
 
-    private void updateBuyingAmount(String symbol, double availableBalancePercentage) {
-        double balance = accountBalance.getCoinBalance(symbol).doubleValue();
+
+    private void updateBuyingAmount(String symbol) {
+        String baseSymbol = Config.BASE_COIN;
+        double balance = accountBalance.getCoinBalance(baseSymbol).doubleValue();
+        double maxAmount = 1;
+        for (int i = 0 ; i < MACDOverCCIWIthATRConstants.MAX_DCA ; i++){
+            maxAmount += 2 * maxAmount;
+        }
+        MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT = (balance / maxAmount) * (MACDOverCCIWIthATRConstants.AVAILABLE_BALANCE_PRECENTAGE / 100);
+
     }
 
     private DCAStrategy createBaseDCA(DataHolder realTimeData,double currentPrice, String symbol, PositionSide positionSide) {
@@ -161,12 +173,12 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
                 double shortTPPrice = currentPrice - (atrValue * MACDOverCCIWIthATRConstants.ATR1);
                 double shortStep = (currentPrice - shortTPPrice) / (currentPrice / 100);
                 return new BaseDCA(currentPrice, MACDOverCCIWIthATRConstants.MAX_DCA, MACDOverCCIWIthATRConstants.AMOUNT_FACTOR, positionSide, shortTPPrice, symbol,
-                        shortStep, MACDOverCCIWIthATRConstants.STEP_FACTOR, DCAStrategy.DCAType.SHORT_DCA_LIMIT);
+                        shortStep, MACDOverCCIWIthATRConstants.STEP_FACTOR, DCAStrategy.DCAType.SHORT_DCA_MARKET);
             case LONG:
                 double longTPPrice = currentPrice + (atrValue * MACDOverCCIWIthATRConstants.ATR1);
                 double longStep = (longTPPrice - currentPrice) / (currentPrice / 100);
                 return new BaseDCA(currentPrice, MACDOverCCIWIthATRConstants.MAX_DCA, MACDOverCCIWIthATRConstants.AMOUNT_FACTOR, positionSide, longTPPrice, symbol,
-                        longStep, MACDOverCCIWIthATRConstants.STEP_FACTOR, DCAStrategy.DCAType.LONG_DCA_LIMIT);
+                        longStep, MACDOverCCIWIthATRConstants.STEP_FACTOR, DCAStrategy.DCAType.LONG_DCA_MARKET);
             default:
                 break;
         }
