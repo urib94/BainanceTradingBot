@@ -1,47 +1,36 @@
 import com.binance.client.SyncRequestClient;
-import com.binance.client.model.enums.CandlestickInterval;
-import com.binance.client.model.enums.ContractType;
-import com.binance.client.model.market.Candlestick;
-import com.binance.client.model.trade.AccountBalance;
-import com.opencsv.CSVWriter;
+import com.binance.client.model.enums.*;
+import com.binance.client.model.trade.Order;
 import singletonHelpers.RequestClient;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.sql.Time;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
 public class Draft {
-    public static void main(String[] args) {
-//        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-//        Date startDate=new Date (115, Calendar.JANUARY,1);
-//        String fileName = "symbol" + " - " + "interval";
-//        File file = new File("C:/Users/urib9/OneDrive/Candles1/" + fileName);
-//        System.out.println(startDate.getTime()+"   "+System.currentTimeMillis());
-//        try{
-//            // create FileWriter object with file as parameter
-//            FileWriter outputFile = new FileWriter(file);
-//
-//            // create CSVWriter object filewriter object as parameter
-//            CSVWriter writer = new CSVWriter(outputFile);
-//            List<String[]> data=new ArrayList<>();
-//            data.add(new String[]{"s", "D", "f"});
-//
-//            writer.writeAll(data);
-//
-//            // closing writer connection
-//            writer.close();
-//        } catch (IOException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//        }
 
+
+    private Order orderDCA, orderTP;
+    private double step;
+    private double dCASize = 0;
+    private int dCACount = 0;
+    private double nextDCAPrice;
+    private double amount;
+    private boolean initialize = true;
+    private int dcaOrderCheckCounter = 0;
+    private double averagePrice;
+
+    private static void postStopLoss(double qty) {
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-        List<AccountBalance>balance= syncRequestClient.getBalance();
+        String symbol = "ethusdt";
+        String sellingQty = String.valueOf(qty);
+        String stopLossPrice = String.valueOf(3000);
+        try {
+            syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.TAKE_PROFIT_MARKET, null,
+                    sellingQty, null, "false", null, stopLossPrice, null,
+                    null, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    public static void main(String[] args) {
+        postStopLoss(0.1);
     }
 }

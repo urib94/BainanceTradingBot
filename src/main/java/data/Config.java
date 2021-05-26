@@ -1,19 +1,16 @@
 package data;
 
-import com.binance.client.model.enums.CandlestickInterval;
-
-import java.math.BigDecimal;
-
 public class Config {
 
 	public static final double DOUBLE_ZERO = 0.0;
 	public static final String BASE_COIN = "usdt";
 	public static final double DOUBLE_ONE = 1.0;
     public static final double ONE_HUNDRED = 100.0;
+    public static final String BASE_SYMBOL = "bnbusdt";
     public static String API_KEY = "h4AdqbWrKlF5wOxWmbNTKLq7IpDReZOvVXeOujGwUfU0HjXdIejUmqKvoVLbcXJ6";
 	public static String SECRET_KEY = "7qqNLwB7ZXiZu2nBJhrdv7ARVpNDhImNA1Rj1oXR6eGjZFkGsRC9ayEO7HLYVm6w";
 	public static final int THREAD_NUM = 6;
-	public static final String SYMBOL = "btcusdt";
+	public static final String SYMBOL = "ethusdt";
 	public static final int CANDLE_NUM = 150;
 	public static final String NEW = "NEW";
 	public static final String PARTIALLY_FILLED = "PARTIALLY_FILLED";

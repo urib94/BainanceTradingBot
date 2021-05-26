@@ -1,9 +1,11 @@
 package codeExecution;
 
+import com.binance.client.model.enums.CandlestickInterval;
 import singletonHelpers.BinanceInfo;
 import strategies.EntryStrategy;
-import com.binance.client.model.enums.CandlestickInterval;
 import strategies.MACDOverCCIWIthATR.MACDOverCCIWithATREntryStrategy;
+import strategies.nutral.Nutral;
+//import strategies.MACDOverCCIWIthATR.MACDOverCCIWithATREntryStrategy;
 
 public class InputMessage {
     public String operation = RealTImeOperations.UNKNOWN_OPERATION;
@@ -91,6 +93,8 @@ public class InputMessage {
             case "macd":
                 return new MACDOverCCIWithATREntryStrategy();
 
+            case "nutral":
+                return new Nutral();
             default:
                 return null;
         }

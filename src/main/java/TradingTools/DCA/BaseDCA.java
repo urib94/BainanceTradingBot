@@ -3,7 +3,6 @@ package TradingTools.DCA;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.*;
 import com.binance.client.model.trade.Order;
-import data.DataHolder;
 import singletonHelpers.BinanceInfo;
 import singletonHelpers.RequestClient;
 import singletonHelpers.TelegramMessenger;
@@ -45,7 +44,7 @@ public class BaseDCA implements DCAStrategy {
 
     public void run(double qty, double averagePrice) {
         this.averagePrice = averagePrice;
-        if (dCACount < maxDCACount) {
+        if (dCACount <= maxDCACount) {
             if (initialize) {
                 postDCAOrder(qty, averagePrice);
                 postTakeProfit(qty, averagePrice);
@@ -56,7 +55,10 @@ public class BaseDCA implements DCAStrategy {
                 boolean needToDCA = qty != amount;
                 boolean dcaOrderIsFilled = isDCAOrderFilled();
                 if (needToDCA && dcaOrderIsFilled) {
-                    postDCAOrder(qty, averagePrice);
+                    if (dCACount < maxDCACount) {
+                        TelegramMessenger.sendToTelegram( dCACount+ " DCA is Filled");
+                        postDCAOrder(qty, averagePrice);
+                    }
                     postTakeProfit(qty, averagePrice);
                     amount = qty;
                 }
@@ -70,40 +72,24 @@ public class BaseDCA implements DCAStrategy {
         String stopLossPrice = BinanceInfo.formatPrice(calculateStopLossPrice(averagePrice), symbol);
         switch (dcaType) {
             case LONG_DCA_LIMIT:
-                try {
-                    syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.STOP, TimeInForce.GTC,
-                            sellingQty, stopLossPrice, "true", null, stopLossPrice, null,
-                            stopLossPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                break;
 
             case LONG_DCA_MARKET:
                 try {
                     syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.STOP_MARKET, TimeInForce.GTC,
-                            sellingQty, null, "true", null, null, null,
-                            stopLossPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
+                            sellingQty, null, "true", null, stopLossPrice, null,
+                            null, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 break;
 
             case SHORT_DCA_LIMIT:
-                try {
-                    syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.STOP, TimeInForce.GTC,
-                            sellingQty, stopLossPrice, "true", null, stopLossPrice, null,
-                            stopLossPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                break;
 
             case SHORT_DCA_MARKET:
                 try {
                     syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.STOP_MARKET, TimeInForce.GTC,
-                            sellingQty, null, "true", null, null, null,
-                            stopLossPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
+                            sellingQty, null, "true", null, stopLossPrice, null,
+                            null, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -154,14 +140,13 @@ public class BaseDCA implements DCAStrategy {
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         String sellingQty = Utils.fixQuantity(BinanceInfo.formatQty(dCASize, symbol));
         String dcaPrice = BinanceInfo.formatPrice(nextDCAPrice, symbol);
-        TelegramMessenger.sendToTelegram("DCA number  " + dCACount + " ," + new Date(System.currentTimeMillis()));
+        System.out.println("dcaPrice" + dcaPrice);
         switch (dcaType) {
             case LONG_DCA_LIMIT:
                 try {
                     orderDCA = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, dcaPrice, null, null, null, null,
                             dcaPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
-                    TelegramMessenger.sendToTelegram("DCA price  " + dcaPrice + " ," + new Date(System.currentTimeMillis()));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -169,10 +154,9 @@ public class BaseDCA implements DCAStrategy {
 
             case LONG_DCA_MARKET:
                 try {
-                    orderDCA = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.STOP_MARKET, TimeInForce.GTC,
-                            sellingQty, null, null, null, null, null,
-                            dcaPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
-                    TelegramMessenger.sendToTelegram("DCA price:  " + dcaPrice + " ," + new Date(System.currentTimeMillis()));
+                    orderDCA = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.TAKE_PROFIT_MARKET, TimeInForce.GTC,
+                            sellingQty, null, null, null, dcaPrice, null,
+                            null, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -182,7 +166,6 @@ public class BaseDCA implements DCAStrategy {
                 try {
                     orderDCA = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.LIMIT, TimeInForce.GTC,
                             sellingQty, dcaPrice, null, null, null, null, dcaPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
-                    TelegramMessenger.sendToTelegram("DCA price:  " + dcaPrice + " ," + new Date(System.currentTimeMillis()));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -190,10 +173,9 @@ public class BaseDCA implements DCAStrategy {
 
             case SHORT_DCA_MARKET:
                 try {
-                    orderDCA = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.STOP_MARKET, TimeInForce.GTC,
-                            sellingQty, null, null, null, null, null,
-                            dcaPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
-                    TelegramMessenger.sendToTelegram("DCA price:  " + dcaPrice + " ," + new Date(System.currentTimeMillis()));
+                    orderDCA = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.TAKE_PROFIT_MARKET, TimeInForce.GTC,
+                            sellingQty, null, null, null, dcaPrice, null,
+                            null, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -202,14 +184,14 @@ public class BaseDCA implements DCAStrategy {
             default:
                 break;
         }
-        TelegramMessenger.sendToTelegram("DCA order:  " + orderDCA + " ," + new Date(System.currentTimeMillis()));
+        TelegramMessenger.sendToTelegram("Posting DCA order number " + dCACount +1 + ":  Side: " + orderDCA.getSide() + " , Qty: " + orderDCA.getCumQty() + " , Stop Price: "
+                + orderDCA.getStopPrice() + " ,                  Time: " + new Date(System.currentTimeMillis()));
         dCACount++;
     }
 
     public void postTakeProfit(double qty, double averagePrice){
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
             if (orderTP != null) {
-                TelegramMessenger.sendToTelegram("Posting TP order ");
                 syncRequestClient.cancelOrder(symbol, orderTP.getOrderId(), orderTP.getClientOrderId());
             }
             String sellingQty = Utils.fixQuantity(BinanceInfo.formatQty(qty, symbol));
@@ -230,8 +212,8 @@ public class BaseDCA implements DCAStrategy {
                     try {
                         tPPrice = BinanceInfo.formatPrice(averagePrice + ((averagePrice / 100) * distanceToTP), symbol);
                         orderTP = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.TAKE_PROFIT_MARKET, TimeInForce.GTC,
-                                sellingQty, null, "true", null, null, null,
-                                tPPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
+                                sellingQty, null, "true", null, tPPrice, null,
+                                null, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -251,9 +233,9 @@ public class BaseDCA implements DCAStrategy {
                 case SHORT_DCA_MARKET:
                     tPPrice = BinanceInfo.formatPrice(averagePrice - ((averagePrice / 100) * distanceToTP), symbol);
                     try {
-                        orderTP = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.TAKE_PROFIT_MARKET, TimeInForce.GTC,
-                                sellingQty, null, "true", null, null, null,
-                                tPPrice, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
+                        orderTP = syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.STOP_MARKET, TimeInForce.GTC,
+                                sellingQty, null, "true", null, tPPrice, null,
+                                null, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -262,7 +244,8 @@ public class BaseDCA implements DCAStrategy {
                 default:
                     break;
             }
-        TelegramMessenger.sendToTelegram("TP order:  " + orderTP + " ," + new Date(System.currentTimeMillis()));
+        TelegramMessenger.sendToTelegram("Posting TP order:  Side: "+ orderTP.getSide() + " , Qty: " + orderTP.getCumQty() + " , Activate Price: "
+                + orderTP.getActivatePrice() + " ,                  Time: " + new Date(System.currentTimeMillis()));
     }
 
     private void updateNextDCAPrice(double currentPrice){
