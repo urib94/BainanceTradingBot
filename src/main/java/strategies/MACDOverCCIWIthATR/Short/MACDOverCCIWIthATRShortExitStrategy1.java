@@ -1,8 +1,6 @@
 package strategies.MACDOverCCIWIthATR.Short;
 
 import TradingTools.Trailers.SkippingExitTrailer;
-import TradingTools.Trailers.TrailingExit;
-import com.binance.client.model.enums.PositionSide;
 import data.DataHolder;
 import positions.SellingInstructions;
 import strategies.ExitStrategy;

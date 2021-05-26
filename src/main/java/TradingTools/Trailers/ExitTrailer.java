@@ -2,7 +2,7 @@ package TradingTools.Trailers;
 
 import com.binance.client.model.enums.PositionSide;
 
-public class TrailingExit {
+public class ExitTrailer {
 
     private double absoluteMaxPrice;
 
@@ -12,7 +12,7 @@ public class TrailingExit {
 
     double trailingPercentage;
 
-    public TrailingExit(double currentPrice, double trailingPercentage, PositionSide side){
+    public ExitTrailer(double currentPrice, double trailingPercentage, PositionSide side){
         absoluteMaxPrice = currentPrice;
         this.side = side;
         this.trailingPercentage = trailingPercentage;
@@ -24,7 +24,7 @@ public class TrailingExit {
         }
     }
 
-    public TrailingExit() {
+    public ExitTrailer() {
     }
 
     public void updateTrailer(double currentPrice){

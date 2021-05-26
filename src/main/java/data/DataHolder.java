@@ -8,35 +8,44 @@ import org.ta4j.core.indicators.bollinger.PercentBIndicator;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import org.ta4j.core.indicators.helpers.HighPriceIndicator;
 import org.ta4j.core.indicators.helpers.LowPriceIndicator;
+import org.ta4j.core.indicators.helpers.OpenPriceIndicator;
 import strategies.MACDOverCCIWIthATR.MACDOverCCIWIthATRConstants;
 import strategies.MACDOverSMAStrategy.MACDOverSMAConstants;
 
 public class DataHolder {
     private double currentPrice;
-    private RSIIndicator rsiIndicator;
     private MACDIndicator macdOverRsiIndicator;
     private MACDIndicator macdOverCCIIndicator;
-    private SMAIndicator smaIndicator;
     private BollingerBandsUpperIndicator bollingerBandsUpperIndicator;
     private BollingerBandsLowerIndicator bollingerBandsLowerIndicator;
     private BollingerBandWidthIndicator bollingerBandWidthIndicator;
     private ATRIndicator atrIndicator;
-    private CCICIndicator ccicIndicator;
 
     private PercentBIndicator percentBIndicator;
     private ClosePriceIndicator closePriceIndicator;
     private HighPriceIndicator highPriceIndicator;
     private LowPriceIndicator lowPriceIndicator;
+    private OpenPriceIndicator openPriceIndicator;
     private int endIndex;
     private MACDIndicator macdOverMa9;
     private MACDIndicator macdOverMa14;
     private MACDIndicator macdOverMa50;
 
+    private CCICIndicator ccicIndicator;
+    private MFIIndicator mfiIndicator;
+    private SMAIndicator smaIndicator;
+    private RSIIndicator rsiIndicator;
+    private SMAIndicator smaOverRsiIndicator;
+    private SMAIndicator smaOverMfiIndicator;
+
 
     public DataHolder(HighPriceIndicator highPriceIndicator, LowPriceIndicator lowPriceIndicator, ClosePriceIndicator closePriceIndicator, RSIIndicator rsiIndicator, MACDIndicator macdOverRsiIndicator, BollingerBandsUpperIndicator bollingerBandsUpperIndicator,
                       BollingerBandsLowerIndicator bollingerBandsLowerIndicator, SMAIndicator smaIndicator, BollingerBandWidthIndicator bollingerbandWidthIndicator, PercentBIndicator percentBIndicator, int endIndex
-                        , MACDIndicator macdOverCCIIndicator, ATRIndicator atrIndicator, CCICIndicator ccicIndicator, MACDIndicator macdOverMa9, MACDIndicator macdOverMa14, MACDIndicator macdOverMa50) {
+            , MACDIndicator macdOverCCIIndicator, ATRIndicator atrIndicator, CCICIndicator ccicIndicator, MACDIndicator macdOverMa9, MACDIndicator macdOverMa14, MACDIndicator macdOverMa50, MFIIndicator mfiIndicator, SMAIndicator smaOverRsiIndicator, SMAIndicator smaOverMfiIndicator, OpenPriceIndicator openPriceIndicator) {
         this.rsiIndicator = rsiIndicator;
+        this.mfiIndicator = mfiIndicator;
+        this.smaOverRsiIndicator = smaOverRsiIndicator;
+        this.smaOverMfiIndicator = smaOverMfiIndicator;
         this.macdOverRsiIndicator = macdOverRsiIndicator;
         this.smaIndicator = smaIndicator;
         this.endIndex = endIndex;
@@ -54,14 +63,41 @@ public class DataHolder {
         this.macdOverMa9 = macdOverMa9;
         this.macdOverMa14 = macdOverMa14;
         this.macdOverMa50 = macdOverMa50;
+        this.openPriceIndicator = openPriceIndicator;
     }
+
+    public double getRSIValueAtIndex(int index) {
+        return rsiIndicator.getValue(index).doubleValue();
+    }
+
+    public  double getSmaValueAtIndex(int index) {
+        return smaIndicator.getValue(index).doubleValue();
+    }
+
+    public double getCCICValue(int index){
+        return ccicIndicator.getValue(index).doubleValue();
+    }
+
+    public double getMFIValue(int index){
+        return mfiIndicator.getValue(index).doubleValue();
+    }
+
+    public double getSmaOverRSIValue(int index){
+        return smaOverRsiIndicator.getValue(index).doubleValue();
+    }
+
+    public double getSmaOverMFIValue(int index){
+        return smaOverMfiIndicator.getValue(index).doubleValue();
+    }
+
+
+
 
     public double getClosePriceAtIndex(int index){return closePriceIndicator.getValue(index).doubleValue();}
 
     public double getHighPriceAtIndex(int index){return highPriceIndicator.getValue(index).doubleValue();}
 
     public double getLowPriceAtIndex(int index){return lowPriceIndicator.getValue(index).doubleValue();}
-
 
     public double getUpperBollingerAtIndex(int index){return bollingerBandsUpperIndicator.getValue(index).doubleValue();}
 
@@ -138,9 +174,6 @@ public class DataHolder {
         return getMacdOverCCIMacdLineValueAtIndex(index) - getMacdOverCCISignalLineValueAtIndex(index);
     }
 
-    public double getCCICIndciator(int index){
-        return ccicIndicator.getValue(index).doubleValue();
-    }
 
     public double getPercentBIndicatorAtIndex(int index) {
         return percentBIndicator.getValue(index).doubleValue();
@@ -150,7 +183,6 @@ public class DataHolder {
     private double getMacdOverCCIMacdLineValueAtIndex(int index) {
         return macdOverCCIIndicator.getValue(index).doubleValue();
     }
-
 
     private double getMacdOverCCISignalLineValueAtIndex(int index) {
         EMAIndicator signal = new EMAIndicator(macdOverCCIIndicator, MACDOverCCIWIthATRConstants.SIGNAL_LENGTH);
@@ -165,14 +197,6 @@ public class DataHolder {
 
     public double getRsiCloseValue() {
         return rsiIndicator.getValue(endIndex-1).doubleValue();
-    }
-
-    public double getRSIValueAtIndex(int index) {
-        return rsiIndicator.getValue(index).doubleValue();
-    }
-
-    public  double getSmaValueAtIndex(int index) {
-        return smaIndicator.getValue(index).doubleValue();
     }
 
     public BollingerBandsLowerIndicator getBollingerBandsLowerIndicator() {
@@ -359,6 +383,10 @@ public class DataHolder {
         this.percentBIndicator = percentIndicator;
     }
 
+    public double getOpenPrice(int index) {
+        return openPriceIndicator.getValue(index).doubleValue();
+    }
+
     public enum CandleType {
         OPEN,CLOSE,BEARISH,BULLISH;
     }
@@ -368,6 +396,8 @@ public class DataHolder {
     }
     public enum IndicatorType {
         RSI,
+        SMA,
+        MFI,
         MACD_OVER_RSI,
         BOllINGER_BANDS_UPPER_INDICATOR,
         BOllINGER_BANDS_LOWER_INDICATOR,

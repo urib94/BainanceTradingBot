@@ -25,6 +25,7 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
     private double takeProfitPercentage = MACDOverCCIWIthATRConstants.DEFAULT_TAKE_PROFIT_PERCENTAGE;
     private double stopLossPercentage = MACDOverCCIWIthATRConstants.DEFAULT_STOP_LOSS_PERCENTAGE;
     private int leverage = MACDOverCCIWIthATRConstants.DEFAULT_LEVERAGE;
+    private double requestedBuyingAmount;
 
     private final AccountBalance accountBalance;
     private double positivePeek = 0;
@@ -47,7 +48,7 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
         if (positionHandler == null){
             double currentPrice = realTimeData.getCurrentPrice();
             boolean positivePeekLargerthanNegative = positivePeek > Math.abs(negativePeek);
-            double cciValue = realTimeData.getCCICIndciator(realTimeData.getLastCloseIndex());
+            double cciValue = realTimeData.getCCICValue(realTimeData.getLastCloseIndex());
             switch (macdOverCCIPrevSign){
                 case NEGATIVE:
                     if(positivePeekLargerthanNegative && cciValue <= 100 && candleIndicateLong(realTimeData, realTimeData.getLastCloseIndex())){
