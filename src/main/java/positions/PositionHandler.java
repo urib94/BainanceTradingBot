@@ -4,6 +4,7 @@ import singletonHelpers.BinanceInfo;
 import singletonHelpers.TelegramMessenger;
 import strategies.DCAStrategy;
 import strategies.ExitStrategy;
+import strategies.nutral.NutralExit;
 import utils.Utils;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.*;
@@ -23,10 +24,16 @@ public class PositionHandler implements Serializable {
     private final ArrayList<ExitStrategy> exitStrategies;
     private volatile boolean isSelling = false;
     private volatile boolean terminated = false;
+    private double stopLossPercentage;
+    private boolean requireStopLoss = false;
+    private PositionSide positionSide;
 
-    public PositionHandler(Order order, ArrayList<ExitStrategy> _exitStrategies) {
+    public PositionHandler(Order order, ArrayList<ExitStrategy> _exitStrategies, double stopLossPercentage, PositionSide positionSide) {
         symbol = order.getSymbol().toLowerCase();
         exitStrategies = _exitStrategies;
+        this.stopLossPercentage = stopLossPercentage;
+        if (stopLossPercentage != 0) requireStopLoss = true;
+        this.positionSide = positionSide;
     }
 
 
@@ -36,6 +43,12 @@ public class PositionHandler implements Serializable {
         this.dcaStrategies = dcaStrategies;
     }
 
+    public PositionHandler(Order order, NutralExit nutralExit){
+        exitStrategies = null;
+        symbol = order.getSymbol().toLowerCase();
+
+
+    }
     public synchronized boolean isSoldOut() {
         return isActive && (qty == 0.0);
     }
@@ -44,14 +57,22 @@ public class PositionHandler implements Serializable {
         double currentPrice = realTimeData.getCurrentPrice();
         isSelling = false;
         if (isActive) {
-            for (DCAStrategy dcaStrategy : dcaStrategies) {
-                dcaStrategy.run(qty, averagePrice);
+            if (requireStopLoss){
+                requireStopLoss = false;
+                postStopLoss(qty, averagePrice, positionSide, symbol);
             }
-            for (ExitStrategy exitStrategy : exitStrategies) {
-                SellingInstructions sellingInstructions = (SellingInstructions) exitStrategy.run(realTimeData);
-                if ((!isSelling) && sellingInstructions != null) {
-                    isSelling = true;
-                    closePosition(sellingInstructions, realTimeData, currentPrice);
+            if(dcaStrategies != null) {
+                for (DCAStrategy dcaStrategy : dcaStrategies) {
+                    dcaStrategy.run(qty, averagePrice);
+                }
+            }
+            if(exitStrategies !=null) {
+                for (ExitStrategy exitStrategy : exitStrategies) {
+                    SellingInstructions sellingInstructions = exitStrategy.run(realTimeData);
+                    if ((!isSelling) && sellingInstructions != null) {
+                        isSelling = true;
+                        closePosition(sellingInstructions, realTimeData, currentPrice);
+                    }
                 }
             }
         }
@@ -179,6 +200,47 @@ public class PositionHandler implements Serializable {
                 break;
         }
 
+    }
+
+    private void postStopLoss(double qty, double averagePrice, PositionSide positionSide, String symbol) {
+        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
+        String sellingQty = Utils.fixQuantity(BinanceInfo.formatQty(qty, symbol));
+        String stopLossPrice = BinanceInfo.formatPrice(calculateStopLossPrice(averagePrice, positionSide), symbol);
+        switch (positionSide) {
+            case LONG:
+                try {
+                    syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.STOP_MARKET, TimeInForce.GTC,
+                            sellingQty, null, "true", null, stopLossPrice, null,
+                            null, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+
+            case SHORT:
+                try {
+                    syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.STOP_MARKET, TimeInForce.GTC,
+                            sellingQty, null, "true", null, stopLossPrice, null,
+                            null, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private double calculateStopLossPrice(double averagePrice, PositionSide positionSide) {
+        switch (positionSide){
+
+            case SHORT:
+                return averagePrice + averagePrice * (stopLossPercentage / 100);
+            case LONG:
+                return averagePrice - averagePrice * (stopLossPercentage / 100);
+        }
+        return averagePrice;//never
     }
 
     public enum ClosePositionTypes {

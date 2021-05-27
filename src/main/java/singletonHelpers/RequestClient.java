@@ -14,6 +14,7 @@ public class RequestClient {
 		RequestOptions options = new RequestOptions();
 		syncRequestClient = SyncRequestClient.create(Config.API_KEY, Config.SECRET_KEY, options);
 	}
+
 	public static RequestClient getRequestClient() {
 		return RequestClientHolder.RequestClient;
 	}

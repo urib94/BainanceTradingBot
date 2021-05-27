@@ -1,7 +1,6 @@
 package strategies.MACrosses;
 
 import TradingTools.Trailers.ExitTrailer;
-import TradingTools.Trailers.SkippingExitTrailer;
 import com.binance.client.model.enums.PositionSide;
 import data.DataHolder;
 import positions.PositionHandler;
@@ -27,7 +26,7 @@ public class MACrossesExitStrategy2 extends BaseMACrossesExitStrategy {
             case SHORT:
                 if (isTrailing) {
                     trailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
-                    if (rsiAboveSmaOverRsi || !rsiMoveTowardsSma(realTimeData) || crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.DOWN)) {
+                    if (rsiAboveSmaOverRsi || !rsiMoveTowardsSma(realTimeData) || crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.DOWN, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)) {
                         isTrailing = false;
                         return null;
                     }
@@ -38,7 +37,7 @@ public class MACrossesExitStrategy2 extends BaseMACrossesExitStrategy {
                     }
                 }
                 else {
-                    if (!rsiAboveSmaOverRsi && rsiMoveTowardsSma(realTimeData) && crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.UP)) {
+                    if (!rsiAboveSmaOverRsi && rsiMoveTowardsSma(realTimeData) && crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.UP, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)) {
                         isTrailing = true;
                         trailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
                         TelegramMessenger.sendToTelegram("Started trailing " + new Date(System.currentTimeMillis()));
@@ -49,7 +48,7 @@ public class MACrossesExitStrategy2 extends BaseMACrossesExitStrategy {
             case LONG:
                 if (isTrailing) {
                     trailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
-                    if (!rsiAboveSmaOverRsi || !rsiMoveTowardsSma(realTimeData) || crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.UP)) {
+                    if (!rsiAboveSmaOverRsi || !rsiMoveTowardsSma(realTimeData) || crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.UP, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)) {
                         isTrailing = false;
                         return null;
                     }
@@ -61,7 +60,7 @@ public class MACrossesExitStrategy2 extends BaseMACrossesExitStrategy {
                 }
                 else {
 
-                    if (rsiAboveSmaOverRsi && rsiMoveTowardsSma(realTimeData) && crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.DOWN)) {
+                    if (rsiAboveSmaOverRsi && rsiMoveTowardsSma(realTimeData) && crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.DOWN, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)) {
                         isTrailing = true;
                         trailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
                         TelegramMessenger.sendToTelegram("Started trailing " + new Date(System.currentTimeMillis()));

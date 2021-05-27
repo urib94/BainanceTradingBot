@@ -14,7 +14,7 @@ import singletonHelpers.TelegramMessenger;
 import strategies.DCAStrategy;
 import strategies.EntryStrategy;
 import strategies.ExitStrategy;
-import strategies.MACDOverCCIWIthATR.Long.MACDOverCCIWIthATRLongExitStrategy1;
+//import strategies.MACDOverCCIWIthATR.Long.MACDOverCCIWIthATRLongExitStrategy1;
 import strategies.MACDOverCCIWIthATR.Long.MACDOverCCIWIthATRLongExitStrategy2;
 
 import java.util.ArrayList;
@@ -125,7 +125,7 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
                         buyingQty, null, null, null, null, null, null, null, WorkingType.MARK_PRICE, "TRUE", NewOrderRespType.RESULT);
                 TelegramMessenger.sendToTelegram("bought long:  " + "Side: " + buyOrder.getSide() + " , Qty: " + buyOrder.getCumQty() +
                         " , Activate Price: " + buyOrder.getActivatePrice() + " ,                   Time: " + new Date(System.currentTimeMillis()));
-                exitStrategies.add(new MACDOverCCIWIthATRLongExitStrategy1());
+//                exitStrategies.add(new MACDOverCCIWIthATRLongExitStrategy1());
                 exitStrategies.add(new MACDOverCCIWIthATRLongExitStrategy2());
                 DCAStrategies.add(createBaseDCA(realTimeData, currentPrice, symbol, positionSide));
                 positionHandler = new PositionHandler(buyOrder, exitStrategies, DCAStrategies);
@@ -143,7 +143,7 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
                         buyingQty, null, null, null, null, null, null, null, WorkingType.MARK_PRICE,"TRUE" , NewOrderRespType.RESULT);
                 TelegramMessenger.sendToTelegram("bought long:  " + "Side: " + buyOrder.getSide() + " , Qty: " + buyOrder.getCumQty() +
                         " , Activate Price: " + buyOrder.getActivatePrice() + " ,                   Time: " + new Date(System.currentTimeMillis()));
-                exitStrategies.add(new MACDOverCCIWIthATRLongExitStrategy1());
+//                exitStrategies.add(new MACDOverCCIWIthATRLongExitStrategy1());
                 exitStrategies.add(new MACDOverCCIWIthATRLongExitStrategy2());
                 DCAStrategies.add(createBaseDCA(realTimeData, currentPrice, symbol, positionSide));
                 positionHandler = new PositionHandler(buyOrder, exitStrategies, DCAStrategies);

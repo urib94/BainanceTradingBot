@@ -46,7 +46,7 @@ public class RealTimeCommandOperator {
 //                    syncRequestClient.postOrder(openPosition.getSymbol().toLowerCase(), OrderSide.SELL, null, OrderType.MARKET, null,
 //                            openPosition.getPositionAmt().toString(), null, Config.REDUCE_ONLY, null, null, null,null,null, null, null, NewOrderRespType.RESULT);
 //                } else {
-//                    syncRequestClient.postOrder(openPosition.getSymbol().toLowerCase(), OrderSide.BUY, null, OrderType.MARKET, null,
+//                    syncRequestClient.buyAndCreatePositionHandler(openPosition.getSymbol().toLowerCase(), OrderSide.BUY, null, OrderType.MARKET, null,
 //                            openPosition.getPositionAmt().toString(), null, Config.REDUCE_ONLY, null, null, null,null,null, null, null, NewOrderRespType.RESULT);
 //                }
 //            }
