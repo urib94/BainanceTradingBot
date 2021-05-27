@@ -2,8 +2,8 @@ package TradingTools.Trailers;
 
 import com.binance.client.model.enums.PositionSide;
 
-public class SkippingExitTrailer extends TrailingExit {
-    private double prevOpenPrice;
+public class SkippingExitTrailer extends ExitTrailer {
+    private double prevOpenPrice = 0;
 
     private double exitPrice;
 
@@ -13,8 +13,7 @@ public class SkippingExitTrailer extends TrailingExit {
 
 
 
-    public SkippingExitTrailer(double openPrice, double trailingPercentage, PositionSide side){
-        prevOpenPrice = openPrice;
+    public SkippingExitTrailer(double trailingPercentage, PositionSide side){
         this.side = side;
         this.trailingPercentage = trailingPercentage;
 
@@ -28,13 +27,13 @@ public class SkippingExitTrailer extends TrailingExit {
 
     public void updateTrailer(double currentOpenPrice){
         if(side == PositionSide.LONG) {
-            if (currentOpenPrice < prevOpenPrice) {
+            if (currentOpenPrice < prevOpenPrice || prevOpenPrice == 0) {
                 prevOpenPrice = currentOpenPrice;
                 calculateLongTrailingExitPrices(prevOpenPrice, trailingPercentage);
             }
         }
         else{
-            if (currentOpenPrice > prevOpenPrice) {
+            if (currentOpenPrice > prevOpenPrice || prevOpenPrice == 0) {
                 prevOpenPrice = currentOpenPrice;
                 calculateShortTrailingExitPrices(prevOpenPrice, trailingPercentage);
             }
@@ -44,9 +43,8 @@ public class SkippingExitTrailer extends TrailingExit {
     public boolean needToSell(double currentPrice){
             if (side == PositionSide.LONG) {
                 return currentPrice <= exitPrice;
-            } else return currentPrice >= exitPrice;
-
-
+            }
+            else return currentPrice >= exitPrice;
     }
 
     private void calculateShortTrailingExitPrices(double curOpenPrice, double trailingPercentage) {

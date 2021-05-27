@@ -1,5 +1,7 @@
 package strategies.MACrosses;
 
+import TradingTools.Trailers.ExitTrailer;
+import TradingTools.Trailers.SkippingExitTrailer;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.*;
 import com.binance.client.model.trade.Order;
@@ -11,11 +13,7 @@ import singletonHelpers.RequestClient;
 import singletonHelpers.TelegramMessenger;
 import strategies.EntryStrategy;
 import strategies.ExitStrategy;
-import strategies.MACDOverCCIWIthATR.MACDOverCCIWIthATRConstants;
-import strategies.MACrosses.Long.MACroosesLongExitStrategy2;
-import strategies.MACrosses.Long.MACrossesLongExitStrategy1;
-import strategies.MACrosses.Short.MACroosesShortExitStrategy2;
-import strategies.MACrosses.Short.MACrossesShortExitStrategy1;
+
 import utils.Utils;
 
 import java.util.ArrayList;
@@ -23,9 +21,10 @@ import java.util.Date;
 
 public class MACrossesEntryStrategy implements EntryStrategy {
     AccountBalance accountBalance;
+    private double requestedBuyingAmount = MACrossesConstants.DEFAULT_BUYING_AMOUNT;
     PositionHandler positionHandler;
-    int leverage = MACrossesConstants.LEVERAGE;
-    DataHolder dataHolder = null;
+    private int leverage = MACrossesConstants.LEVERAGE;
+
 
 
     public MACrossesEntryStrategy(){
@@ -36,50 +35,83 @@ public class MACrossesEntryStrategy implements EntryStrategy {
 
     @Override
     public PositionHandler run(DataHolder realTimeData, String symbol) {
-        if (dataHolder == null){
-            dataHolder = realTimeData;
+        if (positionHandler == null){
+            double currentPrice = realTimeData.getCurrentPrice();
+            if(priceIsAboveSMA(realTimeData)){// long only
+                if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP) ||
+                        (crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.UP) && mfiAndRSIAlign(realTimeData))){
+                    return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.LONG);
+                }
+            }
+            else if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN) ||
+                    (crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.DOWN) && mfiAndRSIAlign(realTimeData))){
+                    return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT);
+            }
         }
-        double currentPrice = dataHolder.getCurrentPrice();
-        if(priceISAboveSMA()){ // long only
-            if(RSICrosseSMAUp())
-        }
-
-
         return null;
     }
 
-    private boolean RSICrosseSMAUp() {
-        double prevRSIValue = dataHolder.getRSIValueAtIndex(dataHolder.getLastCloseIndex() - 1);
-        double
-        return dataHolder.crossed()
+    private boolean crossedSma(DataHolder realTimeData, DataHolder.IndicatorType indicatorType, DataHolder.CrossType crossType){
+        int closeIndex = realTimeData.getLastCloseIndex();
+        double prev = 0, curr = 0;
+        double smaCurrValue = 0, smaPrevValue = 0;
+        switch(indicatorType){
+            case RSI:
+                curr = realTimeData.getRSIValueAtIndex(closeIndex);
+                prev = realTimeData.getRSIValueAtIndex(closeIndex - 1);
+                smaCurrValue = realTimeData.getSmaOverRSIValue(closeIndex);
+                smaPrevValue = realTimeData.getSmaOverRSIValue(closeIndex - 1);
+                break;
+            case MFI:
+                curr = realTimeData.getMFIValue(closeIndex);
+                prev = realTimeData.getMFIValue(closeIndex - 1);
+                smaCurrValue = realTimeData.getSmaOverMFIValue(closeIndex);
+                smaPrevValue = realTimeData.getSmaOverMFIValue(closeIndex - 1);
+                break;
+            default:
+                break;
+        }
+        switch(crossType){
+            case UP:
+                return prev <= smaPrevValue && curr > smaCurrValue;
+            case DOWN:
+                return prev >= smaPrevValue && curr < smaCurrValue;
+        }
+        return false;
     }
 
-    private boolean priceISAboveSMA() {
-        double sMaValue = dataHoler.getSmaValueAtIndex(dataHolder.getLastCloseIndex());
-        return dataHolder.above(DataHolder.IndicatorType.SMA, DataHolder.CandleType.CLOSE, sMaValue);
-    }
 
+    private boolean priceIsAboveSMA(DataHolder realTimeData) {
+        int index = realTimeData.getLastCloseIndex();
+        double smaValue = realTimeData.getSmaValueAtIndex(index);
+        double smaPrevValue = realTimeData.getSmaValueAtIndex(index - 1);
+        double closeValue = realTimeData.getClosePriceAtIndex(index);
+        double closePrevValue = realTimeData.getClosePriceAtIndex(index - 1);
+        return closeValue > smaValue || closePrevValue > smaPrevValue;
+    }
 
     private PositionHandler buyAndCreatePositionHandler(DataHolder realTimeData, double currentPrice, String symbol, PositionSide positionSide) {
         updateBuyingAmount(symbol);
-        double requestedBuyingAmount = MACrossesConstants.DEFAULT_BUYING_AMOUNT;
         TelegramMessenger.sendToTelegram("Entering new position " + new Date(System.currentTimeMillis()));
         ArrayList <ExitStrategy> exitStrategies = new ArrayList<>();
-//        updateBuyingAmount(symbol);
+        SkippingExitTrailer skippingExitTrailer = new SkippingExitTrailer(MACrossesConstants.SKIPPING_TRAILING_PERCENTAGE, positionSide);
+        ExitTrailer exitTrailer = new ExitTrailer(currentPrice, MACrossesConstants.TRAILING_PERCENTAGE, positionSide);
+        exitStrategies.add(new MACrossesExitStrategy1(positionSide, skippingExitTrailer));
+        exitStrategies.add(new MACrossesExitStrategy2(positionSide, exitTrailer));
+        exitStrategies.add(new MACrossesExitStrategy3(positionSide));
         if (positionSide == PositionSide.LONG) {
             try {
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
                 syncRequestClient.changeInitialLeverage(symbol, leverage);
-                String buyingQty = Utils.getBuyingQtyAsString(currentPrice, symbol, leverage, MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT);
+                String buyingQty = Utils.getBuyingQtyAsString(currentPrice, symbol, leverage, requestedBuyingAmount);
                 Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.MARKET, null,
                         buyingQty, null, null, null, null, null, null, null, WorkingType.MARK_PRICE, "TRUE", NewOrderRespType.RESULT);
                 TelegramMessenger.sendToTelegram("bought long:  " + "Side: " + buyOrder.getSide() + " , Qty: " + buyOrder.getCumQty() +
                         " , Activate Price: " + buyOrder.getActivatePrice() + " ,                   Time: " + new Date(System.currentTimeMillis()));
-                exitStrategies.add(new MACrossesLongExitStrategy1());
-                exitStrategies.add(new MACroosesLongExitStrategy2());
                 positionHandler = new PositionHandler(buyOrder, exitStrategies);
                 return positionHandler;
             } catch (Exception e) {
+                TelegramMessenger.sendToTelegram("Exception was thrown" + new Date(System.currentTimeMillis()));
                 e.printStackTrace();
             }
         }
@@ -92,11 +124,10 @@ public class MACrossesEntryStrategy implements EntryStrategy {
                         buyingQty, null, null, null, null, null, null, null, WorkingType.MARK_PRICE,"TRUE" , NewOrderRespType.RESULT);
                 TelegramMessenger.sendToTelegram("bought long:  " + "Side: " + buyOrder.getSide() + " , Qty: " + buyOrder.getCumQty() +
                         " , Activate Price: " + buyOrder.getActivatePrice() + " ,                   Time: " + new Date(System.currentTimeMillis()));
-                exitStrategies.add(new MACrossesShortExitStrategy1());
-                exitStrategies.add(new MACroosesShortExitStrategy2());
                 positionHandler = new PositionHandler(buyOrder, exitStrategies);
                 return positionHandler;
             } catch (Exception e) {
+                TelegramMessenger.sendToTelegram("Exception was thrown" + new Date(System.currentTimeMillis()));
                 e.printStackTrace();
             }
         }
@@ -106,36 +137,36 @@ public class MACrossesEntryStrategy implements EntryStrategy {
     private void updateBuyingAmount(String symbol) {
         String baseSymbol = Config.BASE_COIN;
         double balance = accountBalance.getCoinBalance(baseSymbol).doubleValue();
-        double maxAmount = 1;
-        for (int i = 0 ; i < MACDOverCCIWIthATRConstants.MAX_DCA ; i++){
-            maxAmount += 2 * maxAmount;
+        requestedBuyingAmount = (balance * MACrossesConstants.AVAILABLE_BALANCE_PRECENTAGE) / 100;
+
+    }
+
+    private boolean mfiAndRSIAlign(DataHolder realTimeData){
+        int index = realTimeData.getLastCloseIndex();
+        double currRsi = realTimeData.getRSIValueAtIndex(index);
+        double prevRsi = realTimeData.getRSIValueAtIndex(index - 1);
+        double currMfi = realTimeData.getRSIValueAtIndex(index);
+        double prevMfi = realTimeData.getRSIValueAtIndex(index - 1);
+        if (prevRsi < currRsi){
+            return prevMfi < currMfi;
         }
-        MACDOverCCIWIthATRConstants.DEFAULT_BUYING_AMOUNT = (balance / maxAmount) * (MACDOverCCIWIthATRConstants.AVAILABLE_BALANCE_PRECENTAGE / 100);
-
-    }
-
-    @Override
-    public void setTakeProfitPercentage(double takeProfitPercentage) {
-
-    }
-
-    @Override
-    public void setStopLossPercentage(double stopLossPercentage) {
-
+        else{
+            return prevMfi > currMfi;
+        }
     }
 
     @Override
     public void setLeverage(int leverage) {
-
+        this.leverage = leverage;
     }
 
     @Override
     public void setRequestedBuyingAmount(double requestedBuyingAmount) {
-
+        this.requestedBuyingAmount = requestedBuyingAmount;
     }
 
     @Override
     public void positionClosed() {
-
+        positionHandler = null;
     }
 }

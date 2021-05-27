@@ -4,7 +4,7 @@ import com.binance.client.model.enums.CandlestickInterval;
 import singletonHelpers.BinanceInfo;
 import strategies.EntryStrategy;
 import strategies.MACDOverCCIWIthATR.MACDOverCCIWithATREntryStrategy;
-import strategies.nutral.Nutral;
+import strategies.MACrosses.MACrossesEntryStrategy;
 //import strategies.MACDOverCCIWIthATR.MACDOverCCIWithATREntryStrategy;
 
 public class InputMessage {
@@ -93,8 +93,8 @@ public class InputMessage {
             case "macd":
                 return new MACDOverCCIWithATREntryStrategy();
 
-            case "nutral":
-                return new Nutral();
+            case "ma":
+                return new MACrossesEntryStrategy();
             default:
                 return null;
         }

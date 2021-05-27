@@ -25,6 +25,7 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
     private double takeProfitPercentage = MACDOverCCIWIthATRConstants.DEFAULT_TAKE_PROFIT_PERCENTAGE;
     private double stopLossPercentage = MACDOverCCIWIthATRConstants.DEFAULT_STOP_LOSS_PERCENTAGE;
     private int leverage = MACDOverCCIWIthATRConstants.DEFAULT_LEVERAGE;
+    private double requestedBuyingAmount;
 
     private final AccountBalance accountBalance;
     private double positivePeek = 0;
@@ -47,7 +48,7 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
         if (positionHandler == null){
             double currentPrice = realTimeData.getCurrentPrice();
             boolean positivePeekLargerthanNegative = positivePeek > Math.abs(negativePeek);
-            double cciValue = realTimeData.getCCICIndciator(realTimeData.getLastCloseIndex());
+            double cciValue = realTimeData.getCCICValue(realTimeData.getLastCloseIndex());
             switch (macdOverCCIPrevSign){
                 case NEGATIVE:
                     if(positivePeekLargerthanNegative && cciValue <= 100 && candleIndicateLong(realTimeData, realTimeData.getLastCloseIndex())){
@@ -235,14 +236,14 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
     private boolean candleIndicateLong(DataHolder realTimeData, int index){
         double currentMacdOverCCIValue = realTimeData.getMACDOverCCIHistAtIndex(index);
         double prevMacdOverCCIValue = realTimeData.getMACDOverCCIHistAtIndex(index - 1);
-        double prevPrevMacdOverCCIValue = realTimeData.getMacdOverCCIValueAtIndex(realTimeData.getLastCloseIndex() - 2);
+        double prevPrevMacdOverCCIValue = realTimeData.getMACDOverCCIHistAtIndex(index - 2);
         return currentMacdOverCCIValue > prevMacdOverCCIValue && prevMacdOverCCIValue <= prevPrevMacdOverCCIValue;
     }
 
     private boolean candleIndicateShort(DataHolder realTimeData,int index){
         double currentMacdOverCCIValue = realTimeData.getMACDOverCCIHistAtIndex(index);
         double prevMacdOverCCIValue = realTimeData.getMACDOverCCIHistAtIndex(index - 1);
-        double prevPrevMacdOverCCIValue = realTimeData.getMacdOverCCIValueAtIndex(realTimeData.getLastCloseIndex() - 2);
+        double prevPrevMacdOverCCIValue = realTimeData.getMACDOverCCIHistAtIndex(index - 2);
         return currentMacdOverCCIValue < prevMacdOverCCIValue && prevMacdOverCCIValue >= prevPrevMacdOverCCIValue;
     }
 
@@ -253,23 +254,13 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
     }
 
     @Override
-    public void setTakeProfitPercentage(double takeProfitPercentage) {
-
-    }
-
-    @Override
-    public void setStopLossPercentage(double stopLossPercentage) {
-
-    }
-
-    @Override
     public void setLeverage(int leverage) {
-
+        this.leverage = leverage;
     }
 
     @Override
     public void setRequestedBuyingAmount(double requestedBuyingAmount) {
-
+        this.requestedBuyingAmount = requestedBuyingAmount;
     }
 
     @Override
