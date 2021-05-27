@@ -6,6 +6,9 @@ import com.binance.client.model.enums.PositionSide;
 import data.DataHolder;
 import positions.PositionHandler;
 import positions.SellingInstructions;
+import singletonHelpers.TelegramMessenger;
+
+import java.util.Date;
 
 public class MACrossesExitStrategy2 extends BaseMACrossesExitStrategy {
 
@@ -29,6 +32,7 @@ public class MACrossesExitStrategy2 extends BaseMACrossesExitStrategy {
                         return null;
                     }
                     if (trailer.needToSell(realTimeData.getCurrentPrice())){
+                        TelegramMessenger.sendToTelegram("Closing position with MFI crossed MA " + new Date(System.currentTimeMillis()));
                         return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_MARKET,
                                 MACrossesConstants.EXIT_SELLING_PERCENTAGE);
                     }
@@ -37,6 +41,7 @@ public class MACrossesExitStrategy2 extends BaseMACrossesExitStrategy {
                     if (!rsiAboveSmaOverRsi && rsiMoveTowardsSma(realTimeData) && crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.UP)) {
                         isTrailing = true;
                         trailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
+                        TelegramMessenger.sendToTelegram("Started trailing " + new Date(System.currentTimeMillis()));
                     }
                 }
                 return null;
@@ -49,6 +54,7 @@ public class MACrossesExitStrategy2 extends BaseMACrossesExitStrategy {
                         return null;
                     }
                     if (trailer.needToSell(realTimeData.getCurrentPrice())){
+                        TelegramMessenger.sendToTelegram("Closing position with MFI crossed MA " + new Date(System.currentTimeMillis()));
                         return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_MARKET,
                                 MACrossesConstants.EXIT_SELLING_PERCENTAGE);
                     }
@@ -58,6 +64,7 @@ public class MACrossesExitStrategy2 extends BaseMACrossesExitStrategy {
                     if (rsiAboveSmaOverRsi && rsiMoveTowardsSma(realTimeData) && crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.DOWN)) {
                         isTrailing = true;
                         trailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
+                        TelegramMessenger.sendToTelegram("Started trailing " + new Date(System.currentTimeMillis()));
                     }
                 }
                 return null;

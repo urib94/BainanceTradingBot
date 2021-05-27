@@ -140,7 +140,6 @@ public class BaseDCA implements DCAStrategy {
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         String sellingQty = Utils.fixQuantity(BinanceInfo.formatQty(dCASize, symbol));
         String dcaPrice = BinanceInfo.formatPrice(nextDCAPrice, symbol);
-        System.out.println("dcaPrice" + dcaPrice);
         switch (dcaType) {
             case LONG_DCA_LIMIT:
                 try {
@@ -184,7 +183,7 @@ public class BaseDCA implements DCAStrategy {
             default:
                 break;
         }
-        TelegramMessenger.sendToTelegram("Posting DCA order number " + dCACount +1 + ":  Side: " + orderDCA.getSide() + " , Qty: " + orderDCA.getCumQty() + " , Stop Price: "
+        TelegramMessenger.sendToTelegram("Posting DCA order number " + (dCACount +1) + ":  Side: " + orderDCA.getSide() + " , Qty: " + orderDCA.getCumQty() + " , Stop Price: "
                 + orderDCA.getStopPrice() + " ,                  Time: " + new Date(System.currentTimeMillis()));
         dCACount++;
     }

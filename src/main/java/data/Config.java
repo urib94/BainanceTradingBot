@@ -11,7 +11,7 @@ public class Config {
 	public static String SECRET_KEY = "7qqNLwB7ZXiZu2nBJhrdv7ARVpNDhImNA1Rj1oXR6eGjZFkGsRC9ayEO7HLYVm6w";
 	public static final int THREAD_NUM = 6;
 	public static final String SYMBOL = "ethusdt";
-	public static final int CANDLE_NUM = 150;
+	public static final int CANDLE_NUM = 300;
 	public static final String NEW = "NEW";
 	public static final String PARTIALLY_FILLED = "PARTIALLY_FILLED";
 	public static final String FILLED = "FILLED";

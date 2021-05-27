@@ -54,7 +54,6 @@ public class DataHolder {
         this.bollingerBandWidthIndicator=bollingerbandWidthIndicator;
         this.percentBIndicator=percentBIndicator;
         this.closePriceIndicator = closePriceIndicator;
-        currentPrice = getClosePriceAtIndex(endIndex);
         this.highPriceIndicator = highPriceIndicator;
         this.lowPriceIndicator = lowPriceIndicator;
         this.macdOverCCIIndicator=macdOverCCIIndicator;
@@ -64,6 +63,8 @@ public class DataHolder {
         this.macdOverMa14 = macdOverMa14;
         this.macdOverMa50 = macdOverMa50;
         this.openPriceIndicator = openPriceIndicator;
+        currentPrice = getClosePriceAtIndex(endIndex);
+
     }
 
     public double getRSIValueAtIndex(int index) {
@@ -89,9 +90,6 @@ public class DataHolder {
     public double getSmaOverMFIValue(int index){
         return smaOverMfiIndicator.getValue(index).doubleValue();
     }
-
-
-
 
     public double getClosePriceAtIndex(int index){return closePriceIndicator.getValue(index).doubleValue();}
 

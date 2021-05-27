@@ -38,12 +38,13 @@ public class MACrossesEntryStrategy implements EntryStrategy {
         if (positionHandler == null){
             double currentPrice = realTimeData.getCurrentPrice();
             if(priceIsAboveSMA(realTimeData)){// long only
-                if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP) || crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.UP)){
+                if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP) ||
+                        (crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.UP) && mfiAndRSIAlign(realTimeData))){
                     return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.LONG);
                 }
-
             }
-            else if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN) || crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.DOWN)){
+            else if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN) ||
+                    (crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.DOWN) && mfiAndRSIAlign(realTimeData))){
                     return buyAndCreatePositionHandler(realTimeData, currentPrice, symbol, PositionSide.SHORT);
             }
         }
@@ -78,8 +79,12 @@ public class MACrossesEntryStrategy implements EntryStrategy {
 
 
     private boolean priceIsAboveSMA(DataHolder realTimeData) {
-        double smaValue = realTimeData.getSmaValueAtIndex(realTimeData.getLastCloseIndex());
-        return realTimeData.above(DataHolder.IndicatorType.SMA, DataHolder.CandleType.CLOSE, smaValue);
+        int index = realTimeData.getLastCloseIndex();
+        double smaValue = realTimeData.getSmaValueAtIndex(index);
+        double smaPrevValue = realTimeData.getSmaValueAtIndex(index - 1);
+        double closeValue = realTimeData.getClosePriceAtIndex(index);
+        double closePrevValue = realTimeData.getClosePriceAtIndex(index - 1);
+        return closeValue > smaValue || closePrevValue > smaPrevValue;
     }
 
     private PositionHandler buyAndCreatePositionHandler(DataHolder realTimeData, double currentPrice, String symbol, PositionSide positionSide) {
@@ -90,6 +95,7 @@ public class MACrossesEntryStrategy implements EntryStrategy {
         ExitTrailer exitTrailer = new ExitTrailer(currentPrice, MACrossesConstants.TRAILING_PERCENTAGE, positionSide);
         exitStrategies.add(new MACrossesExitStrategy1(positionSide, skippingExitTrailer));
         exitStrategies.add(new MACrossesExitStrategy2(positionSide, exitTrailer));
+        exitStrategies.add(new MACrossesExitStrategy3(positionSide));
         if (positionSide == PositionSide.LONG) {
             try {
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
@@ -130,6 +136,20 @@ public class MACrossesEntryStrategy implements EntryStrategy {
         double balance = accountBalance.getCoinBalance(baseSymbol).doubleValue();
         requestedBuyingAmount = (balance * MACrossesConstants.AVAILABLE_BALANCE_PRECENTAGE) / 100;
 
+    }
+
+    private boolean mfiAndRSIAlign(DataHolder realTimeData){
+        int index = realTimeData.getLastCloseIndex();
+        double currRsi = realTimeData.getRSIValueAtIndex(index);
+        double prevRsi = realTimeData.getRSIValueAtIndex(index - 1);
+        double currMfi = realTimeData.getRSIValueAtIndex(index);
+        double prevMfi = realTimeData.getRSIValueAtIndex(index - 1);
+        if (prevRsi < currRsi){
+            return prevMfi < currMfi;
+        }
+        else{
+            return prevMfi > currMfi;
+        }
     }
 
     @Override

@@ -130,6 +130,7 @@ public class RealTimeData{
         openPriceIndicator = new OpenPriceIndicator(currData);
         macdOverCCIIndicator = calculateMacdOverCCI(currData);
         smaIndicator = new SMAIndicator(new ClosePriceIndicator(currData), MACrossesConstants.SMA_BAR_COUNT);
+        closePriceIndicator = new ClosePriceIndicator(currData);
 //        calculateBollingerBandsIndicators(currData);
 //        atrIndicator = calculateATR(currData,MACDOverCCIWIthATRConstants.ATR_CANDLE_COUNT);
 //        macdOverMa9 = calculateMacdOverMa(currData, MACDOverSMAConstants.FAST_CANDLE_COUNT);
