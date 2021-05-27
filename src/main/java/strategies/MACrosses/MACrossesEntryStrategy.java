@@ -53,17 +53,20 @@ public class MACrossesEntryStrategy implements EntryStrategy {
 
     private boolean crossedSma(DataHolder realTimeData, DataHolder.IndicatorType indicatorType, DataHolder.CrossType crossType){
         int closeIndex = realTimeData.getLastCloseIndex();
-        double smaCurrValue = realTimeData.getSmaValueAtIndex(closeIndex);
-        double smaPrevValue = realTimeData.getSmaValueAtIndex(closeIndex - 1);
         double prev = 0, curr = 0;
+        double smaCurrValue = 0, smaPrevValue = 0;
         switch(indicatorType){
             case RSI:
                 curr = realTimeData.getRSIValueAtIndex(closeIndex);
                 prev = realTimeData.getRSIValueAtIndex(closeIndex - 1);
+                smaCurrValue = realTimeData.getSmaOverRSIValue(closeIndex);
+                smaPrevValue = realTimeData.getSmaOverRSIValue(closeIndex - 1);
                 break;
             case MFI:
                 curr = realTimeData.getMFIValue(closeIndex);
                 prev = realTimeData.getMFIValue(closeIndex - 1);
+                smaCurrValue = realTimeData.getSmaOverMFIValue(closeIndex);
+                smaPrevValue = realTimeData.getSmaOverMFIValue(closeIndex - 1);
                 break;
             default:
                 break;
