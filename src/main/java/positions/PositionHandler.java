@@ -4,6 +4,7 @@ import singletonHelpers.BinanceInfo;
 import singletonHelpers.TelegramMessenger;
 import strategies.DCAStrategy;
 import strategies.ExitStrategy;
+import strategies.nutral.NutralExit;
 import utils.Utils;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.*;
@@ -36,6 +37,12 @@ public class PositionHandler implements Serializable {
         this.dcaStrategies = dcaStrategies;
     }
 
+    public PositionHandler(Order order, NutralExit nutralExit){
+        exitStrategies = null;
+        symbol = order.getSymbol().toLowerCase();
+
+
+    }
     public synchronized boolean isSoldOut() {
         return isActive && (qty == 0.0);
     }
@@ -44,16 +51,25 @@ public class PositionHandler implements Serializable {
         double currentPrice = realTimeData.getCurrentPrice();
         isSelling = false;
         if (isActive) {
-            for (DCAStrategy dcaStrategy : dcaStrategies) {
-                dcaStrategy.run(qty, averagePrice);
-            }
-            for (ExitStrategy exitStrategy : exitStrategies) {
-                SellingInstructions sellingInstructions = (SellingInstructions) exitStrategy.run(realTimeData);
-                if ((!isSelling) && sellingInstructions != null) {
-                    isSelling = true;
-                    closePosition(sellingInstructions, realTimeData, currentPrice);
+            if(dcaStrategies != null) {
+                for (DCAStrategy dcaStrategy : dcaStrategies) {
+                    dcaStrategy.run(qty, averagePrice);
                 }
             }
+            if(exitStrategies !=null) {
+                for (ExitStrategy exitStrategy : exitStrategies) {
+                    SellingInstructions sellingInstructions = (SellingInstructions) exitStrategy.run(realTimeData);
+                    if ((!isSelling) && sellingInstructions != null) {
+                        isSelling = true;
+                        closePosition(sellingInstructions, realTimeData, currentPrice);
+                    }
+                }
+            }
+//            if(nutral != null){
+//                if(nutralExit.exitIsFilld()){
+//
+//                }
+//            }
         }
 
     }

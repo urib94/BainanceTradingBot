@@ -37,14 +37,16 @@ public class DataHolder {
     private RSIIndicator rsiIndicator;
     private SMAIndicator smaOverRsiIndicator;
     private SMAIndicator smaOverMfiIndicator;
+    private SMAIndicator fastSMAOverRsiIndicator;
 
 
     public DataHolder(HighPriceIndicator highPriceIndicator, LowPriceIndicator lowPriceIndicator, ClosePriceIndicator closePriceIndicator, RSIIndicator rsiIndicator, MACDIndicator macdOverRsiIndicator, BollingerBandsUpperIndicator bollingerBandsUpperIndicator,
                       BollingerBandsLowerIndicator bollingerBandsLowerIndicator, SMAIndicator smaIndicator, BollingerBandWidthIndicator bollingerbandWidthIndicator, PercentBIndicator percentBIndicator, int endIndex
-            , MACDIndicator macdOverCCIIndicator, ATRIndicator atrIndicator, CCICIndicator ccicIndicator, MACDIndicator macdOverMa9, MACDIndicator macdOverMa14, MACDIndicator macdOverMa50, MFIIndicator mfiIndicator, SMAIndicator smaOverRsiIndicator, SMAIndicator smaOverMfiIndicator, OpenPriceIndicator openPriceIndicator) {
+            , MACDIndicator macdOverCCIIndicator, ATRIndicator atrIndicator, CCICIndicator ccicIndicator, MACDIndicator macdOverMa9, MACDIndicator macdOverMa14, MACDIndicator macdOverMa50, MFIIndicator mfiIndicator, SMAIndicator smaOverRsiIndicator, SMAIndicator fastSMAOverRsiIndicator, SMAIndicator smaOverMfiIndicator, OpenPriceIndicator openPriceIndicator) {
         this.rsiIndicator = rsiIndicator;
         this.mfiIndicator = mfiIndicator;
         this.smaOverRsiIndicator = smaOverRsiIndicator;
+        this.fastSMAOverRsiIndicator = fastSMAOverRsiIndicator;
         this.smaOverMfiIndicator = smaOverMfiIndicator;
         this.macdOverRsiIndicator = macdOverRsiIndicator;
         this.smaIndicator = smaIndicator;
@@ -87,6 +89,9 @@ public class DataHolder {
         return smaOverRsiIndicator.getValue(index).doubleValue();
     }
 
+    public double getFastSmaOverRSIValue(int index){
+        return fastSMAOverRsiIndicator.getValue(index).doubleValue();
+    }
     public double getSmaOverMFIValue(int index){
         return smaOverMfiIndicator.getValue(index).doubleValue();
     }
@@ -230,6 +235,22 @@ public class DataHolder {
 
     }
 
+//    private boolean upperBBCross(CrossType crossType, CandleType candleType, double threshold) {
+//        double currBBValue = getUpperBollingerAtIndex(getLastCloseIndex());
+//        double prevBBValue = getUpperBollingerAtIndex(getLastCloseIndex()-1);
+//        double prevClosePrice = getClosePriceAtIndex(getLastCloseIndex()-1);
+//        double currPrice = threshold;
+//        switch (crossType){
+//
+//            case UP:
+//                return (prevClosePrice <= prevBBValue) && currPrice > currBBValue;
+//
+//            case DOWN:
+//                return (prevClosePrice >= prevBBValue) && currPrice < currBBValue;
+//        }
+//        return false;
+//    }
+
     public boolean crossedAtIndex(IndicatorType indicatorType, CrossType crossType, CandleType candleType, double threshold,int index) {
         switch (indicatorType) {
             case RSI:
@@ -249,14 +270,13 @@ public class DataHolder {
                 break;
             case CLOSE_PRICE:
                 return closePriceCrossed(crossType,candleType,threshold);
-
         }
 
         return true; // will not come to this!
 
     }
 
-    private boolean closePriceCrossed(CrossType crossType, CandleType candleType, double threshold) {
+    public boolean closePriceCrossed(CrossType crossType, CandleType candleType, double threshold) {
         double curr,prev;
         if (candleType == CandleType.OPEN) {
             curr = getClosePriceAtIndex(endIndex);

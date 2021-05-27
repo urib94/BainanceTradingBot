@@ -1,10 +1,8 @@
-import data.*;
-import singletonHelpers.BinanceInfo;
 import codeExecution.RealTimeCommandOperator;
+import data.AccountBalance;
+import singletonHelpers.BinanceInfo;
 import singletonHelpers.TelegramMessenger;
-import utils.CSVDataWriter;
 
-import java.time.ZonedDateTime;
 import java.util.Date;
 
 public class Main {
@@ -12,7 +10,7 @@ public class Main {
         AccountBalance accountBalance = AccountBalance.getAccountBalance(); //!Don't touch
         BinanceInfo binanceInfo = BinanceInfo.getBinanceInfo(); //!Don't touch
         RealTimeCommandOperator realTimeCommandOperator = new RealTimeCommandOperator();
-        TelegramMessenger.sendToTelegram("Start running with 10.00$: " + new Date(System.currentTimeMillis()));
+        TelegramMessenger.sendToTelegram("Start running with " + new Date(System.currentTimeMillis()));
 //        CSVDataWriter.writeDataAtOnce();
         try {
             realTimeCommandOperator.run();
