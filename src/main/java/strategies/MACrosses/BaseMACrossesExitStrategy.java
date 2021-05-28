@@ -5,7 +5,7 @@ import data.DataHolder;
 import strategies.ExitStrategy;
 
 public abstract class BaseMACrossesExitStrategy implements ExitStrategy {
-    private boolean slowCondition = false;
+    protected boolean slowCondition = false;
     protected boolean fastManagement = true;
     protected final PositionSide positionSide;
 
@@ -75,7 +75,8 @@ public abstract class BaseMACrossesExitStrategy implements ExitStrategy {
                             (crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.UP) && rsiAboveSMA(realTimeData))*/
 
                         if(realTimeData.closePriceCrossed(DataHolder.CrossType.UP, DataHolder.CandleType.CLOSE, realTimeData.getUpperBollingerAtIndex(realTimeData.getLastCloseIndex()))){
-                        fastManagement = false;
+
+                            fastManagement = false;
                         }
                     } else if(realTimeData.closePriceCrossed(DataHolder.CrossType.DOWN, DataHolder.CandleType.CLOSE, realTimeData.getUpperBollingerAtIndex(realTimeData.getLastCloseIndex()))) {
                         slowCondition = false;

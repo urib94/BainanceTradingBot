@@ -66,6 +66,8 @@ public class DataHolder {
         this.macdOverMa50 = macdOverMa50;
         this.openPriceIndicator = openPriceIndicator;
         currentPrice = getClosePriceAtIndex(endIndex);
+        this.volumeIndicator = volumeIndicator;
+        this.smaOverVolumeIndicator = smaOverVolumeIndicator;
 
     }
 

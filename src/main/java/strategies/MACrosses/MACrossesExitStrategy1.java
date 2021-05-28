@@ -10,6 +10,7 @@ import singletonHelpers.TelegramMessenger;
 import java.util.Date;
 
 public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
+    private boolean arabSolotionToAlertManagmatShifted = false;
     private boolean isSlowTrailing = false;
     private boolean isFastTrailing = false;
     private final SkippingExitTrailer slowTrailer;
@@ -25,7 +26,11 @@ public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
     @Override
     public SellingInstructions run(DataHolder realTimeData) {
         updateManagement(realTimeData);
-        if (!fastManagement) {
+        if (!fastManagement && slowCondition) {
+            if (!arabSolotionToAlertManagmatShifted){
+                TelegramMessenger.sendToTelegram("Transitioning to slow mangment");
+                arabSolotionToAlertManagmatShifted = true;
+            }
             switch (positionSide) {
                 case SHORT:
                     if (isSlowTrailing) {
@@ -33,6 +38,8 @@ public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
                         if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)) {
                             isSlowTrailing = false;
                             fastManagement = true;
+                            TelegramMessenger.sendToTelegram("Transitioning back to fast mangment");
+                            slowCondition = true;
                             return null;
                         }
                         if (slowTrailer.needToSell(realTimeData.getCurrentPrice())) {
@@ -43,6 +50,7 @@ public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
                     } else {
                         if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP,MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)) {
                             isSlowTrailing = true;
+                            slowCondition = false;
                             slowTrailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
                             TelegramMessenger.sendToTelegram("Started trailing " + new Date(System.currentTimeMillis()));
                         }
@@ -53,7 +61,9 @@ public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
                         slowTrailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
                         if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)) {
                             isSlowTrailing = false;
+                            slowCondition = true;
                             fastManagement = true;
+                            TelegramMessenger.sendToTelegram("Transitioning back to fast mangment");
                             return null;
                         }
                         if (slowTrailer.needToSell(realTimeData.getCurrentPrice())) {
@@ -64,6 +74,7 @@ public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
                     } else {
                         if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)) {
                             isSlowTrailing = true;
+                            slowCondition = false;
                             slowTrailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
                             TelegramMessenger.sendToTelegram("Started trailing " + new Date(System.currentTimeMillis()));
                         }
@@ -78,6 +89,7 @@ public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
                         if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT)) {
                             isFastTrailing = false;
                             fastManagement = true;
+                            TelegramMessenger.sendToTelegram("Stoped  fast trailing " + new Date(System.currentTimeMillis()));
                             return null;
                         }
                         if (fastTrailer.needToSell(realTimeData.getCurrentPrice())) {
@@ -99,6 +111,8 @@ public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
                         if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT)) {
                             isFastTrailing = false;
                             fastManagement = true;
+                            TelegramMessenger.sendToTelegram("Stoped  fast trailing " + new Date(System.currentTimeMillis()));
+
                             return null;
                         }
                         if (fastTrailer.needToSell(realTimeData.getCurrentPrice())) {

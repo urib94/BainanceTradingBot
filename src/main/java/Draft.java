@@ -1,7 +1,7 @@
-import com.binance.client.SyncRequestClient;
-import com.binance.client.model.enums.*;
+import TradingTools.Trailers.SkippingExitTrailer;
+import com.binance.client.model.enums.PositionSide;
 import com.binance.client.model.trade.Order;
-import singletonHelpers.RequestClient;
+import strategies.MACrosses.MACrossesConstants;
 
 public class Draft {
 
@@ -16,21 +16,15 @@ public class Draft {
     private int dcaOrderCheckCounter = 0;
     private double averagePrice;
 
-    private static void postStopLoss(double qty) {
-        SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
-        String symbol = "ethusdt";
-        String sellingQty = String.valueOf(qty);
-        String stopLossPrice = String.valueOf(3000);
-        try {
-            syncRequestClient.postOrder(symbol, OrderSide.BUY, PositionSide.BOTH, OrderType.TAKE_PROFIT_MARKET, null,
-                    sellingQty, null, "false", null, stopLossPrice, null,
-                    null, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    private Long timeToExit;
+    private final Long timeProtection = 10000L;
+
+
 
     public static void main(String[] args) {
-        postStopLoss(0.1);
+
+        SkippingExitTrailer skippingExitTrailer = new SkippingExitTrailer(MACrossesConstants.FAST_SKIPPING_TRAILING_PERCENTAGE, PositionSide.LONG);
+
+
     }
 }

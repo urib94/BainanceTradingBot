@@ -134,7 +134,7 @@ public class RealTimeData{
         closePriceIndicator = new ClosePriceIndicator(currData);
         volumeIndicator = new VolumeIndicator(currData);
         smaOverVolumeIndicator = new SMAIndicator(volumeIndicator, MACrossesConstants.SMA_OVER_VOLUME_BAR_COUNT);
-//        calculateBollingerBandsIndicators(currData);
+        calculateBollingerBandsIndicators(currData);
 //        atrIndicator = calculateATR(currData,MACDOverCCIWIthATRConstants.ATR_CANDLE_COUNT);
 //        macdOverMa9 = calculateMacdOverMa(currData, MACDOverSMAConstants.FAST_CANDLE_COUNT);
 //        macdOverMa14 = calculateMacdOverMa(currData, MACDOverSMAConstants.MEDIUM_CANDLE_COUNT);

@@ -3,7 +3,7 @@ package TradingTools.Trailers;
 import com.binance.client.model.enums.PositionSide;
 
 public class SkippingExitTrailer extends ExitTrailer {
-    private Long timeToExit;
+    private Long timeToExit =null;
 
     private double prevOpenPrice = 0;
 
@@ -12,30 +12,24 @@ public class SkippingExitTrailer extends ExitTrailer {
     private PositionSide side;
 
     double trailingPercentage;
+
     private final Long timeProtection = 10000L;
 
 
     public SkippingExitTrailer(double trailingPercentage, PositionSide side){
         this.side = side;
         this.trailingPercentage = trailingPercentage;
-
-        if(side == PositionSide.LONG){
-            calculateLongTrailingExitPrices(prevOpenPrice, trailingPercentage);
-        }
-        else{
-            calculateShortTrailingExitPrices(prevOpenPrice, trailingPercentage);
-        }
     }
 
     public void updateTrailer(double currentOpenPrice){
         if(side == PositionSide.LONG) {
-            if (currentOpenPrice < prevOpenPrice || prevOpenPrice == 0) {
+            if (currentOpenPrice > prevOpenPrice || prevOpenPrice == 0) {
                 prevOpenPrice = currentOpenPrice;
                 calculateLongTrailingExitPrices(prevOpenPrice, trailingPercentage);
             }
         }
         else{
-            if (currentOpenPrice > prevOpenPrice || prevOpenPrice == 0) {
+            if (currentOpenPrice < prevOpenPrice || prevOpenPrice == 0) {
                 prevOpenPrice = currentOpenPrice;
                 calculateShortTrailingExitPrices(prevOpenPrice, trailingPercentage);
             }
@@ -43,6 +37,7 @@ public class SkippingExitTrailer extends ExitTrailer {
     }
 
     public boolean needToSell(double currentPrice){
+        System.out.println("postion side: " + side + "exit Price = " + exitPrice + " curr price = " + currentPrice);
             if (side == PositionSide.LONG) {
                 if(currentPrice <= exitPrice ){
                     return TimeProtect();
@@ -63,22 +58,18 @@ public class SkippingExitTrailer extends ExitTrailer {
     private boolean TimeProtect() {
         if(timeToExit == null){
             timeToExit = System.currentTimeMillis();
+            System.out.println("start terailing time : " + timeToExit);
         }
         return (timeToExit + timeProtection) <= System.currentTimeMillis();
     }
 
     private void calculateShortTrailingExitPrices(double curOpenPrice, double trailingPercentage) {
-        if (curOpenPrice<prevOpenPrice){
-            prevOpenPrice= curOpenPrice;
-            exitPrice=curOpenPrice+ curOpenPrice * (trailingPercentage/100);
-        }
+        exitPrice = curOpenPrice + curOpenPrice * (trailingPercentage/100);
+
     }
 
     private void calculateLongTrailingExitPrices(double curOpenPrice, double trailingPercentage) {
-        if (curOpenPrice>prevOpenPrice){
-            prevOpenPrice= curOpenPrice;
-            exitPrice=curOpenPrice- (curOpenPrice * (trailingPercentage/100));
-        }
+        exitPrice = curOpenPrice - (curOpenPrice * (trailingPercentage/100));
     }
 
     public double getPrevOpenPrice() {
