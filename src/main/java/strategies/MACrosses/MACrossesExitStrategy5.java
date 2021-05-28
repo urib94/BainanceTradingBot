@@ -16,7 +16,7 @@ public class MACrossesExitStrategy5 extends BaseMACrossesExitStrategy{
         int index = realTimeData.getLastCloseIndex();
         double volume = realTimeData.getVolumeAtIndex(index);
         double smaOverVolume = realTimeData.getSmaOverVolumeValueAtIndex(index);
-        if (volume > 2.5 * smaOverVolume){
+        if (volume > 2.5 * smaOverVolume || volume < 2.5 * smaOverVolume){
             switch (positionSide){
 
                 case SHORT:

@@ -1,6 +1,5 @@
 package strategies.MACrosses;
 
-import TradingTools.Trailers.ExitTrailer;
 import TradingTools.Trailers.SkippingExitTrailer;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.*;
@@ -37,10 +36,12 @@ public class MACrossesEntryStrategy implements EntryStrategy {
     public PositionHandler run(DataHolder realTimeData, String symbol) {
         if (positionHandler == null){
             double currentPrice = realTimeData.getCurrentPrice();
-            if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT)){
+            if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT) ||
+            crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)){
                 return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.LONG);
             } else {
-                if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT)){
+                if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT) ||
+                        crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)){
                     return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.SHORT);
                 }
             }
@@ -78,9 +79,9 @@ public class MACrossesEntryStrategy implements EntryStrategy {
         }
         switch(crossType){
             case UP:
-                return prev <= smaPrevValue && curr > smaCurrValue;
+                return prev <= smaPrevValue && curr > smaCurrValue + MACrossesConstants.ENTRY_THRESHOLD;
             case DOWN:
-                return prev >= smaPrevValue && curr < smaCurrValue;
+                return prev >= smaPrevValue && curr < smaCurrValue - MACrossesConstants.ENTRY_THRESHOLD;
         }
         return false;
     }
@@ -99,11 +100,12 @@ public class MACrossesEntryStrategy implements EntryStrategy {
         updateBuyingAmount(symbol);
         TelegramMessenger.sendToTelegram("Entering new position " + new Date(System.currentTimeMillis()));
         ArrayList <ExitStrategy> exitStrategies = new ArrayList<>();
-        SkippingExitTrailer skippingExitTrailer = new SkippingExitTrailer(MACrossesConstants.SKIPPING_TRAILING_PERCENTAGE, positionSide);
-        ExitTrailer exitTrailer = new ExitTrailer(currentPrice, MACrossesConstants.TRAILING_PERCENTAGE, positionSide);
-        exitStrategies.add(new MACrossesExitStrategy1(positionSide, skippingExitTrailer));
-        exitStrategies.add(new MACrossesExitStrategy2(positionSide, exitTrailer));
-        exitStrategies.add(new MACrossesExitStrategy3(positionSide));
+        SkippingExitTrailer slowSkippingExitTrailer = new SkippingExitTrailer(MACrossesConstants.SLOW_SKIPPING_TRAILING_PERCENTAGE, positionSide);
+        SkippingExitTrailer fastSkippingExitTrailer = new SkippingExitTrailer(MACrossesConstants.FAST_SKIPPING_TRAILING_PERCENTAGE, positionSide);
+//        ExitTrailer exitTrailer = new ExitTrailer(currentPrice, MACrossesConstants.TRAILING_PERCENTAGE, positionSide);
+        exitStrategies.add(new MACrossesExitStrategy1(positionSide, slowSkippingExitTrailer, fastSkippingExitTrailer));
+//        exitStrategies.add(new MACrossesExitStrategy2(positionSide, exitTrailer));
+//        exitStrategies.add(new MACrossesExitStrategy3(positionSide));
         exitStrategies.add(new MACrossesExitStrategy5(positionSide));
         if (positionSide == PositionSide.LONG) {
             try {

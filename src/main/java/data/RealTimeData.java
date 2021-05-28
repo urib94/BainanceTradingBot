@@ -122,6 +122,7 @@ public class RealTimeData{
         BaseBarSeries currData = new BaseBarSeries(realTimeData.getBarData());
         rsiIndicator = calculateRSI(MACrossesConstants.RSI_CANDLE_NUM, currData);
         smaOverRsiIndicator = new SMAIndicator(rsiIndicator, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT);
+        fastSMAOverRsiIndicator = new SMAIndicator(rsiIndicator , MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT);
         smaOverRsiIndicator = new SMAIndicator(rsiIndicator, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT);
         mfiIndicator = new MFIIndicator(currData, MACrossesConstants.MFI_BAR_COUNT);
         smaOverMfiIndicator = new SMAIndicator(mfiIndicator, MACrossesConstants.SMA_OVER_MFI_BAR_COUNT);

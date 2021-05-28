@@ -10,12 +10,15 @@ import singletonHelpers.TelegramMessenger;
 import java.util.Date;
 
 public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
-    private boolean isTrailing = false;
-    private final SkippingExitTrailer trailer;
+    private boolean isSlowTrailing = false;
+    private boolean isFastTrailing = false;
+    private final SkippingExitTrailer slowTrailer;
+    private final SkippingExitTrailer fastTrailer;
     
-    public MACrossesExitStrategy1(PositionSide positionSide, SkippingExitTrailer trailer) {
+    public MACrossesExitStrategy1(PositionSide positionSide, SkippingExitTrailer slowTrailer, SkippingExitTrailer fastTrailer) {
         super(positionSide);
-        this.trailer = trailer;
+        this.slowTrailer = slowTrailer;
+        this.fastTrailer = fastTrailer;
 
     }
 
@@ -25,69 +28,92 @@ public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
         if (!fastManagement) {
             switch (positionSide) {
                 case SHORT:
-                    if (isTrailing) {
-                        trailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
+                    if (isSlowTrailing) {
+                        slowTrailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
                         if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)) {
-                            isTrailing = false;
+                            isSlowTrailing = false;
                             fastManagement = true;
                             return null;
                         }
-                        if (trailer.needToSell(realTimeData.getCurrentPrice())) {
+                        if (slowTrailer.needToSell(realTimeData.getCurrentPrice())) {
                             TelegramMessenger.sendToTelegram("Closing position with RSI crossed MA " + new Date(System.currentTimeMillis()));
                             return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_MARKET,
                                     MACrossesConstants.EXIT_SELLING_PERCENTAGE);
                         }
                     } else {
                         if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP,MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)) {
-                            isTrailing = true;
-                            trailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
+                            isSlowTrailing = true;
+                            slowTrailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
                             TelegramMessenger.sendToTelegram("Started trailing " + new Date(System.currentTimeMillis()));
                         }
                     }
                     return null;
                 case LONG:
-                    if (isTrailing) {
-                        trailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
+                    if (isSlowTrailing) {
+                        slowTrailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
                         if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)) {
-                            isTrailing = false;
+                            isSlowTrailing = false;
                             fastManagement = true;
                             return null;
                         }
-                        if (trailer.needToSell(realTimeData.getCurrentPrice())) {
+                        if (slowTrailer.needToSell(realTimeData.getCurrentPrice())) {
                             TelegramMessenger.sendToTelegram("Closing position with RSI crossed MA " + new Date(System.currentTimeMillis()));
                             return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_MARKET,
                                     MACrossesConstants.EXIT_SELLING_PERCENTAGE);
                         }
                     } else {
                         if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)) {
-                            isTrailing = true;
-                            trailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
+                            isSlowTrailing = true;
+                            slowTrailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
                             TelegramMessenger.sendToTelegram("Started trailing " + new Date(System.currentTimeMillis()));
                         }
                     }
-
-
                     return null;
-
             }
-        }else
-        {
-            switch (positionSide){
-
+        }else {
+            switch (positionSide) {
                 case SHORT:
-                    if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT)){
-                        TelegramMessenger.sendToTelegram("Closing position with fast RSI crossed MA " + new Date(System.currentTimeMillis()));
-                        return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_MARKET,
-                                MACrossesConstants.EXIT_SELLING_PERCENTAGE);
+                    if (isFastTrailing) {
+                        fastTrailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
+                        if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT)) {
+                            isFastTrailing = false;
+                            fastManagement = true;
+                            return null;
+                        }
+                        if (fastTrailer.needToSell(realTimeData.getCurrentPrice())) {
+                            TelegramMessenger.sendToTelegram("Closing position with fast RSI crossed MA " + new Date(System.currentTimeMillis()));
+                            return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_MARKET,
+                                    MACrossesConstants.EXIT_SELLING_PERCENTAGE);
+                        }
+                    } else {
+                        if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP,MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT)) {
+                            isFastTrailing = true;
+                            fastTrailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
+                            TelegramMessenger.sendToTelegram("Started  fast trailing " + new Date(System.currentTimeMillis()));
+                        }
                     }
-                    break;
+                    return null;
                 case LONG:
-                    if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT)) {
-                        TelegramMessenger.sendToTelegram("Closing position with fast RSI crossed MA " + new Date(System.currentTimeMillis()));
-                        return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_MARKET,
-                                MACrossesConstants.EXIT_SELLING_PERCENTAGE);
+                    if (isFastTrailing) {
+                        fastTrailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
+                        if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT)) {
+                            isFastTrailing = false;
+                            fastManagement = true;
+                            return null;
+                        }
+                        if (fastTrailer.needToSell(realTimeData.getCurrentPrice())) {
+                            TelegramMessenger.sendToTelegram("Closing position fast with RSI crossed MA " + new Date(System.currentTimeMillis()));
+                            return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_MARKET,
+                                    MACrossesConstants.EXIT_SELLING_PERCENTAGE);
+                        }
+                    } else {
+                        if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT)) {
+                            isFastTrailing = true;
+                            fastTrailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
+                            TelegramMessenger.sendToTelegram("Started fast trailing " + new Date(System.currentTimeMillis()));
+                        }
                     }
-                    break;
+                    return null;
             }
         }
         return null;

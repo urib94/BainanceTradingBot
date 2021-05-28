@@ -5,6 +5,7 @@ import data.DataHolder;
 import strategies.ExitStrategy;
 
 public abstract class BaseMACrossesExitStrategy implements ExitStrategy {
+    private boolean slowCondition = false;
     protected boolean fastManagement = true;
     protected final PositionSide positionSide;
 
@@ -40,9 +41,9 @@ public abstract class BaseMACrossesExitStrategy implements ExitStrategy {
         }
         switch (crossType) {
             case UP:
-                return prev <= smaPrevValue && curr > smaCurrValue;
+                return prev <= smaPrevValue && curr > smaCurrValue + MACrossesConstants.EXIT_THRESHOLD;
             case DOWN:
-                return prev >= smaPrevValue && curr < smaCurrValue;
+                return prev >= smaPrevValue && curr < smaCurrValue - MACrossesConstants.EXIT_THRESHOLD;
         }
         return false;
     }
@@ -52,25 +53,32 @@ public abstract class BaseMACrossesExitStrategy implements ExitStrategy {
     }
 
     protected void updateManagement(DataHolder realTimeData) {
-        double currentPrice = realTimeData.getCurrentPrice();
         switch (positionSide) {
 
             case SHORT:
                 if (!MACrossesEntryStrategy.priceIsAboveSMA(realTimeData)) {
                     if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)/* ||
-                            (crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.DOWN) && !rsiAboveSMA(realTimeData))*/
-                     && realTimeData.closePriceCrossed(DataHolder.CrossType.DOWN, DataHolder.CandleType.CLOSE, realTimeData.getLowerBollingerAtIndex(realTimeData.getLastCloseIndex()))) {
-                        fastManagement = false;
+                            (crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.DOWN) && !rsiAboveSMA(realTimeData))*/) {
+                        slowCondition = true;
+                        if (realTimeData.closePriceCrossed(DataHolder.CrossType.DOWN, DataHolder.CandleType.CLOSE, realTimeData.getLowerBollingerAtIndex(realTimeData.getLastCloseIndex()))){
+                            fastManagement = false;
+                        }
+                    } else if(realTimeData.closePriceCrossed(DataHolder.CrossType.UP, DataHolder.CandleType.CLOSE, realTimeData.getUpperBollingerAtIndex(realTimeData.getLastCloseIndex()))){
+                        slowCondition = false;
                     }
                 }
                 break;
 
             case LONG:
                 if (MACrossesEntryStrategy.priceIsAboveSMA(realTimeData)) {
-                    if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)  /*||
+                    if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)) {  /*||
                             (crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.UP) && rsiAboveSMA(realTimeData))*/
-                    && realTimeData.closePriceCrossed(DataHolder.CrossType.UP, DataHolder.CandleType.CLOSE, realTimeData.getUpperBollingerAtIndex(realTimeData.getLastCloseIndex()))) {
+
+                        if(realTimeData.closePriceCrossed(DataHolder.CrossType.UP, DataHolder.CandleType.CLOSE, realTimeData.getUpperBollingerAtIndex(realTimeData.getLastCloseIndex()))){
                         fastManagement = false;
+                        }
+                    } else if(realTimeData.closePriceCrossed(DataHolder.CrossType.DOWN, DataHolder.CandleType.CLOSE, realTimeData.getUpperBollingerAtIndex(realTimeData.getLastCloseIndex()))) {
+                        slowCondition = false;
                     }
                     break;
                 }
