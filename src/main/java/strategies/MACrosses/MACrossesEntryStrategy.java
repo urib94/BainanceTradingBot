@@ -114,12 +114,15 @@ public class MACrossesEntryStrategy implements EntryStrategy {
     }
 
     private boolean rsiSlowAndFastSmaCrossedUp(DataHolder realTimeData){
-        int closeIndex = realTimeData.getLastCloseIndex();
-        double fastSmaCurrValue = realTimeData.getFastSmaValue(closeIndex);
-        double fastSmaPrevValue = realTimeData.getFastSmaValue(closeIndex - 1);
-        double slowSmaCurrValue = realTimeData.getFastSmaOverRSIValue(closeIndex);
-        double slowSmaPrevValue = realTimeData.getFastSmaOverRSIValue(closeIndex - 1);
-        return slowSmaPrevValue >= fastSmaPrevValue && slowSmaCurrValue < fastSmaCurrValue;
+        if (rsiSmaOutOfBannedZone(realTimeData, MACrossesConstants.SLOW_SMA_OVER_RSI_BAR_COUNT) && rsiSmaOutOfBannedZone(realTimeData, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT)) {
+            int closeIndex = realTimeData.getLastCloseIndex();
+            double fastSmaCurrValue = realTimeData.getFastSmaValue(closeIndex);
+            double fastSmaPrevValue = realTimeData.getFastSmaValue(closeIndex - 1);
+            double slowSmaCurrValue = realTimeData.getFastSmaOverRSIValue(closeIndex);
+            double slowSmaPrevValue = realTimeData.getFastSmaOverRSIValue(closeIndex - 1);
+            return slowSmaPrevValue >= fastSmaPrevValue && slowSmaCurrValue < fastSmaCurrValue;
+        }
+        return false;
     }
 
     private boolean rsiSlowAndFastSmaCrossedDown(DataHolder realTimeData){
@@ -229,7 +232,6 @@ public class MACrossesEntryStrategy implements EntryStrategy {
         ArrayList <ExitStrategy> exitStrategies = new ArrayList<>();
         SkippingExitTrailer trailer = new SkippingExitTrailer(MACrossesConstants.TRAILING_PERCENTAGE, positionSide);
         exitStrategies.add(new MACrossesExitStrategy1(positionSide, trailer));
-        exitStrategies.add(new MACrossesExitStrategy5(positionSide));
         if (positionSide == PositionSide.LONG) {
             try {
                 SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
