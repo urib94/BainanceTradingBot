@@ -17,7 +17,7 @@ public class MACrossesExitStrategy3 extends BaseMACrossesExitStrategy{
 
             case SHORT:
                 if(priceIsAboveSMA(realTimeData)){// long only
-                    if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT) ||
+                    if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.SLOW_SMA_OVER_RSI_BAR_COUNT) ||
                             (crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.UP, MACrossesConstants.SMA_OVER_MFI_BAR_COUNT) && mfiAndRSIAlign(realTimeData))){
                         return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_MARKET,
                                 MACrossesConstants.EXIT_SELLING_PERCENTAGE);
@@ -26,7 +26,7 @@ public class MACrossesExitStrategy3 extends BaseMACrossesExitStrategy{
                 break;
             case LONG:
                 if (!priceIsAboveSMA(realTimeData)){
-                    if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT) ||
+                    if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.SLOW_SMA_OVER_RSI_BAR_COUNT) ||
                             (crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.DOWN, MACrossesConstants.SMA_OVER_MFI_BAR_COUNT) && mfiAndRSIAlign(realTimeData))){
                         return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_MARKET,
                                 MACrossesConstants.EXIT_SELLING_PERCENTAGE);
@@ -39,8 +39,8 @@ public class MACrossesExitStrategy3 extends BaseMACrossesExitStrategy{
 
     private boolean priceIsAboveSMA(DataHolder realTimeData) {
         int index = realTimeData.getLastCloseIndex();
-        double smaValue = realTimeData.getSmaValueAtIndex(index);
-        double smaPrevValue = realTimeData.getSmaValueAtIndex(index - 1);
+        double smaValue = realTimeData.getSlowSmaValueAtIndex(index);
+        double smaPrevValue = realTimeData.getSlowSmaValueAtIndex(index - 1);
         double closeValue = realTimeData.getClosePriceAtIndex(index);
         double closePrevValue = realTimeData.getClosePriceAtIndex(index - 1);
         return closeValue > smaValue || closePrevValue > smaPrevValue;

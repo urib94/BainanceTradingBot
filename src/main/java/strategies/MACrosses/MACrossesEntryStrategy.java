@@ -35,18 +35,53 @@ public class MACrossesEntryStrategy implements EntryStrategy {
     public PositionHandler run(DataHolder realTimeData, String symbol) {
         double currentPrice = realTimeData.getCurrentPrice();
         if (positionHandler == null) {
-            if (priceIsAboveSMA(realTimeData) && (longFastTriger(realTimeData) || longSlowTriger(realTimeData) || rSIMACrosse(realTimeData , DataHolder.CrossType.UP))) {
-                return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.LONG);
-            } else if ( !priceIsAboveSMA(realTimeData) && (shortFastTriger(realTimeData) || shortSlowTriger(realTimeData) || rSIMACrosse(realTimeData, DataHolder.CrossType.DOWN))) {
-                return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.SHORT);
+            if (isLongArea(realTimeData)){
+                if (longFastTriger(realTimeData) || longSlowTriger(realTimeData) || rsiSlowAndFastSmaCrossedUp(realTimeData) || rsiSpikedUp(realTimeData)){
+                    return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.LONG);
+                }
+            }
+            else{
+                if(shortFastTriger(realTimeData) || shortSlowTriger(realTimeData) || rsiSlowAndFastSmaCrossedDown(realTimeData) || rsiSpikedDown(realTimeData)){
+                    return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.SHORT);
+                }
             }
         }
         return null;
     }
 
+    private boolean rsiSmaOutOfBannedZone(DataHolder realTimeData, int barCount){
+        int index = realTimeData.getLastCloseIndex();
+        double rsiValue = realTimeData.getRSIValueAtIndex(index);
+        double smaOverRsiValue;
+        if (barCount == MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT) smaOverRsiValue = realTimeData.getFastSmaOverRSIValue(index);
+        else smaOverRsiValue = realTimeData.getSlowSmaOverRSIValue(index);
+        return rsiValue > MACrossesConstants.UPPER_BANNED_ZONE_THRESHOLD || rsiValue < MACrossesConstants.LOWER_BANNED_ZONE_THRESHOLD ||
+                smaOverRsiValue > MACrossesConstants.UPPER_BANNED_ZONE_THRESHOLD || smaOverRsiValue < MACrossesConstants.LOWER_BANNED_ZONE_THRESHOLD;
+    }
+
+    private boolean isLongArea(DataHolder realTimeData){
+        int index = realTimeData.getLastCloseIndex();
+        double fastSma = realTimeData.getFastSmaValue(index);
+        double slowSma = realTimeData.getSlowSmaOverRSIValue(index);
+        return fastSma > slowSma;
+    }
+
+    private boolean rsiSpikedUp(DataHolder realTimeData){
+        int index = realTimeData.getLastCloseIndex();
+        double currRsiValue = realTimeData.getRSIValueAtIndex(index);
+        double prevRsiValue = realTimeData.getRSIValueAtIndex(index);
+        return currRsiValue > prevRsiValue + 10 && currRsiValue < prevRsiValue + 15;
+    }
+    private boolean rsiSpikedDown(DataHolder realTimeData){
+        int index = realTimeData.getLastCloseIndex();
+        double currRsiValue = realTimeData.getRSIValueAtIndex(index);
+        double prevRsiValue = realTimeData.getRSIValueAtIndex(index);
+        return currRsiValue < prevRsiValue - 10 && currRsiValue > prevRsiValue - 15;
+    }
+
     private boolean shortFastTriger(DataHolder realTimeData) {
         if (outOfCloseBoliingers(realTimeData)) {
-            if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT)) {
+            if (rsiCrossedSma(realTimeData, DataHolder.CrossType.DOWN, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT)) {
                 return !volumeSpike(realTimeData);
             }
         }
@@ -54,8 +89,7 @@ public class MACrossesEntryStrategy implements EntryStrategy {
     }
 
     private boolean shortSlowTriger(DataHolder realTimeData){
-        if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)) {
-            System.out.println("slow short triger");
+        if (rsiCrossedSma(realTimeData, DataHolder.CrossType.DOWN, MACrossesConstants.SLOW_SMA_OVER_RSI_BAR_COUNT)) {
             return !volumeSpike(realTimeData);
         }
         return false;
@@ -63,7 +97,7 @@ public class MACrossesEntryStrategy implements EntryStrategy {
 
     private boolean longFastTriger(DataHolder realTimeData) {
         if (outOfCloseBoliingers(realTimeData)) {
-            if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT )) {
+            if (rsiCrossedSma(realTimeData, DataHolder.CrossType.UP, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT )) {
                 return !volumeSpike(realTimeData);
             }
         }
@@ -73,26 +107,51 @@ public class MACrossesEntryStrategy implements EntryStrategy {
 
 
     private boolean longSlowTriger(DataHolder realTimeData) {
-        if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)) {
-            System.out.println("slow long triger");
+        if (rsiCrossedSma(realTimeData, DataHolder.CrossType.UP, MACrossesConstants.SLOW_SMA_OVER_RSI_BAR_COUNT)) {
             return !volumeSpike(realTimeData);
         }
         return false;
     }
 
-    private boolean rSIMACrosse(DataHolder realTimeData, DataHolder.CrossType crossType){
-        int index = realTimeData.getLastCloseIndex();
-        double prevFastMa = realTimeData.getFastSmaOverRSIValue(index - 1);
-        double currFastMa = realTimeData.getFastSmaOverRSIValue(index);
-        double prevSlowMa = realTimeData.getSmaOverRSIValue(index - 1);
-        double currSlowMa = realTimeData.getSmaOverRSIValue(index);
-        switch (crossType){
+    private boolean rsiSlowAndFastSmaCrossedUp(DataHolder realTimeData){
+        int closeIndex = realTimeData.getLastCloseIndex();
+        double fastSmaCurrValue = realTimeData.getFastSmaValue(closeIndex);
+        double fastSmaPrevValue = realTimeData.getFastSmaValue(closeIndex - 1);
+        double slowSmaCurrValue = realTimeData.getFastSmaOverRSIValue(closeIndex);
+        double slowSmaPrevValue = realTimeData.getFastSmaOverRSIValue(closeIndex - 1);
+        return slowSmaPrevValue >= fastSmaPrevValue && slowSmaCurrValue < fastSmaCurrValue;
+    }
 
-            case UP:
-                return prevFastMa <= prevSlowMa && currFastMa > currSlowMa;
+    private boolean rsiSlowAndFastSmaCrossedDown(DataHolder realTimeData){
+        int closeIndex = realTimeData.getLastCloseIndex();
+        double fastSmaCurrValue = realTimeData.getFastSmaValue(closeIndex);
+        double fastSmaPrevValue = realTimeData.getFastSmaValue(closeIndex - 1);
+        double slowSmaCurrValue = realTimeData.getFastSmaOverRSIValue(closeIndex);
+        double slowSmaPrevValue = realTimeData.getFastSmaOverRSIValue(closeIndex - 1);
+        return slowSmaPrevValue <= fastSmaPrevValue && slowSmaCurrValue > fastSmaCurrValue;
+    }
+    private boolean rsiCrossedSma(DataHolder realTimeData, DataHolder.CrossType crossType, int barCount) {
+        if (rsiSmaOutOfBannedZone(realTimeData, barCount)) {
+            int closeIndex = realTimeData.getLastCloseIndex();
+            double curr, prev, smaCurrValue, smaPrevValue;
+            curr = realTimeData.getRSIValueAtIndex(closeIndex);
+            prev = realTimeData.getRSIValueAtIndex(closeIndex - 1);
+            if(barCount == MACrossesConstants.SLOW_SMA_OVER_RSI_BAR_COUNT) {
+                smaCurrValue = realTimeData.getFastSmaValue(closeIndex);
+                smaPrevValue = realTimeData.getFastSmaValue(closeIndex - 1);
+            } else {
+                smaCurrValue = realTimeData.getFastSmaOverRSIValue(closeIndex);
+                smaPrevValue = realTimeData.getFastSmaOverRSIValue(closeIndex - 1);
 
-            case DOWN:
-                return prevFastMa >= prevSlowMa && currFastMa < currSlowMa;
+            }
+            switch (crossType) {
+
+                case UP:
+                    return prev <= smaPrevValue && curr > smaCurrValue;
+
+                case DOWN:
+                    return prev >= smaPrevValue && curr < smaCurrValue;
+            }
         }
         return false;
     }
@@ -124,9 +183,9 @@ public class MACrossesEntryStrategy implements EntryStrategy {
             case RSI:
                 curr = realTimeData.getRSIValueAtIndex(closeIndex);
                 prev = realTimeData.getRSIValueAtIndex(closeIndex - 1);
-                if(candleCount == MACrossesConstants.SMA_OVER_RSI_BAR_COUNT) {
-                    smaCurrValue = realTimeData.getSmaOverRSIValue(closeIndex);
-                    smaPrevValue = realTimeData.getSmaOverRSIValue(closeIndex - 1);
+                if(candleCount == MACrossesConstants.SLOW_SMA_OVER_RSI_BAR_COUNT) {
+                    smaCurrValue = realTimeData.getFastSmaValue(closeIndex);
+                    smaPrevValue = realTimeData.getFastSmaValue(closeIndex - 1);
                 } else {
                     if (candleCount == MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT) {
                         smaCurrValue = realTimeData.getFastSmaOverRSIValue(closeIndex);
@@ -134,12 +193,7 @@ public class MACrossesEntryStrategy implements EntryStrategy {
                     }
                 }
                 break;
-            case MFI:
-                curr = realTimeData.getMFIValue(closeIndex);
-                prev = realTimeData.getMFIValue(closeIndex - 1);
-                smaCurrValue = realTimeData.getSmaOverMFIValue(closeIndex);
-                smaPrevValue = realTimeData.getSmaOverMFIValue(closeIndex - 1);
-                break;
+
             default:
                 break;
         }
@@ -161,8 +215,8 @@ public class MACrossesEntryStrategy implements EntryStrategy {
 
     public static boolean priceIsAboveSMA(DataHolder realTimeData) {
         int index = realTimeData.getLastCloseIndex();
-        double smaValue = realTimeData.getSmaValueAtIndex(index);
-        double smaPrevValue = realTimeData.getSmaValueAtIndex(index - 1);
+        double smaValue = realTimeData.getSlowSmaValueAtIndex(index);
+        double smaPrevValue = realTimeData.getSlowSmaValueAtIndex(index - 1);
         double closeValue = realTimeData.getClosePriceAtIndex(index);
         double closePrevValue = realTimeData.getClosePriceAtIndex(index - 1);
         System.out.println("curr sma = " + smaValue + "price = " +closeValue);
@@ -173,12 +227,8 @@ public class MACrossesEntryStrategy implements EntryStrategy {
         updateBuyingAmount(symbol);
         TelegramMessenger.sendToTelegram("Entering new position " + new Date(System.currentTimeMillis()));
         ArrayList <ExitStrategy> exitStrategies = new ArrayList<>();
-        SkippingExitTrailer slowSkippingExitTrailer = new SkippingExitTrailer(MACrossesConstants.SLOW_SKIPPING_TRAILING_PERCENTAGE, positionSide);
-        SkippingExitTrailer fastSkippingExitTrailer = new SkippingExitTrailer(MACrossesConstants.FAST_SKIPPING_TRAILING_PERCENTAGE, positionSide);
-//        ExitTrailer exitTrailer = new ExitTrailer(currentPrice, MACrossesConstants.TRAILING_PERCENTAGE, positionSide);
-        exitStrategies.add(new MACrossesExitStrategy1(positionSide, slowSkippingExitTrailer, fastSkippingExitTrailer));
-//        exitStrategies.add(new MACrossesExitStrategy2(positionSide, exitTrailer));
-//        exitStrategies.add(new MACrossesExitStrategy3(positionSide));
+        SkippingExitTrailer trailer = new SkippingExitTrailer(MACrossesConstants.TRAILING_PERCENTAGE, positionSide);
+        exitStrategies.add(new MACrossesExitStrategy1(positionSide, trailer));
         exitStrategies.add(new MACrossesExitStrategy5(positionSide));
         if (positionSide == PositionSide.LONG) {
             try {
@@ -188,7 +238,7 @@ public class MACrossesEntryStrategy implements EntryStrategy {
                 Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.BUY, null, OrderType.MARKET, null,
                         buyingQty, null, null, null, null, null, null, null, WorkingType.MARK_PRICE, "TRUE", NewOrderRespType.RESULT);
                 TelegramMessenger.sendToTelegram("bought long:  " + "Side: " + buyOrder.getSide() + " , Qty: " + buyOrder.getCumQty() +
-                        " , Activate Price: " + buyOrder.getActivatePrice() + " ,                   Time: " + new Date(System.currentTimeMillis()));
+                        " , Average Price: " + buyOrder.getAvgPrice() + " ,                   Time: " + new Date(System.currentTimeMillis()));
                 positionHandler = new PositionHandler(buyOrder, exitStrategies, MACrossesConstants.STOP_LOSS_PERCENTAGE, positionSide);
                 return positionHandler;
             } catch (Exception e) {
@@ -204,7 +254,7 @@ public class MACrossesEntryStrategy implements EntryStrategy {
                 Order buyOrder = syncRequestClient.postOrder(symbol, OrderSide.SELL, null, OrderType.MARKET, null,
                         buyingQty, null, null, null, null, null, null, null, WorkingType.MARK_PRICE,"TRUE" , NewOrderRespType.RESULT);
                 TelegramMessenger.sendToTelegram("bought short:  " + "Side: " + buyOrder.getSide() + " , Qty: " + buyOrder.getCumQty() +
-                        " , Activate Price: " + buyOrder.getActivatePrice() + " ,                   Time: " + new Date(System.currentTimeMillis()));
+                        " , Average Price: " + buyOrder.getAvgPrice() + " ,                   Time: " + new Date(System.currentTimeMillis()));
                 positionHandler = new PositionHandler(buyOrder, exitStrategies, MACrossesConstants.STOP_LOSS_PERCENTAGE, positionSide);
                 return positionHandler;
             } catch (Exception e) {
@@ -218,14 +268,14 @@ public class MACrossesEntryStrategy implements EntryStrategy {
     private void updateBuyingAmount(String symbol) {
         String baseSymbol = Config.BASE_COIN;
         double balance = accountBalance.getCoinBalance(baseSymbol).doubleValue();
-        requestedBuyingAmount = (balance * MACrossesConstants.AVAILABLE_BALANCE_PRECENTAGE) / 100;
+        requestedBuyingAmount = (balance * MACrossesConstants.AVAILABLE_BALANCE_PERCENTAGE) / 100;
 
     }
 
     private boolean rsiAboveSMA(DataHolder realTimeData){
         int index = realTimeData.getLastCloseIndex();
         double currRsi = realTimeData.getRSIValueAtIndex(index);
-        double rSISmaValue = realTimeData.getSmaOverRSIValue(index);
+        double rSISmaValue = realTimeData.getFastSmaValue(index);
         return currRsi > rSISmaValue;
     }
 

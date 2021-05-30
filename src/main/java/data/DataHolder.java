@@ -33,27 +33,29 @@ public class DataHolder {
 
     private CCICIndicator ccicIndicator;
     private MFIIndicator mfiIndicator;
-    private SMAIndicator smaIndicator;
     private RSIIndicator rsiIndicator;
-    private SMAIndicator smaOverRsiIndicator;
-    private SMAIndicator smaOverMfiIndicator;
+
+    private SMAIndicator slowSmaIndicator;
+    private SMAIndicator fastSmaIndicator;
+    private SMAIndicator slowSMAOverRsiIndicator;
     private SMAIndicator fastSMAOverRsiIndicator;
+
     private VolumeIndicator volumeIndicator;
     private SMAIndicator smaOverVolumeIndicator;
 
 
     public DataHolder(HighPriceIndicator highPriceIndicator, LowPriceIndicator lowPriceIndicator, ClosePriceIndicator closePriceIndicator, RSIIndicator rsiIndicator, MACDIndicator macdOverRsiIndicator, BollingerBandsUpperIndicator bollingerBandsUpperIndicator,
-                      BollingerBandsLowerIndicator bollingerBandsLowerIndicator, SMAIndicator smaIndicator, BollingerBandWidthIndicator bollingerbandWidthIndicator, PercentBIndicator percentBIndicator, int endIndex
+                      BollingerBandsLowerIndicator bollingerBandsLowerIndicator, SMAIndicator slowSmaIndicator, BollingerBandWidthIndicator bollingerbandWidthIndicator, PercentBIndicator percentBIndicator, int endIndex
             , MACDIndicator macdOverCCIIndicator, ATRIndicator atrIndicator, CCICIndicator ccicIndicator, MACDIndicator macdOverMa9, MACDIndicator macdOverMa14, MACDIndicator macdOverMa50, MFIIndicator mfiIndicator,
-                      SMAIndicator smaOverRsiIndicator, SMAIndicator fastSMAOverRsiIndicator, SMAIndicator smaOverMfiIndicator, OpenPriceIndicator openPriceIndicator, VolumeIndicator volumeIndicator, SMAIndicator smaOverVolumeIndicator,
+                      SMAIndicator fastSmaIndicator, SMAIndicator fastSMAOverRsiIndicator, SMAIndicator slowSMAOverRsiIndicator, OpenPriceIndicator openPriceIndicator, VolumeIndicator volumeIndicator, SMAIndicator smaOverVolumeIndicator,
                       BollingerBandWidthIndicator closeBollingerBandWidthIndicator, BollingerBandsUpperIndicator closeBollingerBandsUpperIndicator, BollingerBandsLowerIndicator closeBollingerBandsLowerIndicator) {
         this.rsiIndicator = rsiIndicator;
         this.mfiIndicator = mfiIndicator;
-        this.smaOverRsiIndicator = smaOverRsiIndicator;
+        this.fastSmaIndicator = fastSmaIndicator;
         this.fastSMAOverRsiIndicator = fastSMAOverRsiIndicator;
-        this.smaOverMfiIndicator = smaOverMfiIndicator;
+        this.slowSMAOverRsiIndicator = slowSMAOverRsiIndicator;
+        this.slowSmaIndicator = slowSmaIndicator;
         this.macdOverRsiIndicator = macdOverRsiIndicator;
-        this.smaIndicator = smaIndicator;
         this.endIndex = endIndex;
         this.closeBollingerBandWidthIndicator = closeBollingerBandWidthIndicator;
         this.closeBollingerBandsUpperIndicator = closeBollingerBandsUpperIndicator;
@@ -85,13 +87,18 @@ public class DataHolder {
     public  double getSmaOverVolumeValueAtIndex(int index) {
         return smaOverVolumeIndicator.getValue(index).doubleValue();
     }
-
-    public double getRSIValueAtIndex(int index) {
-        return rsiIndicator.getValue(index).doubleValue();
+    public  double getSlowSmaValueAtIndex(int index) {
+        return slowSmaIndicator.getValue(index).doubleValue();
     }
 
-    public  double getSmaValueAtIndex(int index) {
-        return smaIndicator.getValue(index).doubleValue();
+    public double getFastSmaValue(int index){
+        return fastSmaIndicator.getValue(index).doubleValue();
+    }
+    public double getFastSmaOverRSIValue(int index){
+        return fastSMAOverRsiIndicator.getValue(index).doubleValue();
+    }
+    public double getSlowSmaOverRSIValue(int index){
+        return slowSMAOverRsiIndicator.getValue(index).doubleValue();
     }
 
     public double getCCICValue(int index){
@@ -102,16 +109,11 @@ public class DataHolder {
         return mfiIndicator.getValue(index).doubleValue();
     }
 
-    public double getSmaOverRSIValue(int index){
-        return smaOverRsiIndicator.getValue(index).doubleValue();
+
+    public double getRSIValueAtIndex(int index) {
+        return rsiIndicator.getValue(index).doubleValue();
     }
 
-    public double getFastSmaOverRSIValue(int index){
-        return fastSMAOverRsiIndicator.getValue(index).doubleValue();
-    }
-    public double getSmaOverMFIValue(int index){
-        return smaOverMfiIndicator.getValue(index).doubleValue();
-    }
 
     public double getClosePriceAtIndex(int index){return closePriceIndicator.getValue(index).doubleValue();}
 
@@ -379,9 +381,9 @@ public class DataHolder {
         }
         else {
             if (type == CandleType.OPEN) {
-                return getSmaValueAtIndex(getLastIndex())>threshold;
+                return getSlowSmaValueAtIndex(getLastIndex())>threshold;
             } else {
-                return getSmaValueAtIndex(getLastCloseIndex()) > threshold;
+                return getSlowSmaValueAtIndex(getLastCloseIndex()) > threshold;
             }
         }
     }

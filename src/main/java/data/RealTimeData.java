@@ -40,11 +40,13 @@ public class RealTimeData{
 
     private CCICIndicator ccicIndicator;
     private MFIIndicator mfiIndicator;
-    private SMAIndicator smaIndicator;
     private RSIIndicator rsiIndicator;
-    private SMAIndicator smaOverRsiIndicator;
+
+    private SMAIndicator slowSmaIndicator;
+    private SMAIndicator fastSmaIndicator;
     private SMAIndicator fastSMAOverRsiIndicator;
-    private SMAIndicator smaOverMfiIndicator;
+    private SMAIndicator slowSMAOverRsiIndicator;
+
     private VolumeIndicator volumeIndicator;
     private SMAIndicator smaOverVolumeIndicator;
 
@@ -83,8 +85,8 @@ public class RealTimeData{
         counter = 0;
         calculateIndicators();
         return new DataHolder(highPriceIndicator, lowPriceIndicator, closePriceIndicator, rsiIndicator, macdOverRsiIndicator, bollingerBandsUpperIndicator, bollingerBandsLowerIndicator,
-                smaIndicator,bollingerBandWidthIndicator, percentBIndicator, realTimeData.getEndIndex(), macdOverCCIIndicator, atrIndicator, ccicIndicator, macdOverMa9, macdOverMa14,
-                macdOverMa50, mfiIndicator, smaOverRsiIndicator, fastSMAOverRsiIndicator, smaOverMfiIndicator, openPriceIndicator, volumeIndicator, smaOverVolumeIndicator,
+                slowSmaIndicator,bollingerBandWidthIndicator, percentBIndicator, realTimeData.getEndIndex(), macdOverCCIIndicator, atrIndicator, ccicIndicator, macdOverMa9, macdOverMa14,
+                macdOverMa50, mfiIndicator, fastSmaIndicator, fastSMAOverRsiIndicator, slowSMAOverRsiIndicator, openPriceIndicator, volumeIndicator, smaOverVolumeIndicator,
                 closeBollingerBandWidthIndicator , closeBollingerBandsUpperIndicator , closeBollingerBandsLowerIndicator);
     }
 
@@ -125,16 +127,15 @@ public class RealTimeData{
     private void calculateIndicators() {
         BaseBarSeries currData = new BaseBarSeries(realTimeData.getBarData());
         rsiIndicator = calculateRSI(MACrossesConstants.RSI_CANDLE_NUM, currData);
-        smaOverRsiIndicator = new SMAIndicator(rsiIndicator, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT);
+        fastSmaIndicator = new SMAIndicator(rsiIndicator, MACrossesConstants.FAST_SMA_BAR_COUNT);
         fastSMAOverRsiIndicator = new SMAIndicator(rsiIndicator , MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT);
-        smaOverRsiIndicator = new SMAIndicator(rsiIndicator, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT);
         mfiIndicator = new MFIIndicator(currData, MACrossesConstants.MFI_BAR_COUNT);
-        smaOverMfiIndicator = new SMAIndicator(mfiIndicator, MACrossesConstants.SMA_OVER_MFI_BAR_COUNT);
+        slowSMAOverRsiIndicator = new SMAIndicator(new ClosePriceIndicator(currData), MACrossesConstants.SLOW_SMA_OVER_RSI_BAR_COUNT);
         highPriceIndicator = new HighPriceIndicator(currData);
         lowPriceIndicator = new LowPriceIndicator(currData);
         openPriceIndicator = new OpenPriceIndicator(currData);
         macdOverCCIIndicator = calculateMacdOverCCI(currData);
-        smaIndicator = new SMAIndicator(new ClosePriceIndicator(currData), MACrossesConstants.SMA_BAR_COUNT);
+        slowSmaIndicator = new SMAIndicator(new ClosePriceIndicator(currData), MACrossesConstants.SLOW_SMA_BAR_COUNT);
         closePriceIndicator = new ClosePriceIndicator(currData);
         volumeIndicator = new VolumeIndicator(currData);
         smaOverVolumeIndicator = new SMAIndicator(volumeIndicator, MACrossesConstants.SMA_OVER_VOLUME_BAR_COUNT);

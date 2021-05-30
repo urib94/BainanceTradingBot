@@ -1,6 +1,7 @@
 package TradingTools.Trailers;
 
 import com.binance.client.model.enums.PositionSide;
+import singletonHelpers.TelegramMessenger;
 
 public class SkippingExitTrailer extends ExitTrailer {
     private Long timeToExit =null;
@@ -13,7 +14,7 @@ public class SkippingExitTrailer extends ExitTrailer {
 
     double trailingPercentage;
 
-    private final Long timeProtection = 5000L;
+    private boolean sendMessage = true;
 
 
     public SkippingExitTrailer(double trailingPercentage, PositionSide side){
@@ -26,18 +27,23 @@ public class SkippingExitTrailer extends ExitTrailer {
             if (currentOpenPrice > prevOpenPrice || prevOpenPrice == 0) {
                 prevOpenPrice = currentOpenPrice;
                 calculateLongTrailingExitPrices(prevOpenPrice, trailingPercentage);
+                sendMessage = true;
             }
         }
         else{
             if (currentOpenPrice < prevOpenPrice || prevOpenPrice == 0) {
                 prevOpenPrice = currentOpenPrice;
                 calculateShortTrailingExitPrices(prevOpenPrice, trailingPercentage);
+                sendMessage = true;
             }
         }
     }
 
     public boolean needToSell(double currentPrice){
-        System.out.println("postion side: " + side + "exit Price = " + exitPrice + " curr price = " + currentPrice);
+        if (sendMessage){
+            TelegramMessenger.sendToTelegram("postion side: " + side + "exit Price = " + exitPrice + " curr price = " + currentPrice);
+            sendMessage = false;
+        }
             if (side == PositionSide.LONG) {
                 if(currentPrice <= exitPrice ){
                     return TimeProtect();
@@ -58,8 +64,9 @@ public class SkippingExitTrailer extends ExitTrailer {
     private boolean TimeProtect() {
         if(timeToExit == null){
             timeToExit = System.currentTimeMillis();
-            System.out.println("start terailing time : " + timeToExit);
+            System.out.println("start trailing time : " + timeToExit);
         }
+        Long timeProtection = 2500L;
         return (timeToExit + timeProtection) <= System.currentTimeMillis();
     }
 
