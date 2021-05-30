@@ -127,10 +127,10 @@ public class RealTimeData{
     private void calculateIndicators() {
         BaseBarSeries currData = new BaseBarSeries(realTimeData.getBarData());
         rsiIndicator = calculateRSI(MACrossesConstants.RSI_CANDLE_NUM, currData);
-        fastSmaIndicator = new SMAIndicator(rsiIndicator, MACrossesConstants.FAST_SMA_BAR_COUNT);
+        fastSmaIndicator = new SMAIndicator(new ClosePriceIndicator(currData), MACrossesConstants.FAST_SMA_BAR_COUNT);
         fastSMAOverRsiIndicator = new SMAIndicator(rsiIndicator , MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT);
         mfiIndicator = new MFIIndicator(currData, MACrossesConstants.MFI_BAR_COUNT);
-        slowSMAOverRsiIndicator = new SMAIndicator(new ClosePriceIndicator(currData), MACrossesConstants.SLOW_SMA_OVER_RSI_BAR_COUNT);
+        slowSMAOverRsiIndicator = new SMAIndicator(rsiIndicator, MACrossesConstants.SLOW_SMA_OVER_RSI_BAR_COUNT);
         highPriceIndicator = new HighPriceIndicator(currData);
         lowPriceIndicator = new LowPriceIndicator(currData);
         openPriceIndicator = new OpenPriceIndicator(currData);
