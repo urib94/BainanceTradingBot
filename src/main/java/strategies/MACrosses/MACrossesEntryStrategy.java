@@ -12,7 +12,6 @@ import singletonHelpers.RequestClient;
 import singletonHelpers.TelegramMessenger;
 import strategies.EntryStrategy;
 import strategies.ExitStrategy;
-
 import utils.Utils;
 
 import java.util.ArrayList;
@@ -34,19 +33,86 @@ public class MACrossesEntryStrategy implements EntryStrategy {
 
     @Override
     public PositionHandler run(DataHolder realTimeData, String symbol) {
-        if (positionHandler == null){
-            double currentPrice = realTimeData.getCurrentPrice();
-            if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT) ||
-            crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)){
+        double currentPrice = realTimeData.getCurrentPrice();
+        if (positionHandler == null) {
+            if (priceIsAboveSMA(realTimeData) && (longFastTriger(realTimeData) || longSlowTriger(realTimeData) || rSIMACrosse(realTimeData , DataHolder.CrossType.UP))) {
                 return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.LONG);
-            } else {
-                if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT) ||
-                        crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)){
-                    return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.SHORT);
-                }
+            } else if ( !priceIsAboveSMA(realTimeData) && (shortFastTriger(realTimeData) || shortSlowTriger(realTimeData) || rSIMACrosse(realTimeData, DataHolder.CrossType.DOWN))) {
+                return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.SHORT);
             }
         }
         return null;
+    }
+
+    private boolean shortFastTriger(DataHolder realTimeData) {
+        if (outOfCloseBoliingers(realTimeData)) {
+            if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT)) {
+                return !volumeSpike(realTimeData);
+            }
+        }
+        return false;
+    }
+
+    private boolean shortSlowTriger(DataHolder realTimeData){
+        if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)) {
+            System.out.println("slow short triger");
+            return !volumeSpike(realTimeData);
+        }
+        return false;
+    }
+
+    private boolean longFastTriger(DataHolder realTimeData) {
+        if (outOfCloseBoliingers(realTimeData)) {
+            if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT )) {
+                return !volumeSpike(realTimeData);
+            }
+        }
+        return false;
+    }
+
+
+
+    private boolean longSlowTriger(DataHolder realTimeData) {
+        if (crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.SMA_OVER_RSI_BAR_COUNT)) {
+            System.out.println("slow long triger");
+            return !volumeSpike(realTimeData);
+        }
+        return false;
+    }
+
+    private boolean rSIMACrosse(DataHolder realTimeData, DataHolder.CrossType crossType){
+        int index = realTimeData.getLastCloseIndex();
+        double prevFastMa = realTimeData.getFastSmaOverRSIValue(index - 1);
+        double currFastMa = realTimeData.getFastSmaOverRSIValue(index);
+        double prevSlowMa = realTimeData.getSmaOverRSIValue(index - 1);
+        double currSlowMa = realTimeData.getSmaOverRSIValue(index);
+        switch (crossType){
+
+            case UP:
+                return prevFastMa <= prevSlowMa && currFastMa > currSlowMa;
+
+            case DOWN:
+                return prevFastMa >= prevSlowMa && currFastMa < currSlowMa;
+        }
+        return false;
+    }
+
+    private boolean outOfCloseBoliingers(DataHolder realTimeData) {
+        int index =realTimeData.getLastCloseIndex();
+        double upperBoliinger = realTimeData.getCloseUpperBollingerAtIndex(index);
+        double lowerBoliinger = realTimeData.getCloseLowerBollingerAtIndex(index);
+        double currentPrice = realTimeData.getCurrentPrice();
+//        System.out.println(" upper = " + upperBoliinger + "\n lower = " + lowerBoliinger + "\ncurrent price = " + currentPrice );
+        boolean in = currentPrice > lowerBoliinger && currentPrice < upperBoliinger;
+//        System.out.println( "in = "+ in);
+        return !in;
+    }
+
+    private boolean volumeSpike(DataHolder realTimeData) {
+        int index = realTimeData.getLastCloseIndex();
+        double volume = realTimeData.getVolumeAtIndex(index);
+        double smaOverVolume = realTimeData.getSmaOverVolumeValueAtIndex(index);
+        return volume > 2.5 * smaOverVolume && volume < 3.5 * smaOverVolume;
     }
 
 
@@ -79,8 +145,14 @@ public class MACrossesEntryStrategy implements EntryStrategy {
         }
         switch(crossType){
             case UP:
+                if(smaCurrValue > 40 && smaCurrValue < 60 ){
+                    return false;
+                }
                 return prev <= smaPrevValue && curr > smaCurrValue + MACrossesConstants.ENTRY_THRESHOLD;
             case DOWN:
+                if(smaCurrValue > 40 && smaCurrValue < 60 ){
+                    return false;
+                }
                 return prev >= smaPrevValue && curr < smaCurrValue - MACrossesConstants.ENTRY_THRESHOLD;
         }
         return false;
@@ -93,6 +165,7 @@ public class MACrossesEntryStrategy implements EntryStrategy {
         double smaPrevValue = realTimeData.getSmaValueAtIndex(index - 1);
         double closeValue = realTimeData.getClosePriceAtIndex(index);
         double closePrevValue = realTimeData.getClosePriceAtIndex(index - 1);
+        System.out.println("curr sma = " + smaValue + "price = " +closeValue);
         return closeValue > smaValue || closePrevValue > smaPrevValue;
     }
 

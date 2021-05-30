@@ -25,6 +25,9 @@ public class RealTimeData{
     private MACDIndicator macdOverRsiIndicator;
     private MACDIndicator macdOverCCIIndicator;
     private int counter = 0;
+    private BollingerBandWidthIndicator closeBollingerBandWidthIndicator;
+    private BollingerBandsUpperIndicator closeBollingerBandsUpperIndicator;
+    private BollingerBandsLowerIndicator closeBollingerBandsLowerIndicator;
     private BollingerBandWidthIndicator bollingerBandWidthIndicator;
     private BollingerBandsUpperIndicator bollingerBandsUpperIndicator;
     private BollingerBandsLowerIndicator bollingerBandsLowerIndicator;
@@ -81,7 +84,8 @@ public class RealTimeData{
         calculateIndicators();
         return new DataHolder(highPriceIndicator, lowPriceIndicator, closePriceIndicator, rsiIndicator, macdOverRsiIndicator, bollingerBandsUpperIndicator, bollingerBandsLowerIndicator,
                 smaIndicator,bollingerBandWidthIndicator, percentBIndicator, realTimeData.getEndIndex(), macdOverCCIIndicator, atrIndicator, ccicIndicator, macdOverMa9, macdOverMa14,
-                macdOverMa50, mfiIndicator, smaOverRsiIndicator, fastSMAOverRsiIndicator, smaOverMfiIndicator, openPriceIndicator, volumeIndicator, smaOverVolumeIndicator);
+                macdOverMa50, mfiIndicator, smaOverRsiIndicator, fastSMAOverRsiIndicator, smaOverMfiIndicator, openPriceIndicator, volumeIndicator, smaOverVolumeIndicator,
+                closeBollingerBandWidthIndicator , closeBollingerBandsUpperIndicator , closeBollingerBandsLowerIndicator);
     }
 
     private boolean updateLastCandle(CandlestickEvent event) {
@@ -152,10 +156,13 @@ public class RealTimeData{
         closePriceIndicator = new ClosePriceIndicator(currData);
         SMAIndicator smaIndicator = new SMAIndicator(closePriceIndicator, 20);
         BollingerBandsMiddleIndicator bollingerBandsMiddleIndicator = new BollingerBandsMiddleIndicator(smaIndicator);
-        bollingerBandsUpperIndicator = new BollingerBandsUpperIndicator(bollingerBandsMiddleIndicator, new StandardDeviationIndicator(closePriceIndicator, MACDOverCCIWIthATRConstants.STANDARD_DEVIATION_CANDLES), MACDOverCCIWIthATRConstants.DEVIATION_MULTIPLIER);
-        bollingerBandsLowerIndicator = new BollingerBandsLowerIndicator(bollingerBandsMiddleIndicator, new StandardDeviationIndicator(closePriceIndicator, MACDOverCCIWIthATRConstants.STANDARD_DEVIATION_CANDLES), MACDOverCCIWIthATRConstants.DEVIATION_MULTIPLIER);
+        bollingerBandsUpperIndicator = new BollingerBandsUpperIndicator(bollingerBandsMiddleIndicator, new StandardDeviationIndicator(closePriceIndicator, MACrossesConstants.STANDARD_DEVIATION_CANDLES), MACrossesConstants.DEVIATION_MULTIPLIER);
+        bollingerBandsLowerIndicator = new BollingerBandsLowerIndicator(bollingerBandsMiddleIndicator, new StandardDeviationIndicator(closePriceIndicator, MACrossesConstants.STANDARD_DEVIATION_CANDLES), MACrossesConstants.DEVIATION_MULTIPLIER);
         bollingerBandWidthIndicator = new BollingerBandWidthIndicator(bollingerBandsUpperIndicator,bollingerBandsMiddleIndicator,bollingerBandsLowerIndicator);
         percentBIndicator = new PercentBIndicator(closePriceIndicator,20,2);
+        closeBollingerBandsUpperIndicator = new BollingerBandsUpperIndicator(bollingerBandsMiddleIndicator, new StandardDeviationIndicator(closePriceIndicator, MACrossesConstants.STANDARD_DEVIATION_CANDLES), MACrossesConstants.CLOSE_DEVIATION_MULTIPLIER) ;
+        closeBollingerBandsLowerIndicator = new BollingerBandsLowerIndicator(bollingerBandsMiddleIndicator, new StandardDeviationIndicator(closePriceIndicator, MACrossesConstants.STANDARD_DEVIATION_CANDLES), MACrossesConstants.CLOSE_DEVIATION_MULTIPLIER) ;
+        closeBollingerBandWidthIndicator = new BollingerBandWidthIndicator (closeBollingerBandsUpperIndicator,bollingerBandsMiddleIndicator,closeBollingerBandsLowerIndicator);
         //System.out.println("%B="+percentBIndicator.getValue(currData.getEndIndex()));
     }
 

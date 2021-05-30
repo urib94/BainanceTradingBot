@@ -13,6 +13,9 @@ public class DataHolder {
     private double currentPrice;
     private MACDIndicator macdOverRsiIndicator;
     private MACDIndicator macdOverCCIIndicator;
+    private BollingerBandWidthIndicator closeBollingerBandWidthIndicator;
+    private BollingerBandsUpperIndicator closeBollingerBandsUpperIndicator;
+    private BollingerBandsLowerIndicator closeBollingerBandsLowerIndicator;
     private BollingerBandsUpperIndicator bollingerBandsUpperIndicator;
     private BollingerBandsLowerIndicator bollingerBandsLowerIndicator;
     private BollingerBandWidthIndicator bollingerBandWidthIndicator;
@@ -42,7 +45,8 @@ public class DataHolder {
     public DataHolder(HighPriceIndicator highPriceIndicator, LowPriceIndicator lowPriceIndicator, ClosePriceIndicator closePriceIndicator, RSIIndicator rsiIndicator, MACDIndicator macdOverRsiIndicator, BollingerBandsUpperIndicator bollingerBandsUpperIndicator,
                       BollingerBandsLowerIndicator bollingerBandsLowerIndicator, SMAIndicator smaIndicator, BollingerBandWidthIndicator bollingerbandWidthIndicator, PercentBIndicator percentBIndicator, int endIndex
             , MACDIndicator macdOverCCIIndicator, ATRIndicator atrIndicator, CCICIndicator ccicIndicator, MACDIndicator macdOverMa9, MACDIndicator macdOverMa14, MACDIndicator macdOverMa50, MFIIndicator mfiIndicator,
-                      SMAIndicator smaOverRsiIndicator, SMAIndicator fastSMAOverRsiIndicator, SMAIndicator smaOverMfiIndicator, OpenPriceIndicator openPriceIndicator, VolumeIndicator volumeIndicator, SMAIndicator smaOverVolumeIndicator) {
+                      SMAIndicator smaOverRsiIndicator, SMAIndicator fastSMAOverRsiIndicator, SMAIndicator smaOverMfiIndicator, OpenPriceIndicator openPriceIndicator, VolumeIndicator volumeIndicator, SMAIndicator smaOverVolumeIndicator,
+                      BollingerBandWidthIndicator closeBollingerBandWidthIndicator, BollingerBandsUpperIndicator closeBollingerBandsUpperIndicator, BollingerBandsLowerIndicator closeBollingerBandsLowerIndicator) {
         this.rsiIndicator = rsiIndicator;
         this.mfiIndicator = mfiIndicator;
         this.smaOverRsiIndicator = smaOverRsiIndicator;
@@ -51,6 +55,9 @@ public class DataHolder {
         this.macdOverRsiIndicator = macdOverRsiIndicator;
         this.smaIndicator = smaIndicator;
         this.endIndex = endIndex;
+        this.closeBollingerBandWidthIndicator = closeBollingerBandWidthIndicator;
+        this.closeBollingerBandsUpperIndicator = closeBollingerBandsUpperIndicator;
+        this.closeBollingerBandsLowerIndicator = closeBollingerBandsLowerIndicator;
         this.bollingerBandsUpperIndicator = bollingerBandsUpperIndicator;
         this.bollingerBandsLowerIndicator = bollingerBandsLowerIndicator;
         this.bollingerBandWidthIndicator=bollingerbandWidthIndicator;
@@ -117,6 +124,12 @@ public class DataHolder {
     public double getLowerBollingerAtIndex(int index){return bollingerBandsLowerIndicator.getValue(index).doubleValue();}
 
     public double getBandWidthAtIndex(int index){return bollingerBandWidthIndicator.getValue(index).doubleValue();}
+
+    public double getCloseUpperBollingerAtIndex(int index){return closeBollingerBandsUpperIndicator.getValue(index).doubleValue();}
+
+    public double getCloseLowerBollingerAtIndex(int index){return closeBollingerBandsLowerIndicator.getValue(index).doubleValue();}
+
+    public double getCloseBandWidthAtIndex(int index){return closeBollingerBandWidthIndicator.getValue(index).doubleValue();}
 
     public double getPercentBIAtIndex(int index){return percentBIndicator.getValue(index).doubleValue();}
 

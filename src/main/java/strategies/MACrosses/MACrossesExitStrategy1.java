@@ -25,8 +25,8 @@ public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
 
     @Override
     public SellingInstructions run(DataHolder realTimeData) {
-        updateManagement(realTimeData);
-        if (!fastManagement && slowCondition) {
+        //updateManagement(realTimeData);
+        if (!fastManagement/* && slowCondition*/) {
             if (!arabSolotionToAlertManagmatShifted){
                 TelegramMessenger.sendToTelegram("Transitioning to slow mangment");
                 arabSolotionToAlertManagmatShifted = true;

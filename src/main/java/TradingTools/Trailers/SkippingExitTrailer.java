@@ -13,7 +13,7 @@ public class SkippingExitTrailer extends ExitTrailer {
 
     double trailingPercentage;
 
-    private final Long timeProtection = 10000L;
+    private final Long timeProtection = 5000L;
 
 
     public SkippingExitTrailer(double trailingPercentage, PositionSide side){
@@ -70,14 +70,6 @@ public class SkippingExitTrailer extends ExitTrailer {
 
     private void calculateLongTrailingExitPrices(double curOpenPrice, double trailingPercentage) {
         exitPrice = curOpenPrice - (curOpenPrice * (trailingPercentage/100));
-    }
-
-    public double getPrevOpenPrice() {
-        return prevOpenPrice;
-    }
-
-    public void setPrevOpenPrice(double prevOpenPrice) {
-        this.prevOpenPrice = prevOpenPrice;
     }
 
     public double getExitPrice() {
