@@ -2,6 +2,7 @@ package codeExecution;
 
 import com.binance.client.model.enums.CandlestickInterval;
 import singletonHelpers.BinanceInfo;
+import strategies.BasicMaStrategy.BasicMaEntryStrategy;
 import strategies.EntryStrategy;
 import strategies.MACDOverCCIWIthATR.MACDOverCCIWithATREntryStrategy;
 import strategies.MACrosses.MACrossesEntryStrategy;
@@ -95,7 +96,7 @@ public class InputMessage {
                 return new MACDOverCCIWithATREntryStrategy();
 
             case "ma":
-                return new MACrossesEntryStrategy();
+                return new BasicMaEntryStrategy();
 
             case "stoch":
                 return new StochRsiCrosseEntryStrategy();

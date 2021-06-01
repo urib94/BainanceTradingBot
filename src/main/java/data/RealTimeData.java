@@ -10,6 +10,7 @@ import org.ta4j.core.indicators.bollinger.*;
 import org.ta4j.core.indicators.helpers.*;
 import org.ta4j.core.indicators.statistics.StandardDeviationIndicator;
 import singletonHelpers.RequestClient;
+import strategies.BasicMaStrategy.BasicMaConsts;
 import strategies.MACDOverCCIWIthATR.MACDOverCCIWIthATRConstants;
 import strategies.MACrosses.MACrossesConstants;
 import strategies.StochRsiCrosse.StochRsiCrosseConstance;
@@ -139,7 +140,7 @@ public class RealTimeData{
         lowPriceIndicator = new LowPriceIndicator(currData);
         openPriceIndicator = new OpenPriceIndicator(currData);
         macdOverCCIIndicator = calculateMacdOverCCI(currData);
-        slowSmaIndicator = new SMAIndicator(new ClosePriceIndicator(currData), MACrossesConstants.SLOW_SMA_BAR_COUNT);
+        slowSmaIndicator = new SMAIndicator(new ClosePriceIndicator(currData), BasicMaConsts.SMA_BAR_COUNT);
         closePriceIndicator = new ClosePriceIndicator(currData);
         volumeIndicator = new VolumeIndicator(currData);
         smaOverVolumeIndicator = new SMAIndicator(volumeIndicator, MACrossesConstants.SMA_OVER_VOLUME_BAR_COUNT);
