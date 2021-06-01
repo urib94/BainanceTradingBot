@@ -36,12 +36,12 @@ public class MACrossesEntryStrategy implements EntryStrategy {
         double currentPrice = realTimeData.getCurrentPrice();
         if (positionHandler == null) {
             if (isLongArea(realTimeData)){
-                if (longFastTriger(realTimeData) || longSlowTriger(realTimeData) || rsiSlowAndFastSmaCrossedUp(realTimeData) || rsiSpikedUp(realTimeData)){
+                if (longFastTriger(realTimeData) || longSlowTriger(realTimeData) /*|| rsiSlowAndFastSmaCrossedUp(realTimeData)*/ || rsiSpikedUp(realTimeData)){
                     return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.LONG);
                 }
             }
             else{
-                if(shortFastTriger(realTimeData) || shortSlowTriger(realTimeData) || rsiSlowAndFastSmaCrossedDown(realTimeData) || rsiSpikedDown(realTimeData)){
+                if(shortFastTriger(realTimeData) || shortSlowTriger(realTimeData) /*|| rsiSlowAndFastSmaCrossedDown(realTimeData)*/ || rsiSpikedDown(realTimeData)){
                     return buyAndCreatePositionHandler(currentPrice, symbol, PositionSide.SHORT);
                 }
             }
@@ -61,9 +61,10 @@ public class MACrossesEntryStrategy implements EntryStrategy {
 
     private boolean isLongArea(DataHolder realTimeData){
         int index = realTimeData.getLastCloseIndex();
+        double currentPrice = realTimeData.getCurrentPrice();
         double fastSma = realTimeData.getFastSmaValue(index);
-        double slowSma = realTimeData.getSlowSmaOverRSIValue(index);
-        return fastSma > slowSma;
+        double slowSma = realTimeData.getSlowSmaValueAtIndex(index);
+        return fastSma > slowSma ;
     }
 
     private boolean rsiSpikedUp(DataHolder realTimeData){
@@ -80,11 +81,10 @@ public class MACrossesEntryStrategy implements EntryStrategy {
     }
 
     private boolean shortFastTriger(DataHolder realTimeData) {
-        if (outOfCloseBoliingers(realTimeData)) {
-            if (rsiCrossedSma(realTimeData, DataHolder.CrossType.DOWN, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT)) {
-                return !volumeSpike(realTimeData);
-            }
+        if (rsiCrossedSma(realTimeData, DataHolder.CrossType.DOWN, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT)) {
+            return !volumeSpike(realTimeData);
         }
+
         return false;
     }
 
@@ -96,10 +96,8 @@ public class MACrossesEntryStrategy implements EntryStrategy {
     }
 
     private boolean longFastTriger(DataHolder realTimeData) {
-        if (outOfCloseBoliingers(realTimeData)) {
-            if (rsiCrossedSma(realTimeData, DataHolder.CrossType.UP, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT )) {
-                return !volumeSpike(realTimeData);
-            }
+        if (rsiCrossedSma(realTimeData, DataHolder.CrossType.UP, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT )) {
+            return !volumeSpike(realTimeData);
         }
         return false;
     }

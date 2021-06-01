@@ -5,6 +5,7 @@ import singletonHelpers.BinanceInfo;
 import strategies.EntryStrategy;
 import strategies.MACDOverCCIWIthATR.MACDOverCCIWithATREntryStrategy;
 import strategies.MACrosses.MACrossesEntryStrategy;
+import strategies.StochRsiCrosse.StochRsiCrosseEntryStrategy;
 //import strategies.MACDOverCCIWIthATR.MACDOverCCIWithATREntryStrategy;
 
 public class InputMessage {
@@ -95,6 +96,10 @@ public class InputMessage {
 
             case "ma":
                 return new MACrossesEntryStrategy();
+
+            case "stoch":
+                return new StochRsiCrosseEntryStrategy();
+
             default:
                 return null;
         }

@@ -26,7 +26,7 @@ public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
                 case SHORT:
                     if (isTrailing) {
                         trailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
-                        if (shortFastTriger(realTimeData) || shortSlowTriger(realTimeData) || rsiSlowAndFastSmaCrossedDown(realTimeData)) {
+                        if (shortFastTriger(realTimeData) || shortSlowTriger(realTimeData)) {
                             isTrailing = false;
                             return null;
                         }
@@ -38,7 +38,7 @@ public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
                     } else {
                         if (rsiSpikedUp(realTimeData)) return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_MARKET,
                                 MACrossesConstants.EXIT_SELLING_PERCENTAGE);
-                        if (longFastTriger(realTimeData) || longSlowTriger(realTimeData) || rsiSlowAndFastSmaCrossedUp(realTimeData)) {
+                        if (longFastTriger(realTimeData) || longSlowTriger(realTimeData)) {
                             isTrailing = true;
                             trailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
                             TelegramMessenger.sendToTelegram("Started trailing " + new Date(System.currentTimeMillis()));
@@ -72,15 +72,6 @@ public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
         return null;
     }
 
-    private boolean rsiSmaOutOfBannedZone(DataHolder realTimeData, int barCount){
-        int index = realTimeData.getLastCloseIndex();
-        double rsiValue = realTimeData.getRSIValueAtIndex(index);
-        double smaOverRsiValue;
-        if (barCount == MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT) smaOverRsiValue = realTimeData.getFastSmaOverRSIValue(index);
-        else smaOverRsiValue = realTimeData.getSlowSmaOverRSIValue(index);
-        return rsiValue > MACrossesConstants.UPPER_BANNED_ZONE_THRESHOLD || rsiValue < MACrossesConstants.LOWER_BANNED_ZONE_THRESHOLD ||
-                smaOverRsiValue > MACrossesConstants.UPPER_BANNED_ZONE_THRESHOLD || smaOverRsiValue < MACrossesConstants.LOWER_BANNED_ZONE_THRESHOLD;
-    }
 
     private boolean isLongArea(DataHolder realTimeData){
         int index = realTimeData.getLastCloseIndex();
@@ -103,12 +94,10 @@ public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
     }
 
     private boolean shortFastTriger(DataHolder realTimeData) {
-        if (outOfCloseBoliingers(realTimeData)) {
-            if (rsiCrossedSma(realTimeData, DataHolder.CrossType.DOWN, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT)) {
-                return !volumeSpike(realTimeData);
-            }
+        if (rsiCrossedSma(realTimeData, DataHolder.CrossType.DOWN, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT)) {
+            return !volumeSpike(realTimeData);
         }
-        return false;
+    return false;
     }
 
     private boolean shortSlowTriger(DataHolder realTimeData){
@@ -119,10 +108,8 @@ public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
     }
 
     private boolean longFastTriger(DataHolder realTimeData) {
-        if (outOfCloseBoliingers(realTimeData)) {
-            if (rsiCrossedSma(realTimeData, DataHolder.CrossType.UP, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT )) {
-                return !volumeSpike(realTimeData);
-            }
+        if (rsiCrossedSma(realTimeData, DataHolder.CrossType.UP, MACrossesConstants.FAST_SMA_OVER_RSI_BAR_COUNT )) {
+            return !volumeSpike(realTimeData);
         }
         return false;
     }
@@ -154,14 +141,13 @@ public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
         return slowSmaPrevValue <= fastSmaPrevValue && slowSmaCurrValue > fastSmaCurrValue;
     }
     private boolean rsiCrossedSma(DataHolder realTimeData, DataHolder.CrossType crossType, int barCount) {
-        if (rsiSmaOutOfBannedZone(realTimeData, barCount)) {
             int closeIndex = realTimeData.getLastCloseIndex();
             double curr, prev, smaCurrValue, smaPrevValue;
             curr = realTimeData.getRSIValueAtIndex(closeIndex);
             prev = realTimeData.getRSIValueAtIndex(closeIndex - 1);
             if(barCount == MACrossesConstants.SLOW_SMA_OVER_RSI_BAR_COUNT) {
-                smaCurrValue = realTimeData.getFastSmaValue(closeIndex);
-                smaPrevValue = realTimeData.getFastSmaValue(closeIndex - 1);
+                smaCurrValue = realTimeData.getSlowSmaOverRSIValue(closeIndex);
+                smaPrevValue = realTimeData.getSlowSmaOverRSIValue(closeIndex - 1);
             } else {
                 smaCurrValue = realTimeData.getFastSmaOverRSIValue(closeIndex);
                 smaPrevValue = realTimeData.getFastSmaOverRSIValue(closeIndex - 1);
@@ -175,7 +161,6 @@ public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
                 case DOWN:
                     return prev >= smaPrevValue && curr < smaCurrValue;
             }
-        }
         return false;
     }
 

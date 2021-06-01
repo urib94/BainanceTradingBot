@@ -43,12 +43,15 @@ public class DataHolder {
     private VolumeIndicator volumeIndicator;
     private SMAIndicator smaOverVolumeIndicator;
 
+    private StochDIndicator stochDIndicator;
+    private StochRsiAsK stochRsiAsK;
+
 
     public DataHolder(HighPriceIndicator highPriceIndicator, LowPriceIndicator lowPriceIndicator, ClosePriceIndicator closePriceIndicator, RSIIndicator rsiIndicator, MACDIndicator macdOverRsiIndicator, BollingerBandsUpperIndicator bollingerBandsUpperIndicator,
                       BollingerBandsLowerIndicator bollingerBandsLowerIndicator, SMAIndicator slowSmaIndicator, BollingerBandWidthIndicator bollingerbandWidthIndicator, PercentBIndicator percentBIndicator, int endIndex
             , MACDIndicator macdOverCCIIndicator, ATRIndicator atrIndicator, CCICIndicator ccicIndicator, MACDIndicator macdOverMa9, MACDIndicator macdOverMa14, MACDIndicator macdOverMa50, MFIIndicator mfiIndicator,
                       SMAIndicator fastSmaIndicator, SMAIndicator fastSMAOverRsiIndicator, SMAIndicator slowSMAOverRsiIndicator, OpenPriceIndicator openPriceIndicator, VolumeIndicator volumeIndicator, SMAIndicator smaOverVolumeIndicator,
-                      BollingerBandWidthIndicator closeBollingerBandWidthIndicator, BollingerBandsUpperIndicator closeBollingerBandsUpperIndicator, BollingerBandsLowerIndicator closeBollingerBandsLowerIndicator) {
+                      BollingerBandWidthIndicator closeBollingerBandWidthIndicator, BollingerBandsUpperIndicator closeBollingerBandsUpperIndicator, BollingerBandsLowerIndicator closeBollingerBandsLowerIndicator, StochDIndicator stochDIndicator, StochRsiAsK stochRsiAsK) {
         this.rsiIndicator = rsiIndicator;
         this.mfiIndicator = mfiIndicator;
         this.fastSmaIndicator = fastSmaIndicator;
@@ -77,6 +80,8 @@ public class DataHolder {
         currentPrice = getClosePriceAtIndex(endIndex);
         this.volumeIndicator = volumeIndicator;
         this.smaOverVolumeIndicator = smaOverVolumeIndicator;
+        this.stochDIndicator = stochDIndicator ;
+        this.stochRsiAsK = stochRsiAsK;
 
     }
 
@@ -114,6 +119,11 @@ public class DataHolder {
         return rsiIndicator.getValue(index).doubleValue();
     }
 
+
+    public double getDIndicatorAtIndex(int index) {return stochDIndicator.getValue(index).doubleValue();}
+
+    public double getRsiAsKAtIndex(int index) {        return stochRsiAsK.getValue(index).doubleValue();
+    }
 
     public double getClosePriceAtIndex(int index){return closePriceIndicator.getValue(index).doubleValue();}
 
