@@ -6,7 +6,7 @@ import strategies.BasicMaStrategy.BasicMaEntryStrategy;
 import strategies.EntryStrategy;
 import strategies.MACDOverCCIWIthATR.MACDOverCCIWithATREntryStrategy;
 import strategies.MACrosses.MACrossesEntryStrategy;
-import strategies.StochRsiCrosse.StochRsiCrosseEntryStrategy;
+//import strategies.StochRsiCrosse.StochRsiCrosseEntryStrategy;
 //import strategies.MACDOverCCIWIthATR.MACDOverCCIWithATREntryStrategy;
 
 public class InputMessage {
@@ -98,8 +98,8 @@ public class InputMessage {
             case "ma":
                 return new BasicMaEntryStrategy();
 
-            case "stoch":
-                return new StochRsiCrosseEntryStrategy();
+//            case "stoch":
+//                return new StochRsiCrosseEntryStrategy();
 
             default:
                 return null;

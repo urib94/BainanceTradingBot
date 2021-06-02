@@ -1,19 +1,17 @@
 package strategies.BasicMaStrategy;
 
-import TradingTools.Trailers.SkippingExitTrailer;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.*;
 import com.binance.client.model.trade.Order;
 import data.AccountBalance;
+import data.Config;
 import data.DataHolder;
-import javafx.geometry.Pos;
 import positions.PositionHandler;
 import singletonHelpers.RequestClient;
 import singletonHelpers.TelegramMessenger;
 import strategies.EntryStrategy;
 import strategies.ExitStrategy;
 import strategies.MACrosses.MACrossesConstants;
-import strategies.MACrosses.MACrossesExitStrategy1;
 import utils.Utils;
 
 import java.util.ArrayList;
@@ -25,27 +23,35 @@ public class BasicMaEntryStrategy implements EntryStrategy {
     PositionHandler positionHandler;
     private int leverage = BasicMaConsts.LEVERAGE;
 
+    public BasicMaEntryStrategy(){
+        accountBalance = AccountBalance.getAccountBalance();
+        System.out.println("Basic Ma");
+    }
 
     @Override
     public PositionHandler run(DataHolder realTimeData, String symbol) {
-        int closeIndex = realTimeData.getLastCloseIndex();
-        double currentPrice = realTimeData.getClosePriceAtIndex(closeIndex);
-        boolean currentPriceCrossedMaUp = currentPrice > realTimeData.getSlowSmaValueAtIndex(closeIndex);
-        if (currentPriceCrossedMaUp){
-            return buyAndCreatePositionHandler(realTimeData, PositionSide.LONG, symbol);
-        }
-        boolean currentPriceCrossedMaDown = currentPrice < realTimeData.getSlowSmaValueAtIndex(closeIndex);
-        if (currentPriceCrossedMaDown){
-            return buyAndCreatePositionHandler(realTimeData, PositionSide.SHORT, symbol);
-        }
+        if (positionHandler == null){
+            int closeIndex = realTimeData.getLastCloseIndex();
+            double currentPrice = realTimeData.getClosePriceAtIndex(closeIndex);
+            boolean currentPriceCrossedMaUp = currentPrice > realTimeData.getSlowSmaValueAtIndex(closeIndex) && realTimeData.getClosePriceAtIndex(closeIndex - 1) < realTimeData.getSlowSmaValueAtIndex(closeIndex - 1);
+            if (currentPriceCrossedMaUp){
+                return buyAndCreatePositionHandler(realTimeData, PositionSide.LONG, symbol);
+            }
+            boolean currentPriceCrossedMaDown = currentPrice < realTimeData.getSlowSmaValueAtIndex(closeIndex) && realTimeData.getClosePriceAtIndex(closeIndex - 1) > realTimeData.getSlowSmaValueAtIndex(closeIndex - 1);
+            if (currentPriceCrossedMaDown){
+                return buyAndCreatePositionHandler(realTimeData, PositionSide.SHORT, symbol);
+            }
 
+        }
         return null;
     }
 
     private PositionHandler buyAndCreatePositionHandler(DataHolder realTimeData, PositionSide positionSide, String symbol){
+        updateBuyingAmount(symbol);
         TelegramMessenger.sendToTelegram("Entering new position " + new Date(System.currentTimeMillis()));
         ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
-        exitStrategies.add(new BasicMaExitStrategy(positionSide));
+        exitStrategies.add(new BasicMaExitStrategy1(positionSide));
+        exitStrategies.add(new BasicMaExitStrategy2(positionSide, realTimeData.getOpenPrice(realTimeData.getLastCloseIndex())));
         double currentPrice = realTimeData.getCurrentPrice();
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         syncRequestClient.changeInitialLeverage(symbol, leverage);
@@ -93,5 +99,11 @@ public class BasicMaEntryStrategy implements EntryStrategy {
     @Override
     public void positionClosed() {
         positionHandler = null;
+    }
+    private void updateBuyingAmount(String symbol) {
+        String baseSymbol = Config.BASE_COIN;
+        double balance = accountBalance.getCoinBalance(baseSymbol).doubleValue();
+        requestedBuyingAmount = (balance * BasicMaConsts.AVAILABLE_BALANCE_PERCENTAGE) / 100;
+
     }
 }

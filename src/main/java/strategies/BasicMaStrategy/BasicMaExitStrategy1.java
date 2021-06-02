@@ -6,10 +6,10 @@ import positions.PositionHandler;
 import positions.SellingInstructions;
 import strategies.ExitStrategy;
 
-public class BasicMaExitStrategy implements ExitStrategy {
+public class BasicMaExitStrategy1 implements ExitStrategy {
     private PositionSide positionSide;
 
-    public BasicMaExitStrategy(PositionSide positionSide) {
+    public BasicMaExitStrategy1(PositionSide positionSide) {
         this.positionSide = positionSide;
     }
 
