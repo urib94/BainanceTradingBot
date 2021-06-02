@@ -130,7 +130,7 @@ public class PositionHandler implements Serializable {
     }
 
     public static double percentageOfQuantity(double percentage, double qty) {
-        return qty * percentage;
+        return qty * (percentage / 100);
     }
 
     public void terminate() {
