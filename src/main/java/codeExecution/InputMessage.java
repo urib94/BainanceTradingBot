@@ -2,10 +2,11 @@ package codeExecution;
 
 import com.binance.client.model.enums.CandlestickInterval;
 import singletonHelpers.BinanceInfo;
-import strategies.BasicMaStrategy.BasicMaEntryStrategy;
 import strategies.EntryStrategy;
 import strategies.MACDOverCCIWIthATR.MACDOverCCIWithATREntryStrategy;
-import strategies.MACrosses.MACrossesEntryStrategy;
+import strategies.MAStrategies.BasicMaStrategy.BasicMaEntryStrategy;
+import strategies.MAStrategies.BasicMaStrategyCRV.BasicMaCRVEntryStrategy;
+import strategies.rsiDivergence.RsiDivergeceEntryStrategy;
 //import strategies.StochRsiCrosse.StochRsiCrosseEntryStrategy;
 //import strategies.MACDOverCCIWIthATR.MACDOverCCIWithATREntryStrategy;
 
@@ -95,12 +96,16 @@ public class InputMessage {
             case "macd":
                 return new MACDOverCCIWithATREntryStrategy();
 
+            case "rsi":
+                return new RsiDivergeceEntryStrategy();
             case "ma":
                 return new BasicMaEntryStrategy();
 
 //            case "stoch":
 //                return new StochRsiCrosseEntryStrategy();
 
+            case "Ma-crv":
+                return  new BasicMaCRVEntryStrategy();
             default:
                 return null;
         }

@@ -1,9 +1,6 @@
 package data;
 
-import data.indicators.CCICIndicator;
-import data.indicators.MFIIndicator;
-import data.indicators.StochDIndicator;
-import data.indicators.StochRsiAsK;
+import data.indicators.*;
 import org.ta4j.core.indicators.*;
 import org.ta4j.core.indicators.bollinger.BollingerBandWidthIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsLowerIndicator;
@@ -14,6 +11,7 @@ import strategies.MACDOverCCIWIthATR.MACDOverCCIWIthATRConstants;
 import strategies.MACDOverSMAStrategy.MACDOverSMAConstants;
 
 public class DataHolder {
+    private final RSIDivergenceIndicator rsiDivergence;
     private double currentPrice;
     private MACDIndicator macdOverRsiIndicator;
     private MACDIndicator macdOverCCIIndicator;
@@ -55,7 +53,8 @@ public class DataHolder {
                       BollingerBandsLowerIndicator bollingerBandsLowerIndicator, SMAIndicator slowSmaIndicator, BollingerBandWidthIndicator bollingerbandWidthIndicator, PercentBIndicator percentBIndicator, int endIndex
             , MACDIndicator macdOverCCIIndicator, ATRIndicator atrIndicator, CCICIndicator ccicIndicator, MACDIndicator macdOverMa9, MACDIndicator macdOverMa14, MACDIndicator macdOverMa50, MFIIndicator mfiIndicator,
                       SMAIndicator fastSmaIndicator, SMAIndicator fastSMAOverRsiIndicator, SMAIndicator slowSMAOverRsiIndicator, OpenPriceIndicator openPriceIndicator, VolumeIndicator volumeIndicator, SMAIndicator smaOverVolumeIndicator,
-                      BollingerBandWidthIndicator closeBollingerBandWidthIndicator, BollingerBandsUpperIndicator closeBollingerBandsUpperIndicator, BollingerBandsLowerIndicator closeBollingerBandsLowerIndicator, StochDIndicator stochDIndicator, StochRsiAsK stochRsiAsK) {
+                      BollingerBandWidthIndicator closeBollingerBandWidthIndicator, BollingerBandsUpperIndicator closeBollingerBandsUpperIndicator, BollingerBandsLowerIndicator closeBollingerBandsLowerIndicator, StochDIndicator stochDIndicator, StochRsiAsK stochRsiAsK
+                        ,RSIDivergenceIndicator rsiDivergence ) {
         this.rsiIndicator = rsiIndicator;
         this.mfiIndicator = mfiIndicator;
         this.fastSmaIndicator = fastSmaIndicator;
@@ -86,6 +85,7 @@ public class DataHolder {
         this.smaOverVolumeIndicator = smaOverVolumeIndicator;
         this.stochDIndicator = stochDIndicator ;
         this.stochRsiAsK = stochRsiAsK;
+        this.rsiDivergence =rsiDivergence;
 
     }
 
@@ -148,6 +148,8 @@ public class DataHolder {
     public double getCloseBandWidthAtIndex(int index){return closeBollingerBandWidthIndicator.getValue(index).doubleValue();}
 
     public double getPercentBIAtIndex(int index){return percentBIndicator.getValue(index).doubleValue();}
+
+    public double getRsiDivergenceAtIndex(int index){return rsiDivergence.getValue(index).doubleValue();}
 
     public double getMACDOverSMAAverage(int index, int candleCount){
         if (candleCount == MACDOverSMAConstants.FAST_CANDLE_COUNT){

@@ -85,6 +85,9 @@ public class MACDOverCCIWithATREntryStrategy implements EntryStrategy {
         }
         return null;
     }
+//    private boolean longZone(DataHolder realTimeData){
+//        return realTimeData.getSMAOverMACDAtIndex(realTimeData.getLastCloseIndex()) > 0;
+//    }
 
     private void initializePeeks(DataHolder realTimeData) {
         int i = 0, numCrossed = 0, index = realTimeData.getLastCloseIndex();

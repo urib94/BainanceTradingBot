@@ -6,15 +6,17 @@ import data.DataHolder;
 import positions.PositionHandler;
 import positions.SellingInstructions;
 import singletonHelpers.TelegramMessenger;
+import strategies.ExitStrategy;
 
 import java.util.Date;
 
-public class MACrossesExitStrategy1 extends BaseMACrossesExitStrategy {
+public class MACrossesExitStrategy1 implements ExitStrategy {
     private boolean isTrailing = false;
     private final SkippingExitTrailer trailer;
+    private PositionSide positionSide;
 
     public MACrossesExitStrategy1(PositionSide positionSide, SkippingExitTrailer trailer) {
-        super(positionSide);
+        this.positionSide =positionSide;
         this.trailer = trailer;
 
     }

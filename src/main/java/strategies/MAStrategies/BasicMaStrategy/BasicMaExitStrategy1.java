@@ -1,4 +1,4 @@
-package strategies.BasicMaStrategy;
+package strategies.MAStrategies.BasicMaStrategy;
 
 import com.binance.client.model.enums.PositionSide;
 import data.DataHolder;

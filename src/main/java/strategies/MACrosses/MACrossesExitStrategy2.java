@@ -5,7 +5,7 @@
 //import com.binance.client.model.enums.PositionSide;
 //import data.DataHolder;
 //import positions.PositionHandler;
-//import positions.SellingInstructions;
+//import positions.SimulatedSellingInstructions;
 //import singletonHelpers.TelegramMessenger;
 //
 //import java.util.Date;
@@ -25,7 +25,7 @@
 //    }
 //
 //    @Override
-//    public SellingInstructions run(DataHolder realTimeData) {
+//    public SimulatedSellingInstructions run(DataHolder realTimeData) {
 //        //updateManagement(realTimeData);
 //        if (!fastManagement/* && slowCondition*/) {
 //            if (!arabSolotionToAlertManagmatShifted){
@@ -45,7 +45,7 @@
 //                        }
 //                        if (slowTrailer.needToSell(realTimeData.getCurrentPrice())) {
 //                            TelegramMessenger.sendToTelegram("Closing position with RSI crossed MA " + new Date(System.currentTimeMillis()));
-//                            return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_MARKET,
+//                            return new SimulatedSellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_MARKET,
 //                                    MACrossesConstants.EXIT_SELLING_PERCENTAGE);
 //                        }
 //                    } else {
@@ -69,7 +69,7 @@
 //                        }
 //                        if (slowTrailer.needToSell(realTimeData.getCurrentPrice())) {
 //                            TelegramMessenger.sendToTelegram("Closing position with RSI crossed MA " + new Date(System.currentTimeMillis()));
-//                            return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_MARKET,
+//                            return new SimulatedSellingInstructions(PositionHandler.ClosePositionTypes.SELL_MARKET,
 //                                    MACrossesConstants.EXIT_SELLING_PERCENTAGE);
 //                        }
 //                    } else {
@@ -95,7 +95,7 @@
 //                        }
 //                        if (fastTrailer.needToSell(realTimeData.getCurrentPrice())) {
 //                            TelegramMessenger.sendToTelegram("Closing position with fast RSI crossed MA " + new Date(System.currentTimeMillis()));
-//                            return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_MARKET,
+//                            return new SimulatedSellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_MARKET,
 //                                    MACrossesConstants.EXIT_SELLING_PERCENTAGE);
 //                        }
 //                    } else {
@@ -118,7 +118,7 @@
 //                        }
 //                        if (fastTrailer.needToSell(realTimeData.getCurrentPrice())) {
 //                            TelegramMessenger.sendToTelegram("Closing position fast with RSI crossed MA " + new Date(System.currentTimeMillis()));
-//                            return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_MARKET,
+//                            return new SimulatedSellingInstructions(PositionHandler.ClosePositionTypes.SELL_MARKET,
 //                                    MACrossesConstants.EXIT_SELLING_PERCENTAGE);
 //                        }
 //                    } else {

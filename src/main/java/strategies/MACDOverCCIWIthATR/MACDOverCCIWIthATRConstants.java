@@ -9,6 +9,7 @@ public class MACDOverCCIWIthATRConstants {
     public static final double DEFAULT_TAKE_PROFIT_PERCENTAGE = 0.0;
     public static final double DEFAULT_STOP_LOSS_PERCENTAGE = 0.0;
     public static final int DEFAULT_LEVERAGE = 100;
+    public static final int MA_OVER_MACD_LINE = 25;
     public static double DEFAULT_BUYING_AMOUNT = 0.74;
     public static final int SIGNAL_LENGTH = 9;
 //    public static final int RSI_CANDLE_NUM = 9;

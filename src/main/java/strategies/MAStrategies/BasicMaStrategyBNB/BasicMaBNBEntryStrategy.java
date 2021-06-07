@@ -1,4 +1,4 @@
-package strategies.BasicMaStrategy;
+package strategies.MAStrategies.BasicMaStrategyBNB;
 
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.*;
@@ -17,13 +17,13 @@ import utils.Utils;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class BasicMaEntryStrategy implements EntryStrategy {
+public class BasicMaBNBEntryStrategy implements EntryStrategy {
     AccountBalance accountBalance;
     private double requestedBuyingAmount = MACrossesConstants.DEFAULT_BUYING_AMOUNT;
     PositionHandler positionHandler;
-    private int leverage = BasicMaConsts.LEVERAGE;
+    private int leverage = BasicMaBNBConsts.LEVERAGE;
 
-    public BasicMaEntryStrategy(){
+    public BasicMaBNBEntryStrategy(){
         accountBalance = AccountBalance.getAccountBalance();
         System.out.println("Basic Ma");
     }
@@ -50,8 +50,8 @@ public class BasicMaEntryStrategy implements EntryStrategy {
         updateBuyingAmount(symbol);
         TelegramMessenger.sendToTelegram("Entering new position " + new Date(System.currentTimeMillis()));
         ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
-        exitStrategies.add(new BasicMaExitStrategy1(positionSide));
-        exitStrategies.add(new BasicMaExitStrategy2(positionSide, realTimeData.getOpenPrice(realTimeData.getLastCloseIndex())));
+        exitStrategies.add(new BasicMaBNBExitStrategy1(positionSide));
+        exitStrategies.add(new BasicMaBNBExitStrategy2(positionSide, realTimeData.getOpenPrice(realTimeData.getLastCloseIndex())));
         double currentPrice = realTimeData.getCurrentPrice();
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         syncRequestClient.changeInitialLeverage(symbol, leverage);
@@ -62,7 +62,7 @@ public class BasicMaEntryStrategy implements EntryStrategy {
                         buyingQty, null, null, null, null, null, null, null, WorkingType.MARK_PRICE, "TRUE", NewOrderRespType.RESULT);
                 TelegramMessenger.sendToTelegram("bought long:  " + "Side: " + buyOrder.getSide() + " , Qty: " + buyOrder.getCumQty() +
                         " , Average Price: " + buyOrder.getAvgPrice() + " ,                   Time: " + new Date(System.currentTimeMillis()));
-                positionHandler = new PositionHandler(buyOrder, exitStrategies, BasicMaConsts.STOP_LOSS_PERCENTAGE, positionSide);
+                positionHandler = new PositionHandler(buyOrder, exitStrategies, BasicMaBNBConsts.STOP_LOSS_PERCENTAGE, positionSide);
                 return positionHandler;
             } catch (Exception e) {
                 TelegramMessenger.sendToTelegram("Exception was thrown" + new Date(System.currentTimeMillis()));
@@ -75,7 +75,7 @@ public class BasicMaEntryStrategy implements EntryStrategy {
                         buyingQty, null, null, null, null, null, null, null, WorkingType.MARK_PRICE,"TRUE" , NewOrderRespType.RESULT);
                 TelegramMessenger.sendToTelegram("bought short:  " + "Side: " + buyOrder.getSide() + " , Qty: " + buyOrder.getCumQty() +
                         " , Average Price: " + buyOrder.getAvgPrice() + " ,                   Time: " + new Date(System.currentTimeMillis()));
-                positionHandler = new PositionHandler(buyOrder, exitStrategies, BasicMaConsts.STOP_LOSS_PERCENTAGE, positionSide);
+                positionHandler = new PositionHandler(buyOrder, exitStrategies, BasicMaBNBConsts.STOP_LOSS_PERCENTAGE, positionSide);
                 return positionHandler;
             } catch (Exception e) {
                 TelegramMessenger.sendToTelegram("Exception was thrown" + new Date(System.currentTimeMillis()));
@@ -103,7 +103,7 @@ public class BasicMaEntryStrategy implements EntryStrategy {
     private void updateBuyingAmount(String symbol) {
         String baseSymbol = Config.BASE_COIN;
         double balance = accountBalance.getCoinBalance(baseSymbol).doubleValue();
-        requestedBuyingAmount = (balance * BasicMaConsts.AVAILABLE_BALANCE_PERCENTAGE) / 100;
+        requestedBuyingAmount = (balance * BasicMaBNBConsts.AVAILABLE_BALANCE_PERCENTAGE) / 100;
 
     }
 }

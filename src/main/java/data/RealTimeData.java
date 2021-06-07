@@ -4,20 +4,17 @@ import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.CandlestickInterval;
 import com.binance.client.model.event.CandlestickEvent;
 import com.binance.client.model.market.Candlestick;
-import data.indicators.CCICIndicator;
-import data.indicators.MFIIndicator;
-import data.indicators.StochDIndicator;
-import data.indicators.StochRsiAsK;
+import data.indicators.*;
 import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.indicators.*;
 import org.ta4j.core.indicators.bollinger.*;
 import org.ta4j.core.indicators.helpers.*;
 import org.ta4j.core.indicators.statistics.StandardDeviationIndicator;
 import singletonHelpers.RequestClient;
-import strategies.BasicMaStrategy.BasicMaConsts;
 import strategies.MACDOverCCIWIthATR.MACDOverCCIWIthATRConstants;
 import strategies.MACrosses.MACrossesConstants;
 import strategies.StochRsiCrosse.StochRsiCrosseConstance;
+import strategies.rsiDivergence.RsiDivergeceConstance;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
@@ -67,6 +64,7 @@ public class RealTimeData{
     private MACDIndicator macdOverMa14;
     private MACDIndicator macdOverMa50;
 
+    private RSIDivergenceIndicator rsiDivergenceIndicator;
 
 
     public RealTimeData(String symbol, CandlestickInterval interval){
@@ -96,7 +94,7 @@ public class RealTimeData{
         return new DataHolder(highPriceIndicator, lowPriceIndicator, closePriceIndicator, rsiIndicator, macdOverRsiIndicator, bollingerBandsUpperIndicator, bollingerBandsLowerIndicator,
                 slowSmaIndicator,bollingerBandWidthIndicator, percentBIndicator, realTimeData.getEndIndex(), macdOverCCIIndicator, atrIndicator, ccicIndicator, macdOverMa9, macdOverMa14,
                 macdOverMa50, mfiIndicator, fastSmaIndicator, fastSMAOverRsiIndicator, slowSMAOverRsiIndicator, openPriceIndicator, volumeIndicator, smaOverVolumeIndicator,
-                closeBollingerBandWidthIndicator , closeBollingerBandsUpperIndicator , closeBollingerBandsLowerIndicator, stochDIndicator, stochRsiAsK);
+                closeBollingerBandWidthIndicator , closeBollingerBandsUpperIndicator , closeBollingerBandsLowerIndicator, stochDIndicator, stochRsiAsK, rsiDivergenceIndicator);
     }
 
     private boolean updateLastCandle(CandlestickEvent event) {
@@ -144,7 +142,6 @@ public class RealTimeData{
         lowPriceIndicator = new LowPriceIndicator(currData);
         openPriceIndicator = new OpenPriceIndicator(currData);
         macdOverCCIIndicator = calculateMacdOverCCI(currData);
-        slowSmaIndicator = new SMAIndicator(new ClosePriceIndicator(currData), BasicMaConsts.SMA_BAR_COUNT);
         closePriceIndicator = new ClosePriceIndicator(currData);
         volumeIndicator = new VolumeIndicator(currData);
         smaOverVolumeIndicator = new SMAIndicator(volumeIndicator, MACrossesConstants.SMA_OVER_VOLUME_BAR_COUNT);
@@ -152,6 +149,7 @@ public class RealTimeData{
         rsiForStochIndicator = calculateRSI(StochRsiCrosseConstance.RSI_BAR_COUNT, currData);
         stochRsiAsK = new StochRsiAsK(rsiForStochIndicator, StochRsiCrosseConstance.RSI_BAR_COUNT, StochRsiCrosseConstance.STOCH_LENGTH);
         stochDIndicator = new StochDIndicator(stochRsiAsK, StochRsiCrosseConstance.RSI_BAR_COUNT);
+        rsiDivergenceIndicator = new RSIDivergenceIndicator(currData,RsiDivergeceConstance.SLOW ,RsiDivergeceConstance.FAST);
 //        atrIndicator = calculateATR(currData,MACDOverCCIWIthATRConstants.ATR_CANDLE_COUNT);
 //        macdOverMa9 = calculateMacdOverMa(currData, MACDOverSMAConstants.FAST_CANDLE_COUNT);
 //        macdOverMa14 = calculateMacdOverMa(currData, MACDOverSMAConstants.MEDIUM_CANDLE_COUNT);

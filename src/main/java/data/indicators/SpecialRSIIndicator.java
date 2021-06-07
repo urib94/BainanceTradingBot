@@ -1,11 +1,7 @@
 package data.indicators;
 
 import org.ta4j.core.BaseBarSeries;
-import org.ta4j.core.Indicator;
 import org.ta4j.core.indicators.CachedIndicator;
-import org.ta4j.core.indicators.MMAIndicator;
-import org.ta4j.core.indicators.helpers.GainIndicator;
-import org.ta4j.core.indicators.helpers.LossIndicator;
 import org.ta4j.core.num.Num;
 
 public class SpecialRSIIndicator extends CachedIndicator<Num> {

@@ -3,7 +3,7 @@
 //import com.binance.client.model.enums.PositionSide;
 //import data.DataHolder;
 //import positions.PositionHandler;
-//import positions.SellingInstructions;
+//import positions.SimulatedSellingInstructions;
 //
 //public class MACrossesExitStrategy3 extends BaseMACrossesExitStrategy{
 //
@@ -12,14 +12,14 @@
 //    }
 //
 //    @Override
-//    public SellingInstructions run(DataHolder realTimeData) {
+//    public SimulatedSellingInstructions run(DataHolder realTimeData) {
 //        switch (positionSide){
 //
 //            case SHORT:
 //                if(priceIsAboveSMA(realTimeData)){// long only
 //                    if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.UP, MACrossesConstants.SLOW_SMA_OVER_RSI_BAR_COUNT) ||
 //                            (crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.UP, MACrossesConstants.SMA_OVER_MFI_BAR_COUNT) && mfiAndRSIAlign(realTimeData))){
-//                        return new SellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_MARKET,
+//                        return new SimulatedSellingInstructions(PositionHandler.ClosePositionTypes.CLOSE_SHORT_MARKET,
 //                                MACrossesConstants.EXIT_SELLING_PERCENTAGE);
 //                    }
 //                }
@@ -28,7 +28,7 @@
 //                if (!priceIsAboveSMA(realTimeData)){
 //                    if(crossedSma(realTimeData, DataHolder.IndicatorType.RSI, DataHolder.CrossType.DOWN, MACrossesConstants.SLOW_SMA_OVER_RSI_BAR_COUNT) ||
 //                            (crossedSma(realTimeData, DataHolder.IndicatorType.MFI, DataHolder.CrossType.DOWN, MACrossesConstants.SMA_OVER_MFI_BAR_COUNT) && mfiAndRSIAlign(realTimeData))){
-//                        return new SellingInstructions(PositionHandler.ClosePositionTypes.SELL_MARKET,
+//                        return new SimulatedSellingInstructions(PositionHandler.ClosePositionTypes.SELL_MARKET,
 //                                MACrossesConstants.EXIT_SELLING_PERCENTAGE);
 //                    }
 //                }
