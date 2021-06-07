@@ -7,7 +7,7 @@ import org.ta4j.core.num.Num;
 public class RMAIndicator extends AbstractEMAIndicator {
 
     public RMAIndicator(Indicator<Num> indicator, int barCount) {
-        super(indicator, barCount, 1.0D / (double)(barCount + 1));
+        super(indicator, barCount, 1.0D / (double)(barCount));
     }
 }
 
