@@ -5,18 +5,18 @@ import org.ta4j.core.indicators.CachedIndicator;
 import org.ta4j.core.num.Num;
 
 public class SpecialRSIIndicator extends CachedIndicator<Num> {
-    private final RMAIndicator averageGainIndicator;
-    private final RMAIndicator averageLossIndicator;
+    private final MMAIndicator averageGainIndicator;
+    private final MMAIndicator averageLossIndicator;
 
-    public SpecialRSIIndicator(BaseBarSeries series, RMAIndicator up, RMAIndicator down) {
+    public SpecialRSIIndicator(BaseBarSeries series, MMAIndicator up, MMAIndicator down) {
         super(series);
         this.averageGainIndicator = up;
         this.averageLossIndicator = down;
     }
 
     protected Num calculate(int index) {
-        Num averageGain = (Num)this.averageGainIndicator.getValue(index);
-        Num averageLoss = (Num)this.averageLossIndicator.getValue(index);
+        Num averageGain = this.averageGainIndicator.getValue(index);
+        Num averageLoss = this.averageLossIndicator.getValue(index);
         if (averageLoss.isZero()) {
             return averageGain.isZero() ? this.numOf(0) : this.numOf(100);
         } else {

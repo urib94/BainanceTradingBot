@@ -16,7 +16,7 @@ public class NegativeDifferenceIndicator extends CachedIndicator<Num> {
         curr = this.indicator.getValue(index);
         prev = this.indicator.getValue(index - 1);
         output = curr.minus(prev);
-        if (output.isLessThan(this.numOf(0))) return output.multipliedBy(this.numOf(-1));
+        if (output.isLessThan(this.numOf(0))) return output.abs();
         else return this.numOf(0);
     }
 
