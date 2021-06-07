@@ -1,4 +1,4 @@
-package data;
+package data.indicators;
 
 import org.ta4j.core.Indicator;
 import org.ta4j.core.indicators.*;

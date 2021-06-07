@@ -1,5 +1,9 @@
 package data;
 
+import data.indicators.CCICIndicator;
+import data.indicators.MFIIndicator;
+import data.indicators.StochDIndicator;
+import data.indicators.StochRsiAsK;
 import org.ta4j.core.indicators.*;
 import org.ta4j.core.indicators.bollinger.BollingerBandWidthIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsLowerIndicator;
