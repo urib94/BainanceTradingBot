@@ -5,10 +5,10 @@ import org.ta4j.core.indicators.CachedIndicator;
 import org.ta4j.core.indicators.helpers.DifferenceIndicator;
 import org.ta4j.core.num.Num;
 
-public class PositiveCloseDifferenceIndicator extends CachedIndicator<Num> {
+public class PositiveDifferenceIndicator extends CachedIndicator<Num> {
     private final Indicator<Num> indicator;
 
-    public PositiveCloseDifferenceIndicator(Indicator<Num> indicator) {
+    public PositiveDifferenceIndicator(Indicator<Num> indicator) {
         super(indicator);
         this.indicator = indicator;
     }
