@@ -27,6 +27,7 @@ public class PositionHandler implements Serializable {
     private double stopLossPercentage;
     private boolean requireStopLoss = false;
     private PositionSide positionSide;
+    private Order stopLose;
 
     public PositionHandler(Order order, ArrayList<ExitStrategy> _exitStrategies, double stopLossPercentage, PositionSide positionSide) {
         symbol = order.getSymbol().toLowerCase();
@@ -209,7 +210,7 @@ public class PositionHandler implements Serializable {
         switch (positionSide) {
             case LONG:
                 try {
-                    syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.STOP_MARKET, TimeInForce.GTC,
+                    stopLose = syncRequestClient.postOrder(symbol, OrderSide.SELL, PositionSide.BOTH, OrderType.STOP_MARKET, TimeInForce.GTC,
                             sellingQty, null, "true", null, stopLossPrice, null,
                             null, null, WorkingType.MARK_PRICE, "true", NewOrderRespType.RESULT);
                 } catch (Exception e) {

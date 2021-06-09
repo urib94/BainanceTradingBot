@@ -8,4 +8,5 @@ public class RsiDivergeceConstance {
     public static final double BUYING_AMOUNT = 10;
     public static final double STOP_LOSS_PERCENTAGE = 1;
     public static final double AVAILABLE_BALANCE_PERCENTAGE = 10;
+    public static final double TRAILING_PRECENTAGE = 0.05;
 }

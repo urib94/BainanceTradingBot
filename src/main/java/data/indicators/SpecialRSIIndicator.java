@@ -2,6 +2,7 @@ package data.indicators;
 
 import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.indicators.CachedIndicator;
+import org.ta4j.core.indicators.MMAIndicator;
 import org.ta4j.core.num.Num;
 
 public class SpecialRSIIndicator extends CachedIndicator<Num> {
@@ -21,6 +22,7 @@ public class SpecialRSIIndicator extends CachedIndicator<Num> {
             return averageGain.isZero() ? this.numOf(0) : this.numOf(100);
         } else {
             Num relativeStrength = averageGain.dividedBy(averageLoss);
+            //System.out.println("rsi 1 =" + this.numOf(100).minus(this.numOf(100).dividedBy(this.numOf(1).plus(relativeStrength))));
             return this.numOf(100).minus(this.numOf(100).dividedBy(this.numOf(1).plus(relativeStrength)));
         }
     }

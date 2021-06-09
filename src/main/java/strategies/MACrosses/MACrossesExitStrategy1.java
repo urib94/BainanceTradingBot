@@ -64,7 +64,7 @@ public class MACrossesExitStrategy1 implements ExitStrategy {
                                 MACrossesConstants.EXIT_SELLING_PERCENTAGE);
                         if (shortFastTriger(realTimeData) || shortSlowTriger(realTimeData) || rsiSlowAndFastSmaCrossedDown(realTimeData)) {
                             isTrailing = true;
-                            slowCondition = false;
+//                            slowCondition = false;
                             trailer.updateTrailer(realTimeData.getOpenPrice(realTimeData.getLastIndex()));
                             TelegramMessenger.sendToTelegram("Started trailing " + new Date(System.currentTimeMillis()));
                         }

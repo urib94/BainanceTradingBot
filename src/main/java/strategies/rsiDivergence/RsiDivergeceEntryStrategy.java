@@ -1,5 +1,6 @@
 package strategies.rsiDivergence;
 
+import TradingTools.Trailers.SkippingExitTrailer;
 import com.binance.client.SyncRequestClient;
 import com.binance.client.model.enums.*;
 import com.binance.client.model.trade.Order;
@@ -21,29 +22,62 @@ public class RsiDivergeceEntryStrategy implements EntryStrategy {
     private AccountBalance accountBalance;
     private double requestedBuyingAmount = RsiDivergeceConstance.BUYING_AMOUNT;
     private int leverage = RsiDivergeceConstance.LEVRAGE;
+    private boolean firstTrade = true;
+    private boolean freeToTrade = true;
 
+    public RsiDivergeceEntryStrategy(){
+        accountBalance = AccountBalance.getAccountBalance();
+        System.out.println("Rsi Divergence");
+    }
 
     @Override
     public PositionHandler run(DataHolder realTimeData, String symbol) {
-        System.out.println(realTimeData.getRsiDivergenceAtIndex(realTimeData.getLastCloseIndex()));
-//        if (positionHandler != null){
-//            double dev = realTimeData.getRsiDivergenceAtIndex(realTimeData.getLastCloseIndex());
-//            if(dev > 0){
-//                return buyAndCreatePositionHandler(realTimeData,PositionSide.LONG, symbol);
-//            }else{
-//                return buyAndCreatePositionHandler(realTimeData,PositionSide.SHORT, symbol);
-//                }
-//        }
-//
+        if (firstTrade){
+            if(devCrossedUp(realTimeData)){
+                firstTrade = false;
+                freeToTrade = false;
+                return buyAndCreatePositionHandler(realTimeData,PositionSide.LONG, symbol);
+            } else if(devCrossedDown(realTimeData)){
+                firstTrade = false;
+                freeToTrade = false;
+                return buyAndCreatePositionHandler(realTimeData,PositionSide.SHORT, symbol);
+            }
+        }
+        else if (freeToTrade){
+            double dev = realTimeData.getRsiDivergenceAtIndex(realTimeData.getLastCloseIndex());
+            double currentDev = realTimeData.getRsiDivergenceAtIndex(realTimeData.getLastIndex());
+            freeToTrade = false;
+            if(dev > 0.0 && currentDev > 0.0){
+                return buyAndCreatePositionHandler(realTimeData,PositionSide.LONG, symbol);
+            }else if(dev < 0.0 && currentDev < 0.0){
+                return buyAndCreatePositionHandler(realTimeData,PositionSide.SHORT, symbol);
+                }
+        }
+
         return null;
+    }
+
+    private boolean devCrossedDown(DataHolder realTimeData) {
+        int index = realTimeData.getLastCloseIndex();
+        double currDev = realTimeData.getRsiDivergenceAtIndex(index);
+        double prevDev = realTimeData.getRsiDivergenceAtIndex(index - 1);
+        return prevDev > 0 && currDev <= 0;
+    }
+
+    private boolean devCrossedUp(DataHolder realTimeData) {
+        int index = realTimeData.getLastCloseIndex();
+        double currDev = realTimeData.getRsiDivergenceAtIndex(index);
+        double prevDev = realTimeData.getRsiDivergenceAtIndex(index - 1);
+        return prevDev < 0 && currDev >= 0;
     }
 
 
     private PositionHandler buyAndCreatePositionHandler(DataHolder realTimeData, PositionSide positionSide, String symbol){
-        updateBuyingAmount(symbol);
+        setLeverage(symbol);
         TelegramMessenger.sendToTelegram("Entering new position " + new Date(System.currentTimeMillis()));
         ArrayList<ExitStrategy> exitStrategies = new ArrayList<>();
-        exitStrategies.add(new rsiDivergenceExitStrategy1(positionSide));
+        SkippingExitTrailer skippingExitTrailer = new SkippingExitTrailer(RsiDivergeceConstance.TRAILING_PRECENTAGE, positionSide);
+        exitStrategies.add(new rsiDivergenceExitStrategy1(positionSide, skippingExitTrailer));
         double currentPrice = realTimeData.getCurrentPrice();
         SyncRequestClient syncRequestClient = RequestClient.getRequestClient().getSyncRequestClient();
         syncRequestClient.changeInitialLeverage(symbol, leverage);
@@ -84,6 +118,25 @@ public class RsiDivergeceEntryStrategy implements EntryStrategy {
         requestedBuyingAmount = (balance * RsiDivergeceConstance.AVAILABLE_BALANCE_PERCENTAGE) / 100;
 
     }
+
+    private void setLeverage(String symbol){
+        switch (symbol){
+
+            case "bnbusdt":
+                leverage = 75;
+                break;
+            case "ethusdt":
+                leverage = 100;
+                break;
+            case "btcusdt":
+                leverage = 100;
+                break;
+            case "dogeusdt" :
+                leverage = 50;
+                break;
+        }
+    }
+
     @Override
     public void setLeverage(int leverage) {
 
@@ -96,6 +149,6 @@ public class RsiDivergeceEntryStrategy implements EntryStrategy {
 
     @Override
     public void positionClosed() {
-
+        freeToTrade = true;
     }
 }
