@@ -7,8 +7,8 @@ import java.net.URL;
 import java.net.URLConnection;
 
 public class TelegramMessenger {
-    private static String apiToken = "1493781452:AAGDIQ2nVL4NIu2xEstyyprFY6J04kQbDsA";
-    private static String chatId = "-482820044";
+    private static String apiToken = "";
+    private static String chatId = "";
 
 //    private static String apiToken = "1763392075:AAHB56wef0ElT3rTgU6lij8XPlFqf5S3004";
 //    private static String chatId = "-482820044";
